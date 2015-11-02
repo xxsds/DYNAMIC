@@ -10,6 +10,7 @@
 #include <chrono>
 #include <dynamic.hpp>
 #include "packed_block.hpp"
+#include <alphabet_encoder.hpp>
 
 using namespace std;
 using namespace dyn;
@@ -185,7 +186,7 @@ void test_spsi(uint64_t n){
 
 void benchmark_spsi(uint64_t size){
 
-	uint32_t sigma = 260;
+	uint32_t sigma = 300;
 
 	using std::chrono::high_resolution_clock;
 	using std::chrono::duration_cast;
@@ -301,10 +302,10 @@ void benchmark_spsi(uint64_t size){
 
 }
 
-void test_psum_bitv(uint64_t size){
+void compare_bitvectors(uint64_t size){
 
 	dyn_bv dbv;
-	dyn_bitv_check dbvc;
+	gap_bv gbv;
 
 	srand(time(NULL));
 
@@ -315,19 +316,24 @@ void test_psum_bitv(uint64_t size){
 		bool b = rand()%2;
 
 		dbv.insert(j,b);
+		gbv.insert(j,b);
 
-		dbvc.insert(j,b);
+		assert(dbv.size()==gbv.size());
 
 	}
 	assert(dbv.size()==size);
+	assert(gbv.size()==size);
+
 	cout << "ok!" << endl;
 
 	uint64_t ps = dbv.rank1(dbv.size());
 
+	assert(gbv.rank1(gbv.size())==ps);
+
 	cout << "test access ... " << flush;
 	for(uint64_t i=0;i<size;++i){
 
-		assert(dbv[i]==dbvc.at(i));
+		assert(dbv[i]==gbv[i]);
 
 	}
 	cout << "ok!" << endl;
@@ -335,11 +341,13 @@ void test_psum_bitv(uint64_t size){
 	cout << "test select0 ... " << flush;
 	uint64_t nzero = dbv.rank0(dbv.size());
 
+	assert(nzero==gbv.rank0(gbv.size()));
+
 	for(uint64_t i=0;i<size;++i){
 
 		uint64_t x = rand()%nzero;
 
-		assert(dbv.select0(x)==dbvc.select0(x));
+		assert(dbv.select0(x)==gbv.select0(x));
 
 	}
 	cout << "ok!" << endl;
@@ -350,7 +358,7 @@ void test_psum_bitv(uint64_t size){
 
 		uint64_t x = rand()%ps;
 
-		assert(dbv.select1(x)==dbvc.select1(x));
+		assert(dbv.select1(x)==gbv.select1(x));
 
 	}
 	cout << "ok!" << endl;
@@ -359,7 +367,7 @@ void test_psum_bitv(uint64_t size){
 
 	for(uint64_t i=0;i<=size;++i){
 
-		assert(dbv.rank0(i)==dbvc.rank0(i));
+		assert(dbv.rank0(i)==gbv.rank0(i));
 
 	}
 	cout << "ok!" << endl;
@@ -368,7 +376,7 @@ void test_psum_bitv(uint64_t size){
 
 	for(uint64_t i=0;i<=size;++i){
 
-		assert(dbv.rank1(i)==dbvc.rank1(i));
+		assert(dbv.rank1(i)==gbv.rank1(i));
 
 	}
 	cout << "ok!" << endl;
@@ -476,19 +484,24 @@ void benchmark_bitvector(uint64_t size){
 
 int main(int argc,char** argv) {
 
-	//for(int i=0;i<50;++i) test_bitv_spsi(5000);
-	//benchmark_spsi_1(10000000);
-	//for(int i=0;i<50;++i) test_psum_bitv(50000);
-	//test_gap_bitv(10000000);
 
-	//benchmark_psum_bitv(10000000);
 
-	cout << "GAP BITVECTOR: " << endl;
-	benchmark_bitvector<gap_bv>(10000000);
+	alphabet_encoder ae({ {'a',0.01},{'b',0.7},{'c',0.1},{'d',0.1},{'e',0.09} });
+
+	cout << (uchar)ae.decode(ae.encode('a')) << " -> "; for(auto b : ae.encode('a')) cout << b; cout << endl;
+	cout << (uchar)ae.decode(ae.encode('b')) << " -> "; for(auto b : ae.encode('b')) cout << b; cout << endl;
+	cout << (uchar)ae.decode(ae.encode('c')) << " -> "; for(auto b : ae.encode('c')) cout << b; cout << endl;
+	cout << (uchar)ae.decode(ae.encode('d')) << " -> "; for(auto b : ae.encode('d')) cout << b; cout << endl;
+	cout << (uchar)ae.decode(ae.encode('e')) << " -> "; for(auto b : ae.encode('e')) cout << b; cout << endl;
+
+	//compare_bitvectors(100000);
+
+	//cout << "GAP BITVECTOR: " << endl;
+	//benchmark_bitvector<gap_bv>(10000000);
 
 	//benchmark_spsi(11600000);
 
-	cout << "\nSUCCINCT BITVECTOR: " << endl;
-	benchmark_bitvector<dyn_bv>(10000000);
+	//cout << "\nSUCCINCT BITVECTOR: " << endl;
+	//benchmark_bitvector<dyn_bv>(10000000);
 
 }

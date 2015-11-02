@@ -20,6 +20,8 @@
 
 #define WORD_SIZE 64;
 
+typedef unsigned char uchar;
+
 using namespace std;
 
 #endif /* INCLUDES_HPP_ */
