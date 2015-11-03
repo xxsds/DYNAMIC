@@ -8,9 +8,9 @@
  *
  *  User can choose (at constructor time) between 3 types of encodings:
  *
- *  - fixed-size: number of bits of each char is fixed
- *  - gamma encoding: alphabet is completely unknown at construction time
- *  - Huffman encoding: only character probabilities are known at construction time
+ *  - fixed-size: number of bits of each char is fixed. Dynamic (but alphabet size is limited)
+ *  - gamma encoding: alphabet is completely unknown at construction time. Dynamic (alphabet size < 2^64)
+ *  - Huffman encoding: character probabilities are known at construction time. Static.
  *
  */
 
@@ -64,9 +64,7 @@ public:
 	 *
 	 * We know character probabilities. Input: pairs <character, probability>
 	 *
-	 * Here the string is Huffman encoded.
-	 *
-	 * Missing characters in P are assigned probability 0. They also get a binary code
+	 * Here the alphabet is Huffman encoded.
 	 *
 	 */
 	alphabet_encoder(vector<pair<char_type,double> > P){
@@ -115,6 +113,9 @@ public:
 
 		auto code = encode_[c];
 
+		//if c does not have a code, then encoding must not be Huffman (which is static)
+		assert(code.size() > 0 or enc_type != huffman);
+
 		/*
 		 * if character is not present in dictionary, then
 		 * allocate new code
@@ -123,7 +124,7 @@ public:
 
 			if(enc_type==gamma){
 
-				encode_[c] = get_new_delta();
+				encode_[c] = get_new_gamma();
 
 			}else if(enc_type==fixed){
 
@@ -219,7 +220,7 @@ private:
 	/*
 	 * increment sigma and return gamma code of sigma
 	 */
-	vector<bool> get_new_delta(){
+	vector<bool> get_new_gamma(){
 
 		vector<bool> C;
 
