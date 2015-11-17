@@ -117,6 +117,24 @@ class spsi{
 
 public:
 
+	/*
+	 * copy constructor
+	 */
+	spsi ( const spsi & sp){
+
+		root = new node(*sp.root);
+
+	}
+
+	/*
+	 * copy operator
+	 */
+	void operator=( const spsi & sp){
+
+		root = new node(*sp.root);
+
+	}
+
     using spsi_ref = spsi_reference<spsi>;
 
 	/*
@@ -125,6 +143,7 @@ public:
 	 */
 	spsi(uint64_t max_len = 0, uint64_t width = 0){
 
+		assert(root==NULL);
 		root = new node();
 
 	}
@@ -132,7 +151,11 @@ public:
 	~spsi(){
 
 		root->free_mem();
+
+		assert(root!=NULL);
+
 		delete root;
+		root = NULL;
 
 	}
 
@@ -241,6 +264,8 @@ public:
 	 * return number of integers stored in the structure
 	 */
 	uint64_t size(){
+
+		assert(root != NULL);
 		return root->size();
 	}
 
@@ -313,6 +338,35 @@ private:
 	public:
 
 		/*
+		 * copy constructor
+		 */
+		node(const node & n){
+
+			cout << "copy ... " << flush;
+
+			subtree_sizes = {n.subtree_sizes};
+			subtree_psums = {n.subtree_psums};
+
+			children = vector<node*>(n.children.size(),NULL);
+			for(ulint i=0;i<n.children.size();++i) children[i] = new node(*n.children[i]);
+
+			leaves = vector<leaf_type*>(n.leaves.size(),NULL);
+			for(ulint i=0;i<n.leaves.size();++i) leaves[i] = new leaf_type(*n.leaves[i]);
+
+			node* parent = NULL; 		//NULL for root
+			if(n.parent!=NULL) parent = new node(*n.parent);
+
+			rank_ = n.rank_; 		//rank of this node among its siblings
+
+			nr_children = n.nr_children; 	//number of subtrees
+
+			has_leaves_ = n.has_leaves_;		//if true, leaves array is nonempty and children is empty
+
+			cout << "done " << endl;
+
+		}
+
+		/*
 		 * create new root node. This node has only 1 (empty) child, which is a leaf.
 		 */
 		node(){
@@ -323,8 +377,8 @@ private:
 			nr_children = 1;
 			has_leaves_ = true;
 
-			vector<leaf_type*> l {new leaf_type()};
-			leaves = vector<leaf_type*>(l);
+			leaves = vector<leaf_type*>(1);
+			leaves[0] = new leaf_type();
 
 		}
 
@@ -863,7 +917,11 @@ private:
 		void overwrite_rank(uint32_t r){rank_=r;}
 
 		uint64_t size(){
+
+			assert(nr_children>0);
+			assert(nr_children-1 < subtree_sizes.size());
 			return subtree_sizes[nr_children-1];
+
 		}
 
 		uint64_t psum(){
