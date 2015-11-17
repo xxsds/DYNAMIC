@@ -56,6 +56,15 @@ public:
 	}
 
 	/*
+	 * access
+	 */
+	bool access(uint64_t i){
+
+		return at(i);
+
+	}
+
+	/*
 	 * position of i-th bit not set. 0 =< i < rank(size(),0)
 	 */
 	uint64_t select0(uint64_t i){
