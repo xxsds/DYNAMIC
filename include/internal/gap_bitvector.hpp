@@ -27,6 +27,7 @@ public:
 	 */
 	gap_bitvector(uint64_t max_n = 0){
 
+		spsi_.insert(0,0);
 		size_ = 0;
 
 	}
