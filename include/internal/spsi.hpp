@@ -342,16 +342,14 @@ private:
 		 */
 		node(const node & n){
 
-			cout << "copy ... " << flush;
-
 			subtree_sizes = {n.subtree_sizes};
 			subtree_psums = {n.subtree_psums};
 
 			children = vector<node*>(n.children.size(),NULL);
-			for(ulint i=0;i<n.children.size();++i) children[i] = new node(*n.children[i]);
+			for(uint64_t i=0;i<n.children.size();++i) children[i] = new node(*n.children[i]);
 
 			leaves = vector<leaf_type*>(n.leaves.size(),NULL);
-			for(ulint i=0;i<n.leaves.size();++i) leaves[i] = new leaf_type(*n.leaves[i]);
+			for(uint64_t i=0;i<n.leaves.size();++i) leaves[i] = new leaf_type(*n.leaves[i]);
 
 			node* parent = NULL; 		//NULL for root
 			if(n.parent!=NULL) parent = new node(*n.parent);
@@ -361,8 +359,6 @@ private:
 			nr_children = n.nr_children; 	//number of subtrees
 
 			has_leaves_ = n.has_leaves_;		//if true, leaves array is nonempty and children is empty
-
-			cout << "done " << endl;
 
 		}
 
