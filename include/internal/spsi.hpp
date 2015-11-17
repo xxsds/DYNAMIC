@@ -120,9 +120,10 @@ public:
     using spsi_ref = spsi_reference<spsi>;
 
 	/*
-	 * create empty spsi
+	 * create empty spsi. Input parameters are not used (legacy option). This structure
+	 * does not need a max size, and width is automatically detected.
 	 */
-	spsi(){
+	spsi(uint64_t max_len = 0, uint64_t width = 0){
 
 		root = new node();
 

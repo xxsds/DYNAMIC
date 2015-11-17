@@ -23,12 +23,11 @@ class gap_bitvector{
 public:
 
 	/*
-	 * create bitvector of size n filled with zeroes
+	 * create empty bitvector. parameter max_n is not used (legacy option)
 	 */
-	gap_bitvector(uint64_t n = 0){
+	gap_bitvector(uint64_t max_n = 0){
 
-		spsi_.insert(0,n);
-		size_ = n;
+		size_ = 0;
 
 	}
 

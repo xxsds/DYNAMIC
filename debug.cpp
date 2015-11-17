@@ -484,16 +484,6 @@ void benchmark_bitvector(uint64_t size){
 
 int main(int argc,char** argv) {
 
-
-
-	alphabet_encoder ae({ {'a',0.01},{'b',0.7},{'c',0.1},{'d',0.1},{'e',0.09} });
-
-	cout << (uchar)ae.decode(ae.encode('a')) << " -> "; for(auto b : ae.encode('a')) cout << b; cout << endl;
-	cout << (uchar)ae.decode(ae.encode('b')) << " -> "; for(auto b : ae.encode('b')) cout << b; cout << endl;
-	cout << (uchar)ae.decode(ae.encode('c')) << " -> "; for(auto b : ae.encode('c')) cout << b; cout << endl;
-	cout << (uchar)ae.decode(ae.encode('d')) << " -> "; for(auto b : ae.encode('d')) cout << b; cout << endl;
-	cout << (uchar)ae.decode(ae.encode('e')) << " -> "; for(auto b : ae.encode('e')) cout << b; cout << endl;
-
 	//compare_bitvectors(100000);
 
 	//cout << "GAP BITVECTOR: " << endl;
@@ -501,7 +491,7 @@ int main(int argc,char** argv) {
 
 	//benchmark_spsi(11600000);
 
-	//cout << "\nSUCCINCT BITVECTOR: " << endl;
-	//benchmark_bitvector<dyn_bv>(10000000);
+	cout << "\nSUCCINCT BITVECTOR: " << endl;
+	benchmark_bitvector<dyn_bv>(10000000);
 
 }
