@@ -136,6 +136,18 @@ public:
 
 	}
 
+	void push_back(bool b){
+
+		insert(size(),b);
+
+	}
+
+	void push_front(bool b){
+
+		insert(0,b);
+
+	}
+
 	/*
 	 * insert bit b at position i
 	 */

@@ -84,6 +84,13 @@ public:
 
 	}
 
+	uint64_t select(uint64_t i, bool b = true){
+
+		if(b) return select1(i);
+		return select0(i);
+
+	}
+
 	/*
 	 * position of i-th bit not set. 0 =< i < rank(size(),0)
 	 */
@@ -140,6 +147,18 @@ public:
 	void insert(uint64_t i, bool b){
 
 		spsi_.insert(i,b);
+
+	}
+
+	void push_back(bool b){
+
+		insert(size(),b);
+
+	}
+
+	void push_front(bool b){
+
+		insert(0,b);
 
 	}
 

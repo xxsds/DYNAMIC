@@ -508,14 +508,18 @@ int main(int argc,char** argv) {
 	dyn_str ds(freqs);
 	ds.insert(0,'A');
 	ds.insert(1,'C');
-	ds.insert(0,'T');
+	ds.insert(0,'A');
 	ds.insert(2,'G');
-	ds.insert(1,'n');
+	ds.insert(1,'A');
 	ds.insert(0,'u');
 	ds.insert(0,'m');
-	ds.insert(0,'q');
+	ds.insert(0,'A');
+	ds.push_back('A');
 
 
 	for(ulint i=0;i<ds.size();++i) cout << (uchar)ds[i];cout << endl;
+
+	for(ulint i=0;i<ds.rank(ds.size(),'A');++i) cout << ds.select(i,'A') << endl;
+
 
 }

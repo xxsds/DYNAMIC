@@ -65,7 +65,6 @@ public:
 
 	}
 
-
 	/*
 	 * number of bits in the bitvector
 	 */
@@ -100,7 +99,15 @@ public:
 	uint64_t select(uint64_t i,char_type c){
 
 		assert(i<rank(size(),c));
-		return 0;
+
+		auto code = ae.encode(c);
+
+		//if this fails, it means that c is not present
+		//in the string or that it is not present
+		//in the initial dictionary (if any)
+		assert(code.size()>0);
+
+		return root.select(i,code);
 
 	}
 
@@ -110,7 +117,27 @@ public:
 	uint64_t rank(uint64_t i, char_type c){
 
 		assert(i<=size());
-		return 0;
+
+		auto code = ae.encode(c);
+
+		//if this fails, it means that c is not present
+		//in the string or that it is not present
+		//in the initial dictionary (if any)
+		assert(code.size()>0);
+
+		return root.rank(i,code);
+
+	}
+
+	void push_back(char_type c){
+
+		insert(size(),c);
+
+	}
+
+	void push_front(char_type c){
+
+		insert(0,c);
 
 	}
 
@@ -133,10 +160,11 @@ public:
 
 	uint64_t bit_size() {
 
+		//TODO
+		assert(false);
 		return 0;
 
 	}
-
 
 private:
 
@@ -150,7 +178,7 @@ private:
 		//parent constructor
 		node(node* parent_){
 
-			this->p_ = parent_;
+			this->parent_ = parent_;
 
 		}
 
@@ -197,8 +225,13 @@ private:
 
 			assert((b or has_child0()) and (not b or has_child1()));
 
-			if(b) return (child1())->at( bv.rank1(i) );
-			return (child0())->at( bv.rank0(i) );
+			if(b){
+
+				return child1_->at( bv.rank1(i) );
+
+			}
+
+			return child0_->at( bv.rank0(i) );
 
 		}
 
@@ -251,14 +284,72 @@ private:
 
 		}
 
-		bool is_root(){ return parent() == NULL; }
+		ulint rank(ulint i, vector<bool>& B, ulint j=0){
+
+			assert(j <= B.size());
+
+			if(j==B.size()) return i;
+
+			assert(i <= bv.size());
+
+			assert((B[j] or has_child0()) and (not B[j] or has_child1()));
+
+			if(B[j]){
+
+				return child1_->rank( bv.rank1(i), B, j+1 );
+
+			}
+
+			return child0_->rank( bv.rank0(i), B, j+1 );
+
+		}
+
+
+		ulint select(ulint i, vector<bool>& B){
+
+			//top-down: find leaf associated with B
+			node* L = get_leaf(B);
+
+			//bottom-up: from leaf to root
+			return (L->parent_)->select(i,B,B.size()-1);
+
+		}
+
+		ulint select(ulint i, vector<bool>& B, ulint j){
+
+			if(j==0){
+
+				assert(is_root());
+
+				return bv.select(i,B[0]);
+
+			}
+
+			return parent_->select( bv.select(i,B[j]), B, j-1);
+
+		}
+
+		//get leaf associated to code B
+		node* get_leaf(vector<bool>& B, ulint j=0){
+
+			assert(j<=B.size());
+
+			if(j==B.size()) return this;
+
+			if(B[j]){
+
+				return child1_->get_leaf(B,j+1);
+
+			}
+
+			return child0_->get_leaf(B,j+1);
+
+		}
+
+		bool is_root(){ return parent_ == NULL; }
 		bool is_leaf(){ return is_leaf_; }
 		bool has_child0(){ return child0_ != NULL; }
 		bool has_child1(){ return child1_ != NULL; }
-
-		node* child0(){ assert(has_child0()); return child0_; }
-		node* child1(){ assert(has_child1()); return child1_; }
-		node* parent(){ return p_; }
 
 		/*
 		 * to have left label, this node must not have a left (0)
@@ -278,7 +369,7 @@ private:
 
 		node* child0_ = NULL;
 		node* child1_ = NULL;
-		node* p_ = NULL;		//parent (NULL if root)
+		node* parent_ = NULL;		//parent (NULL if root)
 
 		//if is_leaf_, then node is labeled
 		char_type l_ = 0;
