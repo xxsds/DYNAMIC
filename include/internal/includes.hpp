@@ -21,6 +21,7 @@
 #define WORD_SIZE 64;
 
 typedef unsigned char uchar;
+typedef uint64_t ulint;
 
 using namespace std;
 

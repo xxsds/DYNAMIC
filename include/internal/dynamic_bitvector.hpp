@@ -65,7 +65,7 @@ public:
 	}
 
 	/*
-	 * high-level access to the bitvectot. Supports assign (operator=) and access
+	 * high-level access to the bitvector. Supports assign (operator=) and access
 	 */
 	bv_ref operator[](uint64_t i){
 

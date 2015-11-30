@@ -11,6 +11,7 @@
 #include <dynamic.hpp>
 #include "packed_block.hpp"
 #include <alphabet_encoder.hpp>
+#include <dynamic_string.hpp>
 
 using namespace std;
 using namespace dyn;
@@ -491,7 +492,30 @@ int main(int argc,char** argv) {
 
 	//benchmark_spsi(11600000);
 
-	cout << "\nSUCCINCT BITVECTOR: " << endl;
-	benchmark_bitvector<dyn_bv>(10000000);
+	//cout << "\nSUCCINCT BITVECTOR: " << endl;
+	//benchmark_bitvector<dyn_bv>(10000000);
+
+	vector<pair<char_type,double> > freqs;
+
+	for(ulint i=0;i<256;++i){
+
+		if(i=='A' or i=='C' or i=='T' or i=='G') freqs.push_back({i,0.25});
+		else freqs.push_back({i,0});
+
+
+	}
+
+	dyn_str ds(freqs);
+	ds.insert(0,'A');
+	ds.insert(1,'C');
+	ds.insert(0,'T');
+	ds.insert(2,'G');
+	ds.insert(1,'n');
+	ds.insert(0,'u');
+	ds.insert(0,'m');
+	ds.insert(0,'q');
+
+
+	for(ulint i=0;i<ds.size();++i) cout << (uchar)ds[i];cout << endl;
 
 }

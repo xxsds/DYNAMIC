@@ -67,7 +67,7 @@ public:
 	 * Here the alphabet is Huffman encoded.
 	 *
 	 */
-	alphabet_encoder(vector<pair<char_type,double> > P){
+	alphabet_encoder(vector<pair<char_type,double> >& P){
 
 		sigma = P.size();
 		enc_type = huffman;
@@ -141,7 +141,7 @@ public:
 
 	}
 
-	char_type decode(vector<bool> code){
+	char_type decode(vector<bool>& code){
 
 		//code must be present in dictionary!
 		assert(decode_[code]!=0);
