@@ -123,7 +123,7 @@ public:
 		//if code does not yet exist, create it
 		auto code = ae.encode(c);
 
-		for(auto b:code) cout << b;cout<<endl;
+		//for(auto b:code) cout << b;cout<<endl;
 
 		root.insert(i,code,c);
 

@@ -84,9 +84,11 @@ public:
 
 			//extract, copy and erase the 2 smallest elements
 			auto min1 = new node(*s.begin());
+
 			s.erase(s.begin());
 
 			auto min2 = new node(*s.begin());
+
 			s.erase(s.begin());
 
 			double new_prob = min1->second + min2->second;
@@ -98,6 +100,8 @@ public:
 
 		node root = *s.begin();
 		extract_codes(&root,{});
+
+		root.free_memory();
 
 	}
 
@@ -163,7 +167,36 @@ private:
 	//left/right children are stored in the 2 void pointers
 	//if the left void pointer is == NULL, then right pointer
 	//is a char_type (i.e. leaf)
-	typedef pair<pair<void*,void*>,double> node;
+	class node{
+
+	public:
+
+		void free_memory(){
+
+			if(first.first == NULL){
+
+				//leaf: first.second is a pointer to char_type
+
+				assert(first.second != NULL);
+
+			}else{
+
+				//not leaf: first.first and first.second are pointers to nodes
+				assert(first.second != NULL);
+				((node*)first.first)->free_memory();
+				((node*)first.second)->free_memory();
+
+				delete (node*)first.first;
+				delete (node*)first.second;
+
+			}
+
+		}
+
+		pair<void*,void*> first;
+		double second;
+
+	};
 
 	void extract_codes(node* n, vector<bool> C){
 
