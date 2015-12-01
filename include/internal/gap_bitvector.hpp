@@ -243,6 +243,20 @@ public:
 		return sizeof(gap_bitvector<spsi_type>)*8 + spsi_.bit_size();
 	}
 
+	/*
+	 * returns the length of i-th runs of zeros plus 1 (i.e.
+	 * the leading 1 is taken into account). Example: if
+	 * i-th run is 10^n, this function returns n+1
+	 */
+	uint64_t gapAt(uint64_t i){
+
+		assert(i+1<spsi_.size());
+
+		return spsi_[i+1]+1;
+
+	}
+
+
 private:
 
 	/*

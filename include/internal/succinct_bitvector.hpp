@@ -1,8 +1,11 @@
 /*
- * dynamic_bitvector.hpp
+ * succinct_bitvector.hpp
  *
  *  Created on: Oct 27, 2015
  *      Author: nico
+ *
+ *  succinct btvector
+ *
  */
 
 #ifndef INTERNAL_DYNAMIC_BITVECTOR_HPP_
@@ -44,16 +47,16 @@ private:
 };
 
 template<class spsi_type>
-class dynamic_bitvector{
+class succinct_bitvector{
 
 public:
 
-    using bv_ref = bv_reference<dynamic_bitvector>;
+    using bv_ref = bv_reference<succinct_bitvector>;
 
 	/*
 	 * create empty dynamic bitvector
 	 */
-	dynamic_bitvector(){}
+	succinct_bitvector(){}
 
 	/*
 	 * number of bits in the bitvector
@@ -172,7 +175,7 @@ public:
 	}
 
 	uint64_t bit_size() {
-		return sizeof(dynamic_bitvector<spsi_type>)*8 + spsi_.bit_size();
+		return sizeof(succinct_bitvector<spsi_type>)*8 + spsi_.bit_size();
 	}
 
 private:

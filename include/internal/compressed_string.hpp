@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef INCLUDE_INTERNAL_DYNAMIC_STRING_HPP_
-#define INCLUDE_INTERNAL_DYNAMIC_STRING_HPP_
+#ifndef INCLUDE_INTERNAL_COMPRESSED_STRING_HPP_
+#define INCLUDE_INTERNAL_COMPRESSED_STRING_HPP_
 
 #include <includes.hpp>
 #include <alphabet_encoder.hpp>
@@ -25,9 +25,12 @@
 namespace dyn{
 
 template<class dynamic_bitvector_t>
-class dynamic_string{
+class compressed_string{
 
 public:
+
+	//we allow any alphabet
+	typedef uint64_t char_type;
 
 	/*
 	 * Constructor #1
@@ -35,7 +38,7 @@ public:
 	 * Alphabet is unknown. Characters are gamma-coded
 	 *
 	 */
-	dynamic_string(){}
+	compressed_string(){}
 
 	/*
 	 * Constructor #2
@@ -44,7 +47,7 @@ public:
 	 * Characters are assigned codes 0,1,2,... in order of appearance
 	 *
 	 */
-	dynamic_string(uint64_t sigma){
+	compressed_string(uint64_t sigma){
 
 		assert(sigma>0);
 		ae = alphabet_encoder(sigma);
@@ -59,7 +62,7 @@ public:
 	 * Here the alphabet is Huffman encoded.
 	 *
 	 */
-	dynamic_string(vector<pair<char_type,double> >& P){
+	compressed_string(vector<pair<char_type,double> >& P){
 
 		ae = alphabet_encoder(P);
 
@@ -390,4 +393,4 @@ private:
 }
 
 
-#endif /* INCLUDE_INTERNAL_DYNAMIC_STRING_HPP_ */
+#endif /* INCLUDE_INTERNAL_COMPRESSED_STRING_HPP_ */

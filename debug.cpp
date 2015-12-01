@@ -11,7 +11,7 @@
 #include <dynamic.hpp>
 #include "packed_block.hpp"
 #include <alphabet_encoder.hpp>
-#include <dynamic_string.hpp>
+#include "include/internal/compressed_string.hpp"
 
 using namespace std;
 using namespace dyn;
@@ -305,7 +305,7 @@ void benchmark_spsi(uint64_t size){
 
 void compare_bitvectors(uint64_t size){
 
-	dyn_bv dbv;
+	suc_bv dbv;
 	gap_bv gbv;
 
 	srand(time(NULL));
@@ -505,7 +505,7 @@ int main(int argc,char** argv) {
 
 	}
 
-	dyn_str ds(freqs);
+	com_str ds(freqs);
 	ds.insert(0,'A');
 	ds.insert(1,'C');
 	ds.insert(0,'A');

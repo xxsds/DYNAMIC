@@ -20,9 +20,12 @@
 
 #define WORD_SIZE 64;
 
+using namespace std;
+
 typedef unsigned char uchar;
 typedef uint64_t ulint;
 
-using namespace std;
+typedef pair<uint64_t,uint64_t> range_t;
+
 
 #endif /* INCLUDES_HPP_ */

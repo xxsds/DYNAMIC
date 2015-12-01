@@ -22,12 +22,12 @@
 
 namespace dyn {
 
-//we allow any alphabet
-typedef uint64_t char_type;
-
 class alphabet_encoder{
 
 public:
+
+	//we allow any alphabet
+	typedef uint64_t char_type;
 
 	/*
 	 * Constructor #1

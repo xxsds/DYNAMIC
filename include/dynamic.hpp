@@ -1,19 +1,20 @@
 /*
- * typedefs.hpp
+ * dynamic.hpp
  *
  *  Created on: Oct 21, 2015
  *      Author: nico
  */
 
-#ifndef INTERNAL_TYPEDEFS_HPP_
-#define INTERNAL_TYPEDEFS_HPP_
+#ifndef DYNAMIC_TYPEDEFS_HPP_
+#define DYNAMIC_TYPEDEFS_HPP_
 
 #include <spsi.hpp>
 #include <packed_block.hpp>
 #include <gap_bitvector.hpp>
-#include <dynamic_bitvector.hpp>
 #include <spsi_check.hpp>
-#include <dynamic_string.hpp>
+#include "internal/compressed_string.hpp"
+#include "internal/succinct_bitvector.hpp"
+#include "rle_string.hpp"
 
 namespace dyn{
 
@@ -31,19 +32,42 @@ typedef gap_bitvector<packed_spsi> gap_bv;
 /*
  * dynamic succinct bitvector (about 1.1n bits)
  */
-typedef dynamic_bitvector<spsi<packed_block,8192,16> > dyn_bv;
+typedef succinct_bitvector<spsi<packed_block,8192,16> > suc_bv;
+
+/*
+ * succinct/compressed dynamic string implemented with wavelet trees.
+ * user can choose between fixed-length / gamma / Huffman encoding of characters.
+ */
+typedef compressed_string<suc_bv> com_str;
+
+/*
+ * run-length encoded (RLE) string on any alphabet. This string uses 1 sparse bitvector
+ * for all runs, one dynamic string for run heads, and sigma sparse bitvectors (one per character)
+ */
+typedef rle_string<uint64_t, gap_bv, com_str> rle_str;
+
+/*
+ * run-length encoded bitvector. More efficient than rle_str with alphabet size=2
+ */
+typedef rle_string<bool, gap_bv, com_str> rle_bv;
+
+/*
+ * RLE string implemented with a run-length encoded wavelet tree. Each
+ * WT node is run-length encoded.
+ */
+typedef compressed_string<rle_bv> wtrle_str;
+
+
+// ------------- STRUCTURES DESIGNED ONLY FOR DEBUGGING PURPOSES -------------
+
 
 
 /*
  * dynamic bitvector with trivial implementation (test purposes)
  */
-typedef dynamic_bitvector<spsi_check<> > dyn_bitv_check;
+typedef succinct_bitvector<spsi_check<> > dyn_bitv_check;
 
-/*
- * succinct/compressed dynamic string
- */
-typedef dynamic_string<dyn_bv> dyn_str;
 
 }
 
-#endif /* INTERNAL_TYPEDEFS_HPP_ */
+#endif /* DYNAMIC_TYPEDEFS_HPP_ */
