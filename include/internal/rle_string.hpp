@@ -76,6 +76,7 @@ public:
 	char_type at(ulint i){
 
 		assert(i<n);
+		assert(runs.rank1(i) < R);
 		return run_heads_at( runs.rank1(i) );
 
 	}
@@ -96,6 +97,7 @@ public:
 		ulint this_c_run = runs_per_letter[c].rank1(i);
 
 		//position of i-th c inside its c-run
+		assert( this_c_run == 0 || this_c_run-1 < runs_per_letter[c].rank1() );
 		ulint sel = i - ( this_c_run == 0 ? 0 : runs_per_letter[c].select1(this_c_run-1)+1 );
 
 		//run number among all runs
@@ -169,6 +171,216 @@ public:
 		return rank(i, true);
 
 	}
+
+	/*
+	 * insert character c at position i
+	 */
+	void insert(ulint i, char_type c){
+
+		assert(i<=size());
+
+		//CASE #1: empty string
+
+		if(size()==0){
+
+			runs.insert1(0);
+			run_heads_insert(0,c);
+
+			cout << "insert 1 in runs per letter [" << c << "]" << endl;
+			runs_per_letter[c].insert1(0);
+			cout << "size = " <<  runs_per_letter[c].size() << endl;
+
+			//increase length and number of runs
+			n++;
+			R++;
+
+			cout << "###### " << run_heads_at(0) << endl;
+
+			assert(runs_per_letter[c].size() > 0);
+			assert(at(i)==c);
+			return;
+
+		}
+
+		assert(size()>0);
+
+		//c will be inserted between tw aracters 'prev' and 'next'
+		//if one of those 2 chars does not exist, the associated
+		//variable is 0
+		char_type prev = (i == 0 ? 0 : at(i-1));
+		char_type next = (i == size() ? 0 : at(i));
+
+		//character in position i-1 equals c?
+		bool prev_equals_c = (i == 0 ? false : prev == c);
+
+		//character in position i equals c?
+		bool next_equals_c = (i == size() ? false : next == c);
+
+		//CASE #2: c touches a c-run
+
+		if(prev_equals_c or next_equals_c){
+
+			//since position i touches a c-run, this vector can not be empty
+			assert(runs_per_letter[c].size() > 0);
+
+			//run that is extended
+			ulint extended_run = runs.rank1( prev_equals_c ? runs.rank1(i-1) : runs.rank1(i) );
+
+			//extend run: insert a 0 in runs
+			//if at(i-1) == c and at(i) != c, then insert 0 at position i-1
+			//because position i-1 contains a 1
+
+			assert( not (prev_equals_c and not next_equals_c) || runs[i-1] );
+			runs.insert0( prev_equals_c and not next_equals_c ? i-1 : i );
+
+			//the extended run is the number 'extended_c_run' among all c-runs
+			ulint extended_c_run = run_heads_rank(extended_run,c);
+
+			assert(extended_c_run < runs_per_letter[c].rank1());
+			runs_per_letter[c].insert0(runs_per_letter[c].select1(extended_c_run) );
+
+			n++;
+
+			assert(runs_per_letter[c].size() > 0);
+			return;
+
+		}
+
+		//case #3: c does not touch c-runs
+
+		//CASE #3.1: insertion at the beginning
+		if(i==0){
+
+			//next character exists and is different than c
+			assert(next != c);
+
+			runs.insert1(0);
+			run_heads_insert(0,c);
+			runs_per_letter[c].insert1(0);
+
+			n++;
+			R++;
+
+			assert(runs_per_letter[c].size() > 0);
+			return;
+
+		}
+
+		//CASE #3.2: insertion at the end
+		if(i==size()){
+
+			assert(i>0);
+
+			//previous character exists and is different than c
+			assert(prev != c);
+
+			runs.insert1(runs.size());
+			run_heads_insert(R,c);
+			runs_per_letter[c].insert1(runs_per_letter[c].size());
+
+			n++;
+			R++;
+
+			assert(runs_per_letter[c].size() > 0);
+			return;
+
+		}
+
+		//CASE #3.3: c falls between 2 runs of 2 characters different than c
+		//example: aaaaaaaabbbbb -> aaaaaaaacbbbbb
+
+		if(prev != next){
+
+			assert(i>0);
+			assert(runs[i-1]);
+
+			runs.insert1(i);
+
+			auto rk = runs.rank1(i);
+			run_heads_insert(rk,c);
+
+			ulint this_c_run = run_heads_rank(rk,c);
+
+			runs_per_letter[c].insert1( this_c_run == 0 ?
+										0 :
+										runs_per_letter[c].select1(this_c_run-1)+1
+									);
+
+			n++;
+			R++;
+
+			assert(runs_per_letter[c].size() > 0);
+			return;
+
+		}
+
+		//CASE #3.4: c falls inside a single a-run, where a != c
+
+		assert(prev == next);
+		assert(i>0);
+		assert(i<size());
+		assert(not runs[i-1]);
+
+		//run that will be splitted
+		ulint this_run = runs.rank1(i);
+
+		//rank of the new c among all c-runs
+		ulint this_c_run = run_heads_rank(this_run,c);
+
+		//rank of a among all a-runs
+		//ulint this_a_run = run_heads_rank(this_run,prev);
+
+		//this a will be the first of a new a-run, while previous a
+		//will be last of a new a-run
+		ulint a_rank = rank(i,prev);
+
+		//runs[i-1] = true
+		runs.set(i-1);
+
+		//insert a bit set
+		runs.insert1(i);
+
+		//split run
+		run_heads_split(this_run,c);
+
+		//insert a 1 in c-runs
+		runs_per_letter[c].insert1( this_c_run == 0 ?
+									0 :
+									runs_per_letter[c].select1(this_c_run-1)+1
+								);
+
+		//insert a 1 in a-runs
+		assert(a_rank>0);
+		runs_per_letter[prev].set(a_rank-1);
+		runs_per_letter[prev].insert1(a_rank);
+
+		n++;
+		R += 2;
+
+		assert(runs_per_letter[c].size() > 0);
+
+	}
+
+	/*
+	 * insert 0 at position i  (only for bitvectors!)
+	 */
+	void insert0(ulint i){
+
+		assert( typeid(char_type) == typeid(bool) );
+		insert(i,false);
+
+	}
+
+	/*
+	 * insert 1 at position i  (only for bitvectors!)
+	 */
+	void insert1(ulint i){
+
+		assert( typeid(char_type) == typeid(bool) );
+		insert(i,true);
+
+	}
+
 
 	//break range: given a range <l',r'> on the string and a character c, this function
 	//breaks <l',r'> in maximal sub-ranges containing character c.
@@ -307,7 +519,7 @@ private:
 
 	char_type run_heads_at(ulint i){
 
-		assert(i<run_heads_size);
+		assert(i<R);
 
 		if( typeid(char_type) == typeid(bool) ){
 
@@ -323,7 +535,7 @@ private:
 
 	ulint run_heads_rank(ulint i, char_type c){
 
-		assert(i<=run_heads_size);
+		assert(i<=R);
 
 		if( typeid(char_type) == typeid(bool) ){
 
@@ -341,7 +553,7 @@ private:
 
 		if( typeid(char_type) == typeid(bool) ){
 
-			assert(i<run_heads_size/2);
+			assert(i<R/2);
 			return i*2  + ( c xor run_heads_first_bit );
 
 		}else{
@@ -359,13 +571,14 @@ private:
 	 */
 	void run_heads_insert(ulint i, char_type c){
 
-		assert(i <= run_heads_size);
+		assert(i <= R);
 
 		//cannnot duplicate a character
-		assert(i==0 || run_heads_at(i-1)!=c);
-		assert(i==run_heads_size || run_heads_at(i+1)!=c);
+		assert(i==0 || i-1 < R);
+		assert(i==R || i < R);
 
-		run_heads_size++;
+		assert(i==0 || run_heads_at(i-1)!=c);
+		assert(i==R || run_heads_at(i)!=c);
 
 		if( typeid(char_type) == typeid(bool) ){
 
@@ -386,13 +599,11 @@ private:
 	 */
 	void run_heads_split(ulint i, char_type c){
 
-		assert(i < run_heads_size);
+		assert(i < R);
 
 		char_type r = run_heads_at(i);
 
 		assert(r!=c);
-
-		run_heads_size += 2;
 
 		if( typeid(char_type) != typeid(bool) ){
 
@@ -455,7 +666,6 @@ private:
 
 	//store run heads in a compressed string supporting access/rank/select/insert
 	string_t run_heads_;
-	ulint run_heads_size=0;
 	bool run_heads_first_bit=false;
 
 	//text length and number of runs

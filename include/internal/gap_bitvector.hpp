@@ -94,6 +94,7 @@ public:
 	 * total number of bits set
 	 */
 	uint64_t rank1(){
+		assert(bits_set_ == rank1(size()));
 		return bits_set_;
 	}
 
@@ -101,6 +102,7 @@ public:
 	 * total number of bits not set
 	 */
 	uint64_t rank0(){
+		assert(size_ - bits_set_ == rank0(size()));
 		return size_ - bits_set_;
 	}
 

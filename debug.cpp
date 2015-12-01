@@ -495,31 +495,37 @@ int main(int argc,char** argv) {
 	//cout << "\nSUCCINCT BITVECTOR: " << endl;
 	//benchmark_bitvector<dyn_bv>(10000000);
 
-	vector<pair<char_type,double> > freqs;
+	/*wtrle_str rles;
 
-	for(ulint i=0;i<256;++i){
+	rles.insert(0,'C');
+	rles.insert(0,'C');
+	rles.insert(0,'C');
+	rles.insert(3,'C');
 
-		if(i=='A' or i=='C' or i=='T' or i=='G') freqs.push_back({i,0.25});
-		else freqs.push_back({i,0});
+	rles.insert(0,'A');
+
+	rles.insert(5,'V');
+
+	rles.insert(1,'A');
+
+	rles.insert(2,'C');
+
+	rles.insert(8,'V');
+
+	rles.insert(3,'C');
+	rles.insert(4,'C');
+	rles.insert(5,'C');
 
 
-	}
+	for(ulint i=0;i<rles.size();++i) cout << (uchar)rles[i]; cout << endl;*/
 
-	com_str ds(freqs);
-	ds.insert(0,'A');
-	ds.insert(1,'C');
-	ds.insert(0,'A');
-	ds.insert(2,'G');
-	ds.insert(1,'A');
-	ds.insert(0,'u');
-	ds.insert(0,'m');
-	ds.insert(0,'A');
-	ds.push_back('A');
+	rle_bv rlebv;
 
+	rlebv.insert(0,0);
 
-	for(ulint i=0;i<ds.size();++i) cout << (uchar)ds[i];cout << endl;
+	cout << "rlebv[0] = " << rlebv[0] << endl;
 
-	for(ulint i=0;i<ds.rank(ds.size(),'A');++i) cout << ds.select(i,'A') << endl;
+	rlebv.insert(0,1);
 
 
 }
