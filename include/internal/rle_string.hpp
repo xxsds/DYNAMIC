@@ -184,17 +184,14 @@ public:
 		if(size()==0){
 
 			runs.insert1(0);
+
 			run_heads_insert(0,c);
 
-			cout << "insert 1 in runs per letter [" << c << "]" << endl;
 			runs_per_letter[c].insert1(0);
-			cout << "size = " <<  runs_per_letter[c].size() << endl;
 
 			//increase length and number of runs
 			n++;
 			R++;
-
-			cout << "###### " << run_heads_at(0) << endl;
 
 			assert(runs_per_letter[c].size() > 0);
 			assert(at(i)==c);
@@ -584,7 +581,9 @@ private:
 
 			//if i==0, then we are flipping the first bit. Otherwise,
 			//we only need to increment size.
-			run_heads_first_bit = run_heads_first_bit xor (i==0);
+
+			if(R==0) run_heads_first_bit = c;
+			else run_heads_first_bit = run_heads_first_bit xor (i==0);
 
 		}else{
 

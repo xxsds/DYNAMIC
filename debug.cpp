@@ -483,49 +483,41 @@ void benchmark_bitvector(uint64_t size){
 
 }
 
+void test_strings(ulint size, ulint sigma){
+
+	com_str s1;
+	rle_str s2;
+	wtrle_str s3;
+
+	srand(time(NULL));
+	for(ulint i=0;i<size;++i){
+
+		ulint c = rand()%sigma;
+		ulint j = rand()%(s2.size()+1);
+
+		cout << "insert " << c << " at pos " << j << "/" << s2.size() << endl;
+
+		//s1.insert(j,c);
+		s2.insert(j,c);
+		s3.insert(j,c);
+
+		//assert(s1.size()==s2.size());
+		assert(s2.size()==s3.size());
+
+	}
+
+	/*for(ulint i=0;i<size;++i){
+
+		assert(s1[i]==s2[i]);
+		assert(s1[i]==s3[i]);
+
+	}*/
+
+}
+
 int main(int argc,char** argv) {
 
-	//compare_bitvectors(100000);
-
-	//cout << "GAP BITVECTOR: " << endl;
-	//benchmark_bitvector<gap_bv>(10000000);
-
-	//benchmark_spsi(11600000);
-
-	//cout << "\nSUCCINCT BITVECTOR: " << endl;
-	//benchmark_bitvector<dyn_bv>(10000000);
-
-	/*wtrle_str rles;
-
-	rles.insert(0,'C');
-	rles.insert(0,'C');
-	rles.insert(0,'C');
-	rles.insert(3,'C');
-
-	rles.insert(0,'A');
-
-	rles.insert(5,'V');
-
-	rles.insert(1,'A');
-
-	rles.insert(2,'C');
-
-	rles.insert(8,'V');
-
-	rles.insert(3,'C');
-	rles.insert(4,'C');
-	rles.insert(5,'C');
-
-
-	for(ulint i=0;i<rles.size();++i) cout << (uchar)rles[i]; cout << endl;*/
-
-	rle_bv rlebv;
-
-	rlebv.insert(0,0);
-
-	cout << "rlebv[0] = " << rlebv[0] << endl;
-
-	rlebv.insert(0,1);
+	test_strings(1000,100);
 
 
 }
