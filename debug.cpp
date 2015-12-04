@@ -16,6 +16,17 @@
 using namespace std;
 using namespace dyn;
 
+
+ulint rank_vec(vector<ulint>& s, ulint i, ulint c){
+
+	ulint r=0;
+
+	for(ulint j=0;j<i;++j) r += s[j]==c;
+
+	return r;
+
+}
+
 void test_spsi(uint64_t n){
 
 	uint32_t sigma = 300;
@@ -508,7 +519,10 @@ void test_strings(ulint size, ulint sigma){
 	com_str s1;
 	//wtrle_str s2;
 	str_check s2;
-	rle_str_check s3;
+	//rle_str_check s3;
+	rle_str s3;
+
+	vector<ulint> truth;
 
 	srand(time(NULL));
 
@@ -529,6 +543,8 @@ void test_strings(ulint size, ulint sigma){
 
 	}
 
+	for(ulint i=0;i<size;++i) truth.push_back(s1[i]);
+
 	assert(s2.size() == size);
 	assert(s3.size() == size);
 
@@ -541,43 +557,62 @@ void test_strings(ulint size, ulint sigma){
 	}
 	cout << "done. " << endl;
 
-	cout << "testing rank(select) ... " << flush;
+	assert(s3.check_consistency());
+
+	cout << "testing rank ... " << flush;
 	ulint c = s1[rand()%s1.size()];
+	for(ulint i=0;i<=size;++i){
+
+		//if(s2.rank(i,c) != s3.rank(i,c))
+		//cout << i <<"," << c << " -> " << s2.rank(i,c) << "/" << s3.rank(i,c) << endl;
+
+		assert(s1.char_exists(c));
+		assert(s2.char_exists(c));
+		assert(s3.char_exists(c));
+
+		assert(rank_vec(truth,i,c) == s1.rank(i,c));
+		assert(rank_vec(truth,i,c) == s2.rank(i,c));
+		assert(rank_vec(truth,i,c) == s3.rank(i,c));
+
+		//assert(s1.rank(i,c) == s2.rank(i,c));
+		//assert(s2.rank(i,c) == s3.rank(i,c));
+
+	}
+	cout << "done. " << endl;
+
+	cout << "testing select ... " << flush;
+	c = s1[rand()%s1.size()];
+	for(ulint i=0;i<s1.rank(s1.size(),c);++i){
+
+		assert( s1.select(i,c) == s2.select(i,c));
+		assert( s2.select(i,c) == s3.select(i,c));
+
+	}
+	cout << "done. " << endl;
+
+	cout << "testing rank(select) ... " << flush;
+	c = s1[rand()%s1.size()];
 	for(ulint i=0;i<s1.rank(s1.size(),c);++i){
 
 		assert( s1.rank(s1.select(i,c),c ) == i);
 		assert( s2.rank(s2.select(i,c),c ) == i);
 		assert( s3.rank(s3.select(i,c),c ) == i);
 
+		assert( s1.rank(s2.select(i,c),c ) == i);
+
 	}
 	cout << "done. " << endl;
-
-	/*cout << "testing rank ... " << flush;
-	c = s1[rand()%s1.size()];
-	for(ulint i=0;i<=size;++i){
-
-		if(s2.rank(i,c) != s3.rank(i,c))
-		cout << i <<"," << c << " -> " << s2.rank(i,c) << "/" << s3.rank(i,c) << endl;
-
-		assert(s1.char_exists(c));
-		assert(s2.char_exists(c));
-		assert(s3.char_exists(c));
-
-		assert(s1.rank(i,c) == s2.rank(i,c));
-		assert(s2.rank(i,c) == s3.rank(i,c));
-
-	}
-	cout << "done. " << endl;*/
 
 	cout << "ALLRIGHT! " << endl;
 
 
 }
 
+
 int main(int argc,char** argv) {
 
 	//compare_bitvectors(20);
-	test_strings(5000,10);
+	test_strings(2000,3);
 
 
 }

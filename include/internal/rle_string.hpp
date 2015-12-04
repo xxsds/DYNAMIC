@@ -72,8 +72,8 @@ public:
 
 	char_type at(ulint i){
 
-		assert(i<n);
-		assert(runs.rank1(i) < R);
+		assert(i<runs.size());
+		assert(runs.rank1(i) < number_of_runs());
 		return run_heads_[ runs.rank1(i) ];
 
 	}
@@ -148,11 +148,18 @@ public:
 		//this run is the number 'this_run' among all runs
 		ulint this_run = runs.rank1(i);
 
+		assert(this_run <= run_heads_.size());
+
 		//this c-run is the number 'this_c_run' among all c-runs
 		ulint this_c_run = run_heads_.rank(this_run,c);
 
 		//number of cs before position i (excluded) in THIS c-run
-		ulint rk = i - (this_run == 0 ? 0 : runs.select1(this_run-1)+1 );
+		ulint rk = (this_run == run_heads_.size() || run_heads_[this_run] != c) ?
+					0 :
+					i - (this_run == 0 ? 0 : runs.select1(this_run-1)+1 );
+
+		assert(runs_per_letter[c].size()>0);
+		assert(this_c_run == 0 || this_c_run-1 < runs_per_letter[c].rank1(runs_per_letter[c].size()));
 
 		//add also number of cs before this run (excluded)
 		rk += (this_c_run == 0 ? 0 : runs_per_letter[c].select1(this_c_run-1)+1 );
@@ -192,18 +199,22 @@ public:
 
 		if(size()==0){
 
+			assert(runs.size()==0);
+			assert(runs_per_letter[c].size()==0);
+			assert(number_of_runs()==0);
+
 			runs.insert1(0);
-
 			run_heads_.insert(0,c);
-
 			runs_per_letter[c].insert1(0);
 
 			//increase length and number of runs
-			n++;
-			R++;
+			//n++;
+			//R++;
 
 			assert(runs_per_letter[c].size() > 0);
 			assert(at(i)==c);
+
+			assert( run_at( runs.rank1(i) ) == run_at( run_heads_.rank(runs.rank1(i),c), c ) );
 			return;
 
 		}
@@ -229,7 +240,7 @@ public:
 			//since position i touches a c-run, this vector can not be empty
 			assert(runs_per_letter[c].size() > 0);
 
-			//run that is extended
+			//c-run that is extended with a new c
 			ulint extended_run = ( prev_equals_c ? runs.rank1(i-1) : runs.rank1(i) );
 
 			//extend run: insert a 0 in runs
@@ -249,9 +260,12 @@ public:
 			assert(extended_c_run < runs_per_letter[c].rank1());
 			runs_per_letter[c].insert0(runs_per_letter[c].select1(extended_c_run) );
 
-			n++;
+			//n++;
+			//R does not increase because c touches a c-run
 
 			assert(runs_per_letter[c].size() > 0);
+
+			assert( run_at( runs.rank1(i) ) == run_at( run_heads_.rank(runs.rank1(i),c), c ) );
 			return;
 
 		}
@@ -268,10 +282,12 @@ public:
 			run_heads_.insert(0,c);
 			runs_per_letter[c].insert1(0);
 
-			n++;
-			R++;
+			//n++;
+			//R++;
 
 			assert(runs_per_letter[c].size() > 0);
+
+			assert( run_at( runs.rank1(i) ) == run_at( run_heads_.rank(runs.rank1(i),c), c ) );
 			return;
 
 		}
@@ -285,13 +301,15 @@ public:
 			assert(prev != c);
 
 			runs.insert1(runs.size());
-			run_heads_.insert(R,c);
+			run_heads_.insert(number_of_runs(),c);
 			runs_per_letter[c].insert1(runs_per_letter[c].size());
 
-			n++;
-			R++;
+			//n++;
+			//R++;
 
 			assert(runs_per_letter[c].size() > 0);
+
+			assert( run_at( runs.rank1(i) ) == run_at( run_heads_.rank(runs.rank1(i),c), c ) );
 			return;
 
 		}
@@ -302,12 +320,18 @@ public:
 		if(prev != next){
 
 			assert(i>0);
+			assert(i<size());
 			assert(runs[i-1]);
 
-			runs.insert1(i);
-
 			auto rk = runs.rank1(i);
+			assert(number_of_runs()>1);
+			assert(rk>0);
+			assert(rk<=number_of_runs()-1);
+
+			runs.insert1(i);
 			run_heads_.insert(rk,c);
+
+			assert(run_heads_[rk-1]!=c and run_heads_[rk+1]!=c);
 
 			ulint this_c_run = run_heads_.rank(rk,c);
 
@@ -316,10 +340,12 @@ public:
 										runs_per_letter[c].select1(this_c_run-1)+1
 									);
 
-			n++;
-			R++;
+			//n++;
+			//R++;
 
 			assert(runs_per_letter[c].size() > 0);
+
+			assert( run_at( runs.rank1(i) ) == run_at( run_heads_.rank(runs.rank1(i),c), c ) );
 			return;
 
 		}
@@ -362,12 +388,13 @@ public:
 		//insert a 1 in a-runs
 		assert(a_rank>0);
 		runs_per_letter[prev].set(a_rank-1);
-		runs_per_letter[prev].insert1(a_rank);
+		//runs_per_letter[prev].insert1(a_rank);
 
-		n++;
-		R += 2;
+		//n++;
+		//R += 2;
 
 		assert(runs_per_letter[c].size() > 0);
+		assert( run_at( runs.rank1(i) ) == run_at( run_heads_.rank(runs.rank1(i),c), c ) );
 
 	}
 
@@ -430,9 +457,9 @@ public:
 
 	}*/
 
-	ulint size(){return n;}
+	ulint size(){return runs.size();}
 
-	ulint number_of_runs(){return R;}
+	ulint number_of_runs(){return run_heads_.size();}
 
 	/* serialize the structure to the ostream
 	 * \param out	 the ostream
@@ -446,14 +473,67 @@ public:
 	/*void load(std::istream& in) {
 	}*/
 
+	bool check_consistency(){
+
+		ulint n=0;
+		ulint R=0;
+
+		for(auto m:runs_per_letter){
+
+			//cout << m.first << ": ";
+			//for(ulint i=0;i<m.second.size();++i) cout << m.second[i];cout << endl;
+
+			n += m.second.size();
+			R += m.second.rank(m.second.size());
+
+		}
+
+		assert(n==size() and R==number_of_runs());
+
+		map<char_type, ulint> cnt;
+
+		for(ulint i=0;i<number_of_runs();++i){
+
+			char_type c = run_heads_[i];
+
+			ulint run_global = run_at(i);
+			ulint run_char = run_at( cnt[c], c );
+
+			cnt[c]++;
+
+			assert(run_global==run_char);
+
+		}
+
+		return true;
+
+	}
+
+	//length of i-th run
+	ulint run_at(ulint i){
+
+		assert(i<number_of_runs());
+		return (i==0) + runs.select1(i) - (i==0?0:runs.select1(i-1));
+
+	}
+
+	//length of i-th c-run
+	ulint run_at(ulint i, char_type c){
+
+		assert(i<runs_per_letter[c].rank1(runs_per_letter[c].size()));
+		return (i==0) + runs_per_letter[c].select1(i) - (i==0?0:runs_per_letter[c].select1(i-1));
+
+	}
+
 private:
+
 
 	/*
 	 * split i-th run head: a -> aca
 	 */
 	void run_heads_split(ulint i, char_type c){
 
-		assert(i < R);
+		assert(i < number_of_runs());
 
 		char_type r = run_heads_[i];
 
@@ -475,8 +555,8 @@ private:
 	string_t run_heads_;
 
 	//text length and number of runs
-	ulint n=0;
-	ulint R=0;
+	//ulint n=0;
+	//ulint R=0;
 
 };
 

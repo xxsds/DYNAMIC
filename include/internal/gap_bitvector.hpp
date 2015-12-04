@@ -246,17 +246,17 @@ public:
 	}
 
 	/*
-	 * returns the length of i-th runs of zeros plus 1 (i.e.
-	 * the leading 1 is taken into account). Example: if
+	 * returns the length of i-th run of zeros plus 1 (i.e.
+	 * the leading 1 is taken into account). i.e. if
 	 * i-th run is 10^n, this function returns n+1
 	 */
-	uint64_t gapAt(uint64_t i){
+	/*uint64_t gapAt(uint64_t i){
 
 		assert(i+1<spsi_.size());
 
 		return spsi_[i+1]+1;
 
-	}
+	}*/
 
 
 private:
