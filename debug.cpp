@@ -305,8 +305,8 @@ void benchmark_spsi(uint64_t size){
 
 void compare_bitvectors(uint64_t size){
 
-	suc_bv dbv;
-	gap_bv gbv;
+	rle_str dbv;
+	bv_check gbv;
 
 	srand(time(NULL));
 
@@ -326,6 +326,35 @@ void compare_bitvectors(uint64_t size){
 	assert(gbv.size()==size);
 
 	cout << "ok!" << endl;
+
+	cout << "test rank1 ... " << flush;
+
+	for(uint64_t i=0;i<=size;++i){
+
+		if(dbv.rank1(i)!=gbv.rank1(i)){
+
+			cout << "ERROR:" << endl;
+
+			cout << "rle check =  ";
+			for(ulint i=0;i<dbv.size();++i) cout << dbv[i];cout << endl;
+
+			cout << "bv  check =  ";
+			for(ulint i=0;i<gbv.size();++i) cout << gbv[i];cout << endl;
+
+			cout << "rle rank1 =  ";
+			for(ulint i=0;i<dbv.size();++i) cout << dbv.rank1(i) << " ";cout << endl;
+
+			cout << "bv  rank1 =  ";
+			for(ulint i=0;i<gbv.size();++i) cout << gbv.rank1(i) << " ";cout << endl;
+
+		}
+
+		assert(dbv.rank1(i)==gbv.rank1(i));
+
+	}
+	cout << "ok!" << endl;
+
+	exit(0);
 
 	uint64_t ps = dbv.rank1(dbv.size());
 
@@ -369,15 +398,6 @@ void compare_bitvectors(uint64_t size){
 	for(uint64_t i=0;i<=size;++i){
 
 		assert(dbv.rank0(i)==gbv.rank0(i));
-
-	}
-	cout << "ok!" << endl;
-
-	cout << "test rank1 ... " << flush;
-
-	for(uint64_t i=0;i<=size;++i){
-
-		assert(dbv.rank1(i)==gbv.rank1(i));
 
 	}
 	cout << "ok!" << endl;
@@ -486,38 +506,78 @@ void benchmark_bitvector(uint64_t size){
 void test_strings(ulint size, ulint sigma){
 
 	com_str s1;
-	rle_str s2;
-	wtrle_str s3;
+	//wtrle_str s2;
+	str_check s2;
+	rle_str_check s3;
 
 	srand(time(NULL));
+
 	for(ulint i=0;i<size;++i){
 
+		assert(s1.size() == s2.size());
+		assert(s2.size() == s3.size());
+
+		ulint j = rand()%(s1.size()+1);
 		ulint c = rand()%sigma;
-		ulint j = rand()%(s2.size()+1);
 
-		cout << "insert " << c << " at pos " << j << "/" << s2.size() << endl;
+		s1.insert( j,c );
+		s2.insert( j,c );
+		s3.insert( j,c );
 
-		//s1.insert(j,c);
-		s2.insert(j,c);
-		s3.insert(j,c);
-
-		//assert(s1.size()==s2.size());
-		assert(s2.size()==s3.size());
+		assert(s1.size() == s2.size());
+		assert(s2.size() == s3.size());
 
 	}
 
-	/*for(ulint i=0;i<size;++i){
+	assert(s2.size() == size);
+	assert(s3.size() == size);
 
-		assert(s1[i]==s2[i]);
-		assert(s1[i]==s3[i]);
+	cout << "testing access ... " << flush;
+	for(ulint i=0;i<size;++i){
 
-	}*/
+		assert(s1[i] == s2[i]);
+		assert(s2[i] == s3[i]);
+
+	}
+	cout << "done. " << endl;
+
+	cout << "testing rank(select) ... " << flush;
+	ulint c = s1[rand()%s1.size()];
+	for(ulint i=0;i<s1.rank(s1.size(),c);++i){
+
+		assert( s1.rank(s1.select(i,c),c ) == i);
+		assert( s2.rank(s2.select(i,c),c ) == i);
+		assert( s3.rank(s3.select(i,c),c ) == i);
+
+	}
+	cout << "done. " << endl;
+
+	/*cout << "testing rank ... " << flush;
+	c = s1[rand()%s1.size()];
+	for(ulint i=0;i<=size;++i){
+
+		if(s2.rank(i,c) != s3.rank(i,c))
+		cout << i <<"," << c << " -> " << s2.rank(i,c) << "/" << s3.rank(i,c) << endl;
+
+		assert(s1.char_exists(c));
+		assert(s2.char_exists(c));
+		assert(s3.char_exists(c));
+
+		assert(s1.rank(i,c) == s2.rank(i,c));
+		assert(s2.rank(i,c) == s3.rank(i,c));
+
+	}
+	cout << "done. " << endl;*/
+
+	cout << "ALLRIGHT! " << endl;
+
 
 }
 
 int main(int argc,char** argv) {
 
-	test_strings(1000,100);
+	//compare_bitvectors(20);
+	test_strings(5000,10);
 
 
 }

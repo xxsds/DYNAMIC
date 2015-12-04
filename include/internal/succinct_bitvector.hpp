@@ -145,11 +145,48 @@ public:
 	}
 
 	/*
-	 * insert a bit set at position i
+	 * total number of bits not set
+	 */
+	uint64_t rank0(){
+
+		return rank0(size());
+
+	}
+
+	/*
+	 * total number of bits set
+	 */
+	uint64_t rank1(){
+
+		return rank1(size());
+
+
+	}
+
+	/*
+	 * insert a bit b at position i
 	 */
 	void insert(uint64_t i, bool b){
 
 		spsi_.insert(i,b);
+
+	}
+
+	/*
+	 * insert a bit not set at position i
+	 */
+	void insert0(uint64_t i){
+
+		insert(i,false);
+
+	}
+
+	/*
+	 * insert a bit set at position i
+	 */
+	void insert1(uint64_t i){
+
+		insert(i,true);
 
 	}
 

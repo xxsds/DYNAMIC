@@ -154,6 +154,18 @@ public:
 
 	}
 
+	bool code_exists(vector<bool>& code){
+
+		return decode_[code]!=0;
+
+	}
+
+	bool char_exists(char_type c){
+
+		return encode_[c].size()>0;
+
+	}
+
 	/*
 	 * alphabet size
 	 */

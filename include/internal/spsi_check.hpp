@@ -27,6 +27,10 @@ public:
 
 	}
 
+	uint64_t& operator[](ulint i){
+		return vec.at(i);
+	}
+
 	uint64_t at(uint64_t i){
 		return vec[i];
 	}

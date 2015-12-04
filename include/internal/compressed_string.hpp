@@ -1,15 +1,14 @@
 /*
- * dynamic_string.hpp
+ * compressed_string.hpp
  *
  *  Created on: Nov 30, 2015
  *      Author: nico
  *
  *  Dynamic string supporting rank, select, access, insert.
  *
- *  The string uses a wavelet tree. The encoding depends on the constructor with which the
- *  string is built:
+ *  The string uses a wavelet tree. The encoding depends on the constructor:
  *
- *  - dynamic_string() : gamma coding. maximum code length will be 2log sigma. New characters can always
+ *  - dynamic_string() : gamma coding. maximum code bit-length will be 2log sigma. New characters can always
  *     be inserted.
  *  - dynamic_string(uint64_t sigma) : fixed-length. Max sigma characters are allowed
  *  - dynamic_string(vector<pair<char_type,double> > P) : Huffman-encoding. The characters set is fixed at construction time.
@@ -101,6 +100,7 @@ public:
 	 */
 	uint64_t select(uint64_t i,char_type c){
 
+		assert(ae.char_exists(c));
 		assert(i<rank(size(),c));
 
 		auto code = ae.encode(c);
@@ -110,7 +110,7 @@ public:
 		//in the initial dictionary (if any)
 		assert(code.size()>0);
 
-		return root.select(i,code);
+		return root.select(i,code, ae);
 
 	}
 
@@ -121,6 +121,8 @@ public:
 
 		assert(i<=size());
 
+		if(not ae.char_exists(c)) return 0;
+
 		auto code = ae.encode(c);
 
 		//if this fails, it means that c is not present
@@ -128,7 +130,13 @@ public:
 		//in the initial dictionary (if any)
 		assert(code.size()>0);
 
-		return root.rank(i,code);
+		return root.rank(i,code, ae);
+
+	}
+
+	bool char_exists(char_type c){
+
+		return ae.char_exists(c);
 
 	}
 
@@ -153,8 +161,6 @@ public:
 		//if code does not yet exist, create it
 		auto code = ae.encode(c);
 
-		//for(auto b:code) cout << b;cout<<endl;
-
 		root.insert(i,code,c);
 
 		n++;
@@ -166,6 +172,12 @@ public:
 		//TODO
 		assert(false);
 		return 0;
+
+	}
+
+	ulint alphabet_size(){
+
+		return ae.size();
 
 	}
 
@@ -246,12 +258,18 @@ private:
 
 			if(j==B.size()){
 
+				//this node must be a leaf
+				assert(bv.size()==0);
+
 				if(is_leaf()){
 
+					//if it's already marked as leaf, check
+					//that the label is correct
 					assert(c==label());
 
 				}else{
 
+					//else, mark node as leaf
 					make_leaf(c);
 
 				}
@@ -273,6 +291,8 @@ private:
 					child1_ = new node(this);
 				}
 
+				assert(j == B.size()-1 or bv.rank1(i) <= child1_->bv.size());
+
 				child1_->insert( bv.rank1(i), B, c, j+1 );
 
 			}else{
@@ -281,13 +301,15 @@ private:
 					child0_ = new node(this);
 				}
 
+				assert(j == B.size()-1 or  bv.rank0(i) <= child0_->bv.size());
+
 				child0_->insert( bv.rank0(i), B, c, j+1 );
 
 			}
 
 		}
 
-		ulint rank(ulint i, vector<bool>& B, ulint j=0){
+		ulint rank(ulint i, vector<bool>& B, alphabet_encoder& ae, ulint j=0){
 
 			assert(j <= B.size());
 
@@ -295,20 +317,24 @@ private:
 
 			assert(i <= bv.size());
 
-			assert((B[j] or has_child0()) and (not B[j] or has_child1()));
-
 			if(B[j]){
 
-				return child1_->rank( bv.rank1(i), B, j+1 );
+				assert(bv.rank1(bv.size())>0);
+				assert(has_child1());
+				return child1_->rank( bv.rank1(i), B, ae, j+1 );
 
 			}
 
-			return child0_->rank( bv.rank0(i), B, j+1 );
+			assert(bv.rank0(bv.size())>0);
+			assert(has_child0());
+			return child0_->rank( bv.rank0(i), B, ae, j+1 );
 
 		}
 
 
-		ulint select(ulint i, vector<bool>& B){
+		ulint select(ulint i, vector<bool>& B, alphabet_encoder& ae){
+
+			assert( ae.code_exists(B) );
 
 			//top-down: find leaf associated with B
 			node* L = get_leaf(B);

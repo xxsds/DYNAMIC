@@ -14,9 +14,6 @@
 namespace dyn{
 
 template<
-	typename char_type,			//character type (any integer type).
-								//The class implements
-								//some optimizations for bool type.
 	class sparse_bitvector_t,	//bitvector taking O(b) words of space,
 								//b being the number of bits set
 	class string_t				//data structure implementing a string with
@@ -25,6 +22,8 @@ template<
 class rle_string{
 
 public:
+
+	typedef ulint char_type;
 
 	/*
 	 * Constructor #1
@@ -47,7 +46,6 @@ public:
 	 */
 	rle_string(uint64_t sigma){
 
-		assert( typeid(char_type) != typeid(bool) );
 		assert(sigma>0);
 
 		//if sigma=2, we don't need run_heads since bits are
@@ -68,7 +66,6 @@ public:
 	 */
 	rle_string(vector<pair<char_type,double> >& P){
 
-		assert( typeid(char_type) != typeid(bool) );
 		run_heads_ = string_t(P);
 
 	}
@@ -77,7 +74,7 @@ public:
 
 		assert(i<n);
 		assert(runs.rank1(i) < R);
-		return run_heads_at( runs.rank1(i) );
+		return run_heads_[ runs.rank1(i) ];
 
 	}
 
@@ -87,21 +84,27 @@ public:
 
 	}
 
+	bool char_exists(char_type c){
+
+		return run_heads_.char_exists(c);
+
+	}
+
 	/*
 	 * position of i-th character c. i starts from 0!
 	 */
 	ulint select(ulint i, char_type c){
 
+		assert(run_heads_.char_exists(c));
 		assert(i < rank(size(),c));
 
 		ulint this_c_run = runs_per_letter[c].rank1(i);
 
 		//position of i-th c inside its c-run
-		assert( this_c_run == 0 || this_c_run-1 < runs_per_letter[c].rank1() );
 		ulint sel = i - ( this_c_run == 0 ? 0 : runs_per_letter[c].select1(this_c_run-1)+1 );
 
 		//run number among all runs
-		ulint this_run = run_heads_select(this_c_run, c);
+		ulint this_run = run_heads_.select(this_c_run, c);
 
 		sel += (this_run == 0 ? 0 : runs.select1(this_run-1)+1);
 
@@ -110,22 +113,26 @@ public:
 	}
 
 	/*
-	 * position of i-th 0. i starts from 0 (only for bitvectors!)
+	 * position of i-th bit not set. 0 =< i < rank(size(),0)
 	 */
-	ulint select0(ulint i){
+	uint64_t select0(uint64_t i){
 
-		assert( typeid(char_type) == typeid(bool) );
-		return select(i, false);
+		assert(run_heads_.char_exists(false));
+		assert(i<rank0(size()));
+
+		return select(i,false);
 
 	}
 
 	/*
-	 * position of i-th 1. i starts from 0 (only for bitvectors!)
+	 * position of i-th bit set. 0 =< i < rank(size(),1)
 	 */
-	ulint select1(ulint i){
+	uint64_t select1(uint64_t i){
 
-		assert( typeid(char_type) == typeid(bool) );
-		return select(i, true);
+		assert(run_heads_.char_exists(true));
+		assert(i<rank1(size()));
+
+		return select(i,true);
 
 	}
 
@@ -136,11 +143,13 @@ public:
 
 		assert(i<=size());
 
+		if(not run_heads_.char_exists(c)) return 0;
+
 		//this run is the number 'this_run' among all runs
 		ulint this_run = runs.rank1(i);
 
 		//this c-run is the number 'this_c_run' among all c-runs
-		ulint this_c_run = run_heads_rank(this_run,c);
+		ulint this_c_run = run_heads_.rank(this_run,c);
 
 		//number of cs before position i (excluded) in THIS c-run
 		ulint rk = i - (this_run == 0 ? 0 : runs.select1(this_run-1)+1 );
@@ -157,7 +166,7 @@ public:
 	 */
 	ulint rank0(ulint i){
 
-		assert( typeid(char_type) == typeid(bool) );
+		assert(run_heads_.char_exists(false));
 		return rank(i, false);
 
 	}
@@ -167,7 +176,7 @@ public:
 	 */
 	ulint rank1(ulint i){
 
-		assert( typeid(char_type) == typeid(bool) );
+		assert(run_heads_.char_exists(true));
 		return rank(i, true);
 
 	}
@@ -185,7 +194,7 @@ public:
 
 			runs.insert1(0);
 
-			run_heads_insert(0,c);
+			run_heads_.insert(0,c);
 
 			runs_per_letter[c].insert1(0);
 
@@ -201,9 +210,9 @@ public:
 
 		assert(size()>0);
 
-		//c will be inserted between tw aracters 'prev' and 'next'
+		//c will be inserted between two caracters 'prev' and 'next'
 		//if one of those 2 chars does not exist, the associated
-		//variable is 0
+		//variable (prev/next) is 0
 		char_type prev = (i == 0 ? 0 : at(i-1));
 		char_type next = (i == size() ? 0 : at(i));
 
@@ -221,7 +230,7 @@ public:
 			assert(runs_per_letter[c].size() > 0);
 
 			//run that is extended
-			ulint extended_run = runs.rank1( prev_equals_c ? runs.rank1(i-1) : runs.rank1(i) );
+			ulint extended_run = ( prev_equals_c ? runs.rank1(i-1) : runs.rank1(i) );
 
 			//extend run: insert a 0 in runs
 			//if at(i-1) == c and at(i) != c, then insert 0 at position i-1
@@ -230,8 +239,12 @@ public:
 			assert( not (prev_equals_c and not next_equals_c) || runs[i-1] );
 			runs.insert0( prev_equals_c and not next_equals_c ? i-1 : i );
 
+			//here c must be present inside run_heads_ since
+			//the new c touches a c-run
+			assert(run_heads_.char_exists(c));
+
 			//the extended run is the number 'extended_c_run' among all c-runs
-			ulint extended_c_run = run_heads_rank(extended_run,c);
+			ulint extended_c_run = run_heads_.rank(extended_run,c);
 
 			assert(extended_c_run < runs_per_letter[c].rank1());
 			runs_per_letter[c].insert0(runs_per_letter[c].select1(extended_c_run) );
@@ -252,7 +265,7 @@ public:
 			assert(next != c);
 
 			runs.insert1(0);
-			run_heads_insert(0,c);
+			run_heads_.insert(0,c);
 			runs_per_letter[c].insert1(0);
 
 			n++;
@@ -272,7 +285,7 @@ public:
 			assert(prev != c);
 
 			runs.insert1(runs.size());
-			run_heads_insert(R,c);
+			run_heads_.insert(R,c);
 			runs_per_letter[c].insert1(runs_per_letter[c].size());
 
 			n++;
@@ -294,9 +307,9 @@ public:
 			runs.insert1(i);
 
 			auto rk = runs.rank1(i);
-			run_heads_insert(rk,c);
+			run_heads_.insert(rk,c);
 
-			ulint this_c_run = run_heads_rank(rk,c);
+			ulint this_c_run = run_heads_.rank(rk,c);
 
 			runs_per_letter[c].insert1( this_c_run == 0 ?
 										0 :
@@ -322,7 +335,7 @@ public:
 		ulint this_run = runs.rank1(i);
 
 		//rank of the new c among all c-runs
-		ulint this_c_run = run_heads_rank(this_run,c);
+		ulint this_c_run = run_heads_.rank(this_run,c);
 
 		//rank of a among all a-runs
 		//ulint this_a_run = run_heads_rank(this_run,prev);
@@ -358,26 +371,17 @@ public:
 
 	}
 
-	/*
-	 * insert 0 at position i  (only for bitvectors!)
-	 */
-	void insert0(ulint i){
+	void push_back(char_type c){
 
-		assert( typeid(char_type) == typeid(bool) );
-		insert(i,false);
+		insert(size(),c);
 
 	}
 
-	/*
-	 * insert 1 at position i  (only for bitvectors!)
-	 */
-	void insert1(ulint i){
+	void push_front(char_type c){
 
-		assert( typeid(char_type) == typeid(bool) );
-		insert(i,true);
+		insert(0,c);
 
 	}
-
 
 	//break range: given a range <l',r'> on the string and a character c, this function
 	//breaks <l',r'> in maximal sub-ranges containing character c.
@@ -428,170 +432,21 @@ public:
 
 	ulint size(){return n;}
 
-	/*
-	 * return inclusive range of j-th run in the string
-	 */
-	/*pair<ulint,ulint> run_range(ulint j){
-
-		assert(j<run_heads.size());
-
-		ulint this_block = j/B;
-		ulint current_run = this_block*B;
-		ulint pos = (this_block==0?0:runs.select(this_block-1)+1);
-
-		while(current_run < j){
-
- 			pos += run_at(current_run);
-			current_run++;
-
-		}
-
-		assert(current_run == j);
-
-		return {pos,pos+run_at(j)-1};
-
-	}
-
-	//length of i-th run
-	ulint run_at(ulint i){
-
-		assert(i<R);
-		uchar c = run_heads_at[i];
-
-		return runs_per_letter[c].gapAt(run_heads_rank(i,c));
-
-	}*/
-
 	ulint number_of_runs(){return R;}
 
 	/* serialize the structure to the ostream
 	 * \param out	 the ostream
 	 */
 	/*ulint serialize(std::ostream& out){
-
-		ulint w_bytes = 0;
-
-		out.write((char*)&n,sizeof(n));
-		out.write((char*)&R,sizeof(R));
-		out.write((char*)&B,sizeof(B));
-
-		w_bytes += sizeof(n) + sizeof(R) + sizeof(B);
-
-		if(n==0) return w_bytes;
-
-		w_bytes += runs.serialize(out);
-
-		for(ulint i=0;i<256;++i)
-			w_bytes += runs_per_letter[i].serialize(out);
-
-		w_bytes += run_heads.serialize(out);
-
-		return w_bytes;
-
 	}*/
 
 	/* load the structure from the istream
 	 * \param in the istream
 	 */
 	/*void load(std::istream& in) {
-
-		in.read((char*)&n,sizeof(n));
-		in.read((char*)&R,sizeof(R));
-		in.read((char*)&B,sizeof(B));
-
-		if(n==0) return;
-
-		runs.load(in);
-
-		runs_per_letter = vector<sparse_bitvector_t>(256);
-
-		for(ulint i=0;i<256;++i)
-			runs_per_letter[i].load(in);
-
-		run_heads.load(in);
-
 	}*/
 
 private:
-
-	char_type run_heads_at(ulint i){
-
-		assert(i<R);
-
-		if( typeid(char_type) == typeid(bool) ){
-
-			return (i%2) xor run_heads_first_bit;
-
-		}else{
-
-			return run_heads_[i];
-
-		}
-
-	}
-
-	ulint run_heads_rank(ulint i, char_type c){
-
-		assert(i<=R);
-
-		if( typeid(char_type) == typeid(bool) ){
-
-			return (i + (run_heads_first_bit xor not c ) )/2;
-
-		}else{
-
-			return run_heads_.rank(i,c);
-
-		}
-
-	}
-
-	ulint run_heads_select(ulint i, char_type c){
-
-		if( typeid(char_type) == typeid(bool) ){
-
-			assert(i<R/2);
-			return i*2  + ( c xor run_heads_first_bit );
-
-		}else{
-
-			return run_heads_.select(i,c);
-
-		}
-
-	}
-
-	/*
-	 * insert c at position i in run_heads. This operation must
-	 * not duplicate any character (i.e. must not create a run
-	 * of length >1)
-	 */
-	void run_heads_insert(ulint i, char_type c){
-
-		assert(i <= R);
-
-		//cannnot duplicate a character
-		assert(i==0 || i-1 < R);
-		assert(i==R || i < R);
-
-		assert(i==0 || run_heads_at(i-1)!=c);
-		assert(i==R || run_heads_at(i)!=c);
-
-		if( typeid(char_type) == typeid(bool) ){
-
-			//if i==0, then we are flipping the first bit. Otherwise,
-			//we only need to increment size.
-
-			if(R==0) run_heads_first_bit = c;
-			else run_heads_first_bit = run_heads_first_bit xor (i==0);
-
-		}else{
-
-			run_heads_.insert(i,c);
-
-		}
-
-	}
 
 	/*
 	 * split i-th run head: a -> aca
@@ -600,61 +455,14 @@ private:
 
 		assert(i < R);
 
-		char_type r = run_heads_at(i);
+		char_type r = run_heads_[i];
 
 		assert(r!=c);
 
-		if( typeid(char_type) != typeid(bool) ){
-
-			run_heads_.insert(i+1,r);
-			run_heads_.insert(i+1,c);
-
-		}
-		/*
-		 * else do nothing because first character
-		 * does not change
-		 */
+		run_heads_.insert(i+1,r);
+		run_heads_.insert(i+1,c);
 
 	}
-
-	//<j=run of position i, last position of j-th run>
-	/*pair<ulint,ulint> run_of(ulint i){
-
-		ulint last_block = runs.rank(i);
-		ulint current_run = last_block*B;
-
-		//current position in the string: the first of a block
-		ulint pos = 0;
-		if(last_block>0)
-			pos = runs.select(last_block-1)+1;
-
-		assert(pos <= i);
-
-		while(pos < i){
-
- 			pos += run_at(current_run);
-			current_run++;
-
-		}
-
-		assert(pos >= i);
-
-		if(pos>i){
-
-			current_run--;
-
-		}else{//pos==i
-
-			pos += run_at(current_run);
-
-		}
-
-		assert(pos>0);
-		assert(current_run<R);
-
-		return {current_run,pos-1};
-
-	}*/
 
 	//main bitvector storing all run lengths. R bits set
 	//a run of length n+1 is stored as 0^n1
@@ -665,7 +473,6 @@ private:
 
 	//store run heads in a compressed string supporting access/rank/select/insert
 	string_t run_heads_;
-	bool run_heads_first_bit=false;
 
 	//text length and number of runs
 	ulint n=0;
