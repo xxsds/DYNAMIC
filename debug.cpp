@@ -23,7 +23,25 @@ ulint rank_vec(vector<ulint>& s, ulint i, ulint c){
 
 	for(ulint j=0;j<i;++j) r += s[j]==c;
 
+
 	return r;
+
+}
+
+ulint select_vec(vector<ulint>& s, ulint i, ulint c){
+
+	ulint r=0;
+
+	for(ulint j=0;j<s.size();++j){
+
+		if(s[j]==c and r == i) return j;
+
+		r += s[j]==c;
+
+	}
+
+	assert(false);
+	return 0;
 
 }
 
@@ -418,10 +436,10 @@ void compare_bitvectors(uint64_t size){
 
 }
 
-template<class bv_type>
-void benchmark_bitvector(uint64_t size){
+template<class dyn_str_t>
+void benchmark_dyn_str(uint64_t size, uint64_t sigma){
 
-	bv_type bv;
+	dyn_str_t bv;
 
 	srand(time(NULL));
 
@@ -434,7 +452,9 @@ void benchmark_bitvector(uint64_t size){
 	cout << "insert ... " << flush;
 	for(uint64_t i=0;i<size;++i){
 
-		bv.insert(rand()%(bv.size()+1),rand()%2);
+		if(i%10000==0 and i>0) cout << endl << i << " characters processed ...";
+
+		bv.insert(rand()%(bv.size()+1),rand()%sigma);
 
 	}
 	cout << "done." << endl;
@@ -451,74 +471,47 @@ void benchmark_bitvector(uint64_t size){
 
 	auto t3 = high_resolution_clock::now();
 
-	cout << "rank1 ... " << flush;
+	cout << "rank ... " << flush;
 	for(uint64_t i=0;i<size;++i){
 
-		bv.rank1(rand()%(bv.size()+1));
+		bv.rank(rand()%(bv.size()+1),rand()%sigma);
 
 	}
 	cout << "done." << endl;
 
 	auto t4 = high_resolution_clock::now();
 
-	cout << "rank0 ... " << flush;
+	uint64_t c = rand()%sigma;
+	uint64_t nr_c = bv.rank(bv.size(),c);
+
+	cout << "select ... " << flush;
 	for(uint64_t i=0;i<size;++i){
 
-		bv.rank0(rand()%(bv.size()+1));
+		//if(i%100==0 and i>0) cout << endl << i << " characters processed ...";
+
+		bv.select(i%nr_c,c);
 
 	}
 	cout << "done." << endl;
-
 	auto t5 = high_resolution_clock::now();
-
-	uint64_t nr1 = bv.rank1(bv.size());
-
-	cout << "select1 ... " << flush;
-	for(uint64_t i=0;i<size;++i){
-
-		bv.select1(rand()%nr1);
-
-	}
-	cout << "done." << endl;
-
-	uint64_t nr0 = bv.rank0(bv.size());
-
-	auto t6 = high_resolution_clock::now();
-
-	cout << "select0... " << flush;
-	for(uint64_t i=0;i<size;++i){
-
-		bv.select0(rand()%nr0);
-
-	}
-	cout << "done." << endl;
-
-	auto t7 = high_resolution_clock::now();
 
 	uint64_t sec_insert = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 	uint64_t sec_access = std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2).count();
-	uint64_t sec_rank1 = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
-	uint64_t sec_rank0 = std::chrono::duration_cast<std::chrono::microseconds>(t5 - t4).count();
-	uint64_t sec_sel1 = std::chrono::duration_cast<std::chrono::microseconds>(t6 - t5).count();
-	uint64_t sec_sel0 = std::chrono::duration_cast<std::chrono::microseconds>(t7 - t6).count();
+	uint64_t sec_rank = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
+	uint64_t sec_sel = std::chrono::duration_cast<std::chrono::microseconds>(t5 - t4).count();
 
 	cout << (double)sec_insert/bv.size() << " microseconds/insert" << endl;
 	cout << (double)sec_access/bv.size() << " microseconds/access" << endl;
-	cout << (double)sec_rank1/bv.size() << " microseconds/rank1" << endl;
-	cout << (double)sec_rank0/bv.size() << " microseconds/rank0" << endl;
-	cout << (double)sec_sel1/bv.size() << " microseconds/sel1" << endl;
-	cout << (double)sec_sel0/bv.size() << " microseconds/sel0" << endl;
-
-	auto bs = bv.bit_size();
-	cout << "Bit size of the structure = " << bs << " (" << (double)bs/size << " n bits)" << endl;
+	cout << (double)sec_rank/bv.size() << " microseconds/rank" << endl;
+	cout << (double)sec_sel/size << " microseconds/sel" << endl;
 
 }
 
 void test_strings(ulint size, ulint sigma){
 
 	com_str s1;
-	//wtrle_str s2;
-	str_check s2;
+	wtrle_str s2;
+	//str_check s2;
 	//rle_str_check s3;
 	rle_str s3;
 
@@ -557,25 +550,21 @@ void test_strings(ulint size, ulint sigma){
 	}
 	cout << "done. " << endl;
 
-	assert(s3.check_consistency());
+	//assert(s3.check_consistency());
 
 	cout << "testing rank ... " << flush;
 	ulint c = s1[rand()%s1.size()];
 	for(ulint i=0;i<=size;++i){
 
-		//if(s2.rank(i,c) != s3.rank(i,c))
-		//cout << i <<"," << c << " -> " << s2.rank(i,c) << "/" << s3.rank(i,c) << endl;
-
 		assert(s1.char_exists(c));
 		assert(s2.char_exists(c));
 		assert(s3.char_exists(c));
 
-		assert(rank_vec(truth,i,c) == s1.rank(i,c));
-		assert(rank_vec(truth,i,c) == s2.rank(i,c));
-		assert(rank_vec(truth,i,c) == s3.rank(i,c));
+		auto rr = rank_vec(truth,i,c);
 
-		//assert(s1.rank(i,c) == s2.rank(i,c));
-		//assert(s2.rank(i,c) == s3.rank(i,c));
+		assert(rr == s1.rank(i,c));
+		assert(rr == s2.rank(i,c));
+		assert(rr == s3.rank(i,c));
 
 	}
 	cout << "done. " << endl;
@@ -584,8 +573,11 @@ void test_strings(ulint size, ulint sigma){
 	c = s1[rand()%s1.size()];
 	for(ulint i=0;i<s1.rank(s1.size(),c);++i){
 
-		assert( s1.select(i,c) == s2.select(i,c));
-		assert( s2.select(i,c) == s3.select(i,c));
+		auto ss = select_vec(truth, i,c);
+
+		assert( ss == s1.select(i,c));
+		assert( ss == s2.select(i,c));
+		assert( ss == s3.select(i,c));
 
 	}
 	cout << "done. " << endl;
@@ -597,8 +589,6 @@ void test_strings(ulint size, ulint sigma){
 		assert( s1.rank(s1.select(i,c),c ) == i);
 		assert( s2.rank(s2.select(i,c),c ) == i);
 		assert( s3.rank(s3.select(i,c),c ) == i);
-
-		assert( s1.rank(s2.select(i,c),c ) == i);
 
 	}
 	cout << "done. " << endl;
@@ -612,7 +602,12 @@ void test_strings(ulint size, ulint sigma){
 int main(int argc,char** argv) {
 
 	//compare_bitvectors(20);
-	test_strings(2000,3);
+	//test_strings(5000,3);
+
+	//benchmark_dyn_str<rle_str>(200000, 100);
+	//benchmark_dyn_str<wtrle_str>(50000, 100);
+	benchmark_dyn_str<com_str>(1000, 100);
+	//benchmark_dyn_str<gap_str>(10000, 100);
 
 
 }
