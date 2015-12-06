@@ -20,7 +20,7 @@ namespace dyn{
 
 /*
  * a succinct searchable partial sum with inserts implemented with cache-efficient
- * B trees. All integers in the same leaf have the same bit size.
+ * B trees.
  */
 typedef spsi<packed_block,256,16> packed_spsi;
 
@@ -55,13 +55,14 @@ typedef rle_string<gap_bv, com_str> rle_str;
  * RLE string implemented with a run-length encoded wavelet tree. Each
  * WT node is run-length encoded.
  */
+//TODO use rle_bv here
 typedef compressed_string<rle_str> wtrle_str;
 
 /*
  * string implemented with a gap-compressed wavelet tree. Each
  * WT node is gap-compressed.
  */
-typedef compressed_string<gap_bv> gap_str;
+typedef compressed_string<gap_bv> wtgap_str;
 
 
 
@@ -77,8 +78,6 @@ typedef succinct_bitvector<spsi_check<> > bv_check;
 typedef compressed_string<bv_check> str_check;
 
 typedef rle_string<bv_check, str_check> rle_str_check;
-
-//typedef rle_string<bool, gap_bv, str_check> rle_bv_check;
 
 }
 

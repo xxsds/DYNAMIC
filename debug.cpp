@@ -450,7 +450,7 @@ void benchmark_dyn_str(uint64_t size, uint64_t sigma){
 	cout << "insert ... " << flush;
 	for(uint64_t i=0;i<size;++i){
 
-		if(i%10000==0 and i>0) cout << endl << i << " characters processed ...";
+		//if(i%10000==0 and i>0) cout << endl << i << " characters processed ...";
 
 		bv.insert(rand()%(bv.size()+1),rand()%sigma);
 
@@ -606,10 +606,26 @@ int main(int argc,char** argv) {
 
 	//compare_bitvectors(10000);
 
-	benchmark_dyn_str<rle_str>(200000, 100);
-	//benchmark_dyn_str<wtrle_str>(50000, 100);
-	//benchmark_dyn_str<com_str>(200000, 100);
-	//benchmark_dyn_str<gap_str>(10000, 100);
+	ulint n  = 1000000;
+	ulint sigma = 26;
+
+	cout << endl << " *** gap_bv:" << endl;
+	benchmark_dyn_str<gap_bv>(n, 2);
+
+	cout << endl << " *** suc_bv:" << endl;
+	benchmark_dyn_str<suc_bv>(n, 2);
+
+	cout << endl << " *** com_str:" << endl;
+	benchmark_dyn_str<com_str>(n, sigma);
+
+	cout << endl << " *** rle_str:" << endl;
+	benchmark_dyn_str<rle_str>(n, sigma);
+
+	cout << endl << " *** wtrle_str:" << endl;
+	benchmark_dyn_str<wtrle_str>(n, sigma);
+
+	cout << endl << " *** wtgap_str:" << endl;
+	benchmark_dyn_str<wtgap_str>(n, sigma);
 
 
 }
