@@ -29,6 +29,7 @@ public:
 		this->words = vector<uint64_t>(words);
 		this->size_= new_size;
 		this->width_= width;
+		this->int_per_word_ = 64/width_;
 
 		MASK = (uint64_t(1) << width_)-1;
 
@@ -40,9 +41,7 @@ public:
 
 		//assert(i<size_);
 
-		uint8_t int_per_word = 64/width_;
-
-		return MASK & (words[i/int_per_word] >> ((i%int_per_word)*width_));
+		return MASK & (words[i/int_per_word_] >> ((i%int_per_word_)*width_));
 
 	}
 
@@ -52,29 +51,36 @@ public:
 
 	}
 
+	/*
+	 * inclusive partial sum (i.e. up to element i included)
+	 */
 	uint64_t psum(uint64_t i){
 
 		assert(i<size_);
 
+		i++;
+
 		uint64_t s = 0;
 		uint32_t pos = 0;
 
-		//optimization for bitvectors
-		if(width_==1){
+		// optimization for bitvectors
 
-			uint32_t current_word = i/64;
+		for(uint32_t j = 0;j<(i/64)*(width_==1);++j){
 
-			for(uint32_t j = 0;j<current_word;++j)
-				s += __builtin_popcountll(words[j]);
-
-			pos = current_word*64;
+			s += __builtin_popcountll(words[j]);
+			pos += 64;
 
 		}
 
-		for(uint32_t j=pos;j<size_;++j){
+		s += 	width_>1 or i%64==0 ?
+				0 :
+				__builtin_popcountll( words[i/64] & ((ulint(1) << (i%64))-1) );
+
+		// end optimization for bitvectors
+
+		for(uint32_t j=pos;j<i*(width_>1);++j){
 
 			s += at(j);
-			if(j==i) return s;
 
 		}
 
@@ -82,22 +88,42 @@ public:
 
 	}
 
+	/*
+	 * smallest index j such that psum(j)>=x
+	 */
 	uint64_t search(uint64_t x){
 
 		assert(size_>0);
 		assert(x<=psum_);
 
 		uint64_t s = 0;
+		uint64_t pop = 0;
+		uint32_t pos = 0;
 
-		for(uint32_t j=0;j<size_;++j){
+		// optimization for bitvectors
 
-			s += at(j);
-			if(s>=x) return j;
+		for(uint32_t j = 0; j < (size_/64)*(width_==1) and s < x;++j){
+
+			pop = __builtin_popcountll(words[j]);
+			pos += 64;
+			s += pop;
 
 		}
 
-		assert(false);
-		return 0;
+		// end optimization for bitvectors
+
+		pos -= 64*(pos>0);
+		s -= pop;
+
+		for( ; pos<size_ and s<x;++pos){
+
+			s += at(pos);
+
+		}
+
+		pos -= pos!=0;
+
+		return pos;
 
 	}
 
@@ -109,45 +135,77 @@ public:
 	 */
 	uint64_t search_0(uint64_t x){
 
+		assert(size_>0);
 		assert(width_==1);
 		assert(x<=size_-psum_);
-		assert(x>0);
 
 		uint64_t s = 0;
+		uint64_t pop = 0;
+		uint32_t pos = 0;
 
-		for(uint32_t j=0;j<size_;++j){
+		// optimization for bitvectors
 
-			assert(at(j)==0 or at(j)==1);
+		for(uint32_t j = 0; j < size_/64 and s < x;++j){
 
-			s += (1 - at(j));
-
-			assert(s<=x);
-
-			if(s==x) return j;
+			pop = 64-__builtin_popcountll(words[j]);
+			pos += 64;
+			s += pop;
 
 		}
 
-		assert(false);
-		return 0;
+		// end optimization for bitvectors
+
+		pos -= 64*(pos>0);
+		s -= pop;
+
+		for( ; pos<size_ and s<x;++pos){
+
+			s += (1-at(pos));
+
+		}
+
+		pos -= pos!=0;
+
+		return pos;
 
 	}
 
+	/*
+	 * smallest index j such that psum(j)+j>=x
+	 */
 	uint64_t search_r(uint64_t x){
 
 		assert(size_>0);
 		assert(x<=psum_+size_);
 
 		uint64_t s = 0;
+		uint64_t pop = 0;
+		uint32_t pos = 0;
 
-		for(uint32_t j=0;j<size_;++j){
+		// optimization for bitvectors
 
-			s += ( at(j)+1 );
-			if(s>=x) return j;
+		for(uint32_t j = 0; j < (size_/64)*(width_==1) and s < x;++j){
+
+			pop = 64 + __builtin_popcountll(words[j]);
+			pos += 64;
+			s += pop;
 
 		}
 
-		assert(false);
-		return 0;
+		// end optimization for bitvectors
+
+		pos -= 64*(pos>0);
+		s -= pop;
+
+		for( ; pos<size_ and s<x;++pos){
+
+			s += ( 1 + at(pos) );
+
+		}
+
+		pos -= pos!=0;
+
+		return pos;
 
 	}
 
@@ -159,21 +217,15 @@ public:
 		assert(size_>0);
 		assert(x<=psum_);
 
-		if(x==0) return true;
-
 		uint64_t s = 0;
 
-		for(uint32_t j=0;j<size_;++j){
+		for(uint32_t j=0;j<size_ and s<x;++j){
 
 			s += at(j);
 
-			if(s==x) return true;
-			if(s>x) return false;
-
 		}
 
-		assert(false);
-		return false;
+		return s==x;
 
 	}
 
@@ -185,21 +237,15 @@ public:
 		assert(size_>0);
 		assert(x<=psum_+size_);
 
-		if(x==0) return true;
-
 		uint64_t s = 0;
 
-		for(uint32_t j=0;j<size_;++j){
+		for(uint32_t j=0;j<size_ and s<x;++j){
 
 			s += (at(j)+1);
 
-			if(s==x) return true;
-			if(s>x) return false;
-
 		}
 
-		assert(false);
-		return false;
+		return s==x;
 
 	}
 
@@ -255,9 +301,9 @@ public:
 
 		}
 
-		//no enough space for the new element:
+		//not enough space for the new element:
 		//alloc extra_ new words
-		if(size_+1>(words.size()*(64/width_))){
+		if(size_+1>(words.size()*(int_per_word_))){
 
 			//resize words
 
@@ -316,8 +362,7 @@ public:
 
 		uint64_t prev_size = size_;
 
-		uint8_t int_per_word = 64/width_;
-		uint32_t tot_words = (size_/int_per_word) + (size_%int_per_word!=0);
+		uint32_t tot_words = (size_/int_per_word_) + (size_%int_per_word_!=0);
 
 		assert(tot_words <= words.size());
 
@@ -327,7 +372,7 @@ public:
 		assert(nr_left_words>0);
 		assert(nr_right_words>0);
 
-		uint32_t nr_left_ints = nr_left_words*int_per_word;
+		uint32_t nr_left_ints = nr_left_words*int_per_word_;
 
 		assert(size_ > nr_left_ints);
 		uint32_t nr_right_ints = size_ - nr_left_ints;
@@ -372,14 +417,13 @@ private:
 	void shift_right(uint32_t i){
 
 		//number of integers that fit in a memory word
-		uint32_t int_per_word = 64/width_;
-		assert(int_per_word>0);
+		assert(int_per_word_>0);
 
-		assert(size_+1 <= words.size()*int_per_word);
+		assert(size_+1 <= words.size()*int_per_word_);
 
-		uint32_t current_word = i/int_per_word;
+		uint32_t current_word = i/int_per_word_;
 
-		uint32_t falling_out_idx = current_word*int_per_word+(int_per_word-1);
+		uint32_t falling_out_idx = current_word*int_per_word_+(int_per_word_-1);
 
 		//integer that falls out from the right of current word
 		uint64_t falling_out = at(falling_out_idx);
@@ -392,13 +436,13 @@ private:
 
 		for(uint32_t j = current_word+1;j<words.size();++j){
 
-			falling_out_temp = at( j*int_per_word+(int_per_word-1) );
+			falling_out_temp = at( j*int_per_word_+(int_per_word_-1) );
 
 			words[j] = words[j] << width_;
 
-			assert(at(j*int_per_word)==0);
+			assert(at(j*int_per_word_)==0);
 
-			set(j*int_per_word,falling_out);
+			set(j*int_per_word_,falling_out);
 
 			falling_out = falling_out_temp;
 
@@ -412,13 +456,13 @@ private:
 
 		psum_ = sum(vec);
 		width_ = max_bitsize(vec);
+		int_per_word_ = 64/width_;
 
 		MASK = (uint64_t(1) << width_)-1;
 
 		size_=vec.size();
 
-		uint8_t int_per_word = 64/width_;
-		words = vector<uint64_t>( size_/int_per_word + (size_%int_per_word != 0) + extra_ );
+		words = vector<uint64_t>( size_/int_per_word_ + (size_%int_per_word_ != 0) + extra_ );
 
 		uint32_t i = 0;
 		for(auto x:vec) set(i++, x);
@@ -429,10 +473,8 @@ private:
 
 		assert(bitsize(x)<=width_);
 
-		uint8_t int_per_word = 64/width_;
-
-		uint32_t word_nr = i/int_per_word;
-		uint8_t pos = i%int_per_word;
+		uint32_t word_nr = i/int_per_word_;
+		uint8_t pos = i%int_per_word_;
 
 		//set to 0 i-th entry
 		uint64_t MASK1 = ~(MASK<<(width_*pos));
@@ -482,6 +524,7 @@ private:
 	uint64_t MASK=0;
 	uint16_t size_=0;
 	uint8_t width_=0;
+	uint8_t int_per_word_=0;
 
 	//when reallocating, reserve extra_ words of space to accelerate insert
 	static const uint8_t extra_ = 2;

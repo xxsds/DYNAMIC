@@ -110,7 +110,7 @@ public:
 		//in the initial dictionary (if any)
 		assert(code.size()>0);
 
-		return root.select(i,code, ae);
+		return root.select(i,code);
 
 	}
 
@@ -130,7 +130,7 @@ public:
 		//in the initial dictionary (if any)
 		assert(code.size()>0);
 
-		return root.rank(i,code, ae);
+		return root.rank(i,code);
 
 	}
 
@@ -309,52 +309,40 @@ private:
 
 		}
 
-		ulint rank(ulint i, vector<bool>& B, alphabet_encoder& ae, ulint j=0){
+		ulint rank(ulint i, vector<bool>& B, ulint j=0){
 
 			assert(j <= B.size());
 
-			if(j==B.size()) return i;
-
-			assert(i <= bv.size());
-
-			if(B[j]){
-
-				assert(bv.rank1(bv.size())>0);
-				assert(has_child1());
-				return child1_->rank( bv.rank1(i), B, ae, j+1 );
-
-			}
-
-			assert(bv.rank0(bv.size())>0);
-			assert(has_child0());
-			return child0_->rank( bv.rank0(i), B, ae, j+1 );
+			return  j==B.size() ?
+					i :
+					(
+							B[j] ?
+							child1_->rank( bv.rank1(i), B, j+1 ):
+							child0_->rank( bv.rank0(i), B, j+1 )
+					);
 
 		}
 
 
-		ulint select(ulint i, vector<bool>& B, alphabet_encoder& ae){
-
-			assert( ae.code_exists(B) );
+		ulint select(ulint i, vector<bool>& B){
 
 			//top-down: find leaf associated with B
 			node* L = get_leaf(B);
 
+			auto p = L->parent_;
+
 			//bottom-up: from leaf to root
-			return (L->parent_)->select(i,B,B.size()-1);
+			return p->select(i,B,B.size()-1);
 
 		}
 
 		ulint select(ulint i, vector<bool>& B, ulint j){
 
-			if(j==0){
+			auto s = bv.select(i,B[j]);
 
-				assert(is_root());
-
-				return bv.select(i,B[0]);
-
-			}
-
-			return parent_->select( bv.select(i,B[j]), B, j-1);
+			return 	j==0 ?
+					s :
+					parent_->select( s, B, j-1);
 
 		}
 
@@ -363,15 +351,13 @@ private:
 
 			assert(j<=B.size());
 
-			if(j==B.size()) return this;
+			return 	j==B.size() ? this :
+					(
+						B[j]?
+						child1_->get_leaf(B,j+1) :
+						child0_->get_leaf(B,j+1)
 
-			if(B[j]){
-
-				return child1_->get_leaf(B,j+1);
-
-			}
-
-			return child0_->get_leaf(B,j+1);
+					);
 
 		}
 

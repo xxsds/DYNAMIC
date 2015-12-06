@@ -89,8 +89,7 @@ public:
 
 	uint64_t select(uint64_t i, bool b = true){
 
-		if(b) return select1(i);
-		return select0(i);
+		return b ? select1(i) : select0(i);
 
 	}
 
@@ -119,8 +118,7 @@ public:
 	 */
 	uint64_t rank(uint64_t i, bool b = true){
 
-		if(b) return rank1(i);
-		return rank0(i);
+		return b ? rank1(i) : rank0(i);
 
 	}
 

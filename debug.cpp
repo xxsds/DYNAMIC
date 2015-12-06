@@ -334,7 +334,7 @@ void benchmark_spsi(uint64_t size){
 
 void compare_bitvectors(uint64_t size){
 
-	rle_str dbv;
+	suc_bv dbv;
 	bv_check gbv;
 
 	srand(time(NULL));
@@ -382,8 +382,6 @@ void compare_bitvectors(uint64_t size){
 
 	}
 	cout << "ok!" << endl;
-
-	exit(0);
 
 	uint64_t ps = dbv.rank1(dbv.size());
 
@@ -519,6 +517,7 @@ void test_strings(ulint size, ulint sigma){
 
 	srand(time(NULL));
 
+	cout << "testing insert ... " << flush;
 	for(ulint i=0;i<size;++i){
 
 		assert(s1.size() == s2.size());
@@ -535,6 +534,7 @@ void test_strings(ulint size, ulint sigma){
 		assert(s2.size() == s3.size());
 
 	}
+	cout << "done. " << endl;
 
 	for(ulint i=0;i<size;++i) truth.push_back(s1[i]);
 
@@ -602,11 +602,13 @@ void test_strings(ulint size, ulint sigma){
 int main(int argc,char** argv) {
 
 	//compare_bitvectors(20);
-	//test_strings(5000,3);
+	//test_strings(5000,5);
 
-	//benchmark_dyn_str<rle_str>(200000, 100);
+	//compare_bitvectors(10000);
+
+	benchmark_dyn_str<rle_str>(200000, 100);
 	//benchmark_dyn_str<wtrle_str>(50000, 100);
-	benchmark_dyn_str<com_str>(1000, 100);
+	//benchmark_dyn_str<com_str>(200000, 100);
 	//benchmark_dyn_str<gap_str>(10000, 100);
 
 

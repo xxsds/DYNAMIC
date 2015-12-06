@@ -57,6 +57,13 @@ typedef rle_string<gap_bv, com_str> rle_str;
  */
 typedef compressed_string<rle_str> wtrle_str;
 
+/*
+ * string implemented with a gap-compressed wavelet tree. Each
+ * WT node is gap-compressed.
+ */
+typedef compressed_string<gap_bv> gap_str;
+
+
 
 // ------------- STRUCTURES DESIGNED ONLY FOR DEBUGGING PURPOSES -------------
 
