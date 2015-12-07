@@ -47,15 +47,10 @@ typedef compressed_string<suc_bv> com_str;
 typedef rle_string<gap_bv, com_str> rle_str;
 
 /*
- * run-length encoded bitvector. More space-efficient than rle_str with alphabet size=2
- */
-//typedef rle_bitvector<gap_bv> rle_bv;
-
-/*
  * RLE string implemented with a run-length encoded wavelet tree. Each
- * WT node is run-length encoded.
+ * WT node is run-length encoded. rle_str is much more efficient and
+ * thus preferable
  */
-//TODO use rle_bv here
 typedef compressed_string<rle_str> wtrle_str;
 
 /*
