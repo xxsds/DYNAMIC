@@ -598,13 +598,7 @@ void test_strings(ulint size, ulint sigma){
 
 }
 
-
-int main(int argc,char** argv) {
-
-	//compare_bitvectors(20);
-	//test_strings(5000,5);
-
-	//compare_bitvectors(10000);
+void test_strings(){
 
 	ulint n  = 1000000;
 	ulint sigma = 26;
@@ -627,5 +621,47 @@ int main(int argc,char** argv) {
 	cout << endl << " *** wtgap_str:" << endl;
 	benchmark_dyn_str<wtgap_str>(n, sigma);
 
+}
+
+int main(int argc,char** argv) {
+
+	rle_bwt rlbwt;
+
+	string m = "mississippi";
+
+	for(ulint i=0;i<m.size();++i)
+		rlbwt.extend(m[m.size()-i-1]);
+
+	for(ulint i=0;i<rlbwt.bwt_length();++i)
+		cout << uchar(rlbwt[i]==rlbwt.get_terminator()?'#':rlbwt[i]);
+
+	cout << endl;
+
+	ulint j = rlbwt.get_terminator_position();
+	for(ulint k=0;k<rlbwt.bwt_length();++k){
+
+		cout << uchar(rlbwt[j]==rlbwt.get_terminator()?'#':rlbwt[j]);
+		j = rlbwt.LF(j);
+
+	}
+
+	cout << endl;
+
+	j = 0;
+	for(ulint k=0;k<rlbwt.bwt_length();++k){
+
+		cout << uchar(rlbwt[j]==rlbwt.get_terminator()?'#':rlbwt[j]);
+		j = rlbwt.FL(j);
+
+	}
+
+	cout << endl;
+
+	auto r = rlbwt.get_full_interval();
+	r = rlbwt.BS(r,'i');
+	r = rlbwt.BS(r,'s');
+	r = rlbwt.BS(r,'s');
+
+	cout << r.first << ", " << r.second<<endl;
 
 }

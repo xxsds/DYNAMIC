@@ -66,6 +66,10 @@ public:
 	 *
 	 * Here the alphabet is Huffman encoded.
 	 *
+	 * Note: all characters that will appear in the text must be included
+	 * in P. If in doubt, assign probability 0 (such characters will get
+	 * the longest codes)
+	 *
 	 */
 	alphabet_encoder(vector<pair<char_type,double> >& P){
 

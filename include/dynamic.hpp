@@ -12,9 +12,10 @@
 #include <packed_block.hpp>
 #include <gap_bitvector.hpp>
 #include <spsi_check.hpp>
-#include "internal/compressed_string.hpp"
-#include "internal/succinct_bitvector.hpp"
-#include "rle_string.hpp"
+#include <internal/compressed_string.hpp>
+#include <internal/succinct_bitvector.hpp>
+#include <rle_string.hpp>
+#include <bwt.hpp>
 
 namespace dyn{
 
@@ -58,6 +59,17 @@ typedef compressed_string<rle_str> wtrle_str;
  * WT node is gap-compressed.
  */
 typedef compressed_string<gap_bv> wtgap_str;
+
+/*
+ * succinct/compressed BWT (see description of com_str)
+ */
+typedef bwt<com_str,rle_str> com_bwt;
+
+/*
+ * run-length encoded BWT
+ */
+typedef bwt<rle_str,rle_str> rle_bwt;
+
 
 
 
