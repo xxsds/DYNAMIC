@@ -19,6 +19,10 @@
 
 #include <includes.hpp>
 
+#include <gap_bitvector.hpp>
+#include <compressed_string.hpp>
+#include <rle_string.hpp>
+
 namespace dyn {
 
 template <	class dynamic_string_type,	//to encode BWT
@@ -273,6 +277,23 @@ public:
 
 	}
 
+	/*
+	 * number of runs in the bwt.
+	 *
+	 * defined only for rle_bwt (see dynamic.hpp)
+	 */
+	ulint number_of_runs();
+
+
+	/*
+	 * number of runs intersecting the interval range = [left,right).
+	 * Note: right bound is excluded!
+	 *
+	 * defined only for rle_bwt (see dynamic.hpp)
+	 */
+	ulint number_of_runs(pair<ulint,ulint> range);
+
+
 private:
 
 	/*
@@ -294,6 +315,7 @@ private:
 	ulint terminator_position=0;
 
 };
+
 
 }
 #endif /* DYNAMICBWT_H_ */

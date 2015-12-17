@@ -623,7 +623,7 @@ void test_strings(){
 
 }
 
-int main(int argc,char** argv) {
+void test_bwt(){
 
 	rle_bwt rlbwt;
 
@@ -663,5 +663,24 @@ int main(int argc,char** argv) {
 	r = rlbwt.BS(r,'s');
 
 	cout << r.first << ", " << r.second<<endl;
+
+
+}
+
+int main(int argc,char** argv) {
+
+	rle_bwt rlbwt;
+
+	string m = "x2ax1ax3";
+
+	for(ulint i=0;i<m.size();++i)
+		rlbwt.extend(m[m.size()-i-1]);
+
+	for(ulint i=0;i<rlbwt.bwt_length();++i)
+		cout << uchar(rlbwt[i]==rlbwt.get_terminator()?'#':rlbwt[i]);
+
+	cout << endl;
+
+	cout << rlbwt.number_of_runs({4,9}) << endl;
 
 }

@@ -459,21 +459,32 @@ public:
 
 	ulint size(){return runs.size();}
 
+	/*
+	 * number of runs intersecting the interval range = [left,right).
+	 * Note: right bound is excluded!
+	 *
+	 */
+	ulint number_of_runs(pair<ulint,ulint> range){
+
+		ulint l = range.first;
+		ulint r = range.second;
+
+		assert(l<=runs.size());
+		assert(r<=runs.size());
+
+		/*
+		 * if interval not empty, add number of 1s in the interval and (not runs[r-1])
+		 * (not runs[r-1]) = 1 iif last bit in the interval is 0 (i.e. if right bound falls inside a run)
+		 */
+		return	r<=l ? 0 :
+				( runs.rank1(r) - runs.rank1(l) ) + (not runs[r-1]);
+
+	}
+
+	//total number of runs
 	ulint number_of_runs(){return run_heads_.size();}
 
-	/* serialize the structure to the ostream
-	 * \param out	 the ostream
-	 */
-	/*ulint serialize(std::ostream& out){
-	}*/
-
-	/* load the structure from the istream
-	 * \param in the istream
-	 */
-	/*void load(std::istream& in) {
-	}*/
-
-	bool check_consistency(){
+	/*bool check_consistency(){
 
 		ulint n=0;
 		ulint R=0;
@@ -507,7 +518,7 @@ public:
 
 		return true;
 
-	}
+	}*/
 
 	//length of i-th run
 	ulint run_at(ulint i){
@@ -524,6 +535,8 @@ public:
 		return (i==0) + runs_per_letter[c].select1(i) - (i==0?0:runs_per_letter[c].select1(i-1));
 
 	}
+
+
 
 private:
 
