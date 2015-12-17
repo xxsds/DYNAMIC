@@ -12,6 +12,7 @@ project (dynamic)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/include/internal)
+include_directories(${PROJECT_SOURCE_DIR}/include/algorithms)
 
 message("Building in ${CMAKE_BUILD_TYPE} mode")
 

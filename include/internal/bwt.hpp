@@ -245,6 +245,13 @@ public:
 
 	}
 
+	/*
+	 * length of the bwt
+	 */
+	ulint size(){
+		return bwt_length();
+	}
+
 	//alphabet of the text
 	ulint text_alphabet_size(){
 
@@ -300,6 +307,12 @@ public:
 	 */
 	pair<ulint,ulint> locate_run(ulint i);
 
+	set<char_type> get_alphabet(){
+
+		return alphabet;
+
+	}
+
 private:
 
 	/*
@@ -313,7 +326,8 @@ private:
 	static const char_type TERMINATOR = ~ulint(0);
 
 	//stores the alphabet. Useful to infer lexicographic order
-	//of new incoming characters in log sigma time.
+	//of new incoming characters in log sigma time. TERMINATOR is not
+	//here.
 	set<char_type> alphabet;
 
 	//terminator is not actually stored in the BWT: we just remember

@@ -164,7 +164,6 @@ pair<ulint,ulint> rle_bwt::locate_run(ulint i){
 
 }
 
-
 }
 
 #endif /* DYNAMIC_TYPEDEFS_HPP_ */

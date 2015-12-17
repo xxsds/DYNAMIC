@@ -12,6 +12,7 @@
 #include "packed_block.hpp"
 #include <alphabet_encoder.hpp>
 #include "include/internal/compressed_string.hpp"
+#include "rle_lz77.hpp"
 
 using namespace std;
 using namespace dyn;
@@ -669,21 +670,16 @@ void test_bwt(){
 
 int main(int argc,char** argv) {
 
-	rle_bwt rlbwt;
+	rle_lz77 lz77;
 
-	string m = "x3ax1ax2ax4ax5";
+	std::ifstream ifs("/home/nico/test.txt");
+	std::ofstream os("/dev/null");
 
-	for(ulint i=0;i<m.size();++i)
-		rlbwt.extend(m[m.size()-i-1]);
+	lz77 = rle_lz77(ifs);
 
-	for(ulint i=0;i<rlbwt.bwt_length();++i)
-		cout << uchar(rlbwt[i]==rlbwt.get_terminator()?'#':rlbwt[i]);
+	ifs.close();
+	ifs = std::ifstream("/home/nico/test.txt");
 
-	cout << endl;
-
-	for(ulint i=0;i<rlbwt.bwt_length();++i){
-		auto r = rlbwt.locate_run(i);
-		cout << i << " -> " << r.first << ", " << r.second << endl;
-	}
+	lz77.parse(ifs,os);
 
 }

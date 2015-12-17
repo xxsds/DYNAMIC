@@ -29,8 +29,7 @@ public:
 	 * Constructor #1
 	 *
 	 * 2 cases:
-	 * - If char_type != bool, the string accepts any alphabet (unknown at priori). Run-heads are are gamma-coded
-	 * - Otherwise, alphabet is boolean and fixed: {true, false}
+	 * The string accepts any alphabet (unknown at priori). Run-heads are are gamma-coded
 	 *
 	 */
 	rle_string(){}
@@ -41,15 +40,11 @@ public:
 	 * We know only alphabet size. Each Run-head char is assigned log2(sigma) bits.
 	 * Characters are assigned codes 0,1,2,... in order of appearance
 	 *
-	 * Warning: cannot call this constructor on bitvector (i.e. char_type==bool)
-	 *
 	 */
 	rle_string(uint64_t sigma){
 
 		assert(sigma>0);
 
-		//if sigma=2, we don't need run_heads since bits are
-		//always alternated in ru_heds
 		run_heads_ = string_t(sigma);
 
 	}
@@ -60,8 +55,6 @@ public:
 	 * We know character probabilities. Input: pairs <character, probability>
 	 *
 	 * Here Run-heads are Huffman encoded.
-	 *
-	 * Warning: cannot call this constructor on bitvector (i.e. char_type==bool)
 	 *
 	 */
 	rle_string(vector<pair<char_type,double> >& P){
@@ -361,6 +354,7 @@ public:
 		ulint this_run = runs.rank1(i);
 
 		//rank of the new c among all c-runs
+		assert(this_run<=run_heads_.size());
 		ulint this_c_run = run_heads_.rank(this_run,c);
 
 		//rank of a among all a-runs
@@ -533,6 +527,17 @@ public:
 
 		assert(i<runs_per_letter[c].rank1(runs_per_letter[c].size()));
 		return (i==0) + runs_per_letter[c].select1(i) - (i==0?0:runs_per_letter[c].select1(i-1));
+
+	}
+
+	/*
+	 * input: position on the string and character c
+	 * output: number of c-runs before position i, excluded
+	 * the run containing i (if it is a c-run)
+	 */
+	ulint run_rank(ulint i, char_type c){
+
+		return run_heads_.rank(runs.rank1(i),c);
 
 	}
 

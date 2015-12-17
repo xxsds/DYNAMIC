@@ -110,6 +110,9 @@ public:
 		//in the initial dictionary (if any)
 		assert(code.size()>0);
 
+		//this code must have been inserted in the tree already
+		assert(root.exists(code));
+
 		return root.select(i,code);
 
 	}
@@ -130,7 +133,12 @@ public:
 		//in the initial dictionary (if any)
 		assert(code.size()>0);
 
-		return root.rank(i,code);
+		/*
+		 * if condition is false, it means that the code is in the
+		 * alphabet encoder, but it has not yet been inserted
+		 * in the tree
+		 */
+		return root.exists(code) ? root.rank(i,code) : 0;
 
 	}
 
@@ -167,13 +175,7 @@ public:
 
 	}
 
-	uint64_t bit_size() {
-
-		//TODO
-		assert(false);
-		return 0;
-
-	}
+	uint64_t bit_size();
 
 	ulint alphabet_size(){
 
@@ -251,6 +253,32 @@ private:
 		}
 
 		/*
+		 * true iif code B has already been inserted
+		 */
+		bool exists(vector<bool>& B, ulint j=0){
+
+			assert(j <= B.size());
+
+			//not at the end of B -> (B[j] -> must have child 1)
+			bool c1 = j==B.size() || (not B[j] || has_child1());
+
+			//not at the end of B -> (notB[j] -> must have child 0)
+			bool c0 = j==B.size() || (B[j] || has_child0());
+
+			return  (c1 and c0) &&
+					(
+						j==B.size() ?
+						true :
+						(
+								B[j] ?
+								child1_->exists( B, j+1 ):
+								child0_->exists( B, j+1 )
+						)
+					);
+
+		}
+
+		/*
 		 * insert code B[j,...,B.size()-1] at position i. This code is associated
 		 * with character c
 		 */
@@ -313,6 +341,15 @@ private:
 
 			assert(j <= B.size());
 
+			//not at the end of B -> (B[j] -> must have child 1)
+			assert(j==B.size() || (not B[j] || has_child1()));
+
+			//not at the end of B -> (notB[j] -> must have child 0)
+			assert(j==B.size() || (B[j] || has_child0()));
+
+			//not at the end of B -> i must be smaller than bv.size()
+			assert(j==B.size() || i<=bv.size());
+
 			return  j==B.size() ?
 					i :
 					(
@@ -361,10 +398,10 @@ private:
 
 		}
 
-		bool is_root(){ return parent_ == NULL; }
+		bool is_root(){ return not parent_; }
 		bool is_leaf(){ return is_leaf_; }
-		bool has_child0(){ return child0_ != NULL; }
-		bool has_child1(){ return child1_ != NULL; }
+		bool has_child0(){ return child0_; }
+		bool has_child1(){ return child1_; }
 
 		/*
 		 * to have left label, this node must not have a left (0)
