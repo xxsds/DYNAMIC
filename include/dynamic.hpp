@@ -125,6 +125,45 @@ ulint rle_bwt::number_of_runs(pair<ulint,ulint> interval){
 
 }
 
+/*
+ * given a position i inside the string, return the interval [l,r) of the run containing i,
+ * i.e. i \in [l,r) (right position always exclusive)
+ */
+template<>
+pair<ulint,ulint> rle_bwt::locate_run(ulint i){
+
+	assert(i<bwt_length());
+
+	//if i is terminator position, its run is {i,i+1}
+	if(i==terminator_position) return {i,i+1};
+
+	//position on BWT without terminator
+	ulint i1 = 	i <= terminator_position ?
+				i :
+				i-1;
+
+	//range on BWT without terminator
+	auto range = L.locate_run(i1);
+
+	//adjust coordinates of the range:
+	range.first = 	range.first < terminator_position ?
+					range.first :
+					range.first + 1;
+
+	range.second = 	range.second < terminator_position ?
+					range.second :
+					range.second + 1;
+
+	//if terminator falls inside the range, split the range
+
+	return	terminator_position < range.first or terminator_position >= range.second ?
+			range :							//terminator outside range
+				i < terminator_position ? 	//terminator inside range
+				pair<ulint,ulint> {range.first,terminator_position} :	//i at the left of terminator
+				pair<ulint,ulint> {terminator_position+1,range.second};
+
+}
+
 
 }
 

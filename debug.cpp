@@ -671,7 +671,7 @@ int main(int argc,char** argv) {
 
 	rle_bwt rlbwt;
 
-	string m = "x2ax1ax3";
+	string m = "x3ax1ax2ax4ax5";
 
 	for(ulint i=0;i<m.size();++i)
 		rlbwt.extend(m[m.size()-i-1]);
@@ -681,6 +681,9 @@ int main(int argc,char** argv) {
 
 	cout << endl;
 
-	cout << rlbwt.number_of_runs({4,9}) << endl;
+	for(ulint i=0;i<rlbwt.bwt_length();++i){
+		auto r = rlbwt.locate_run(i);
+		cout << i << " -> " << r.first << ", " << r.second << endl;
+	}
 
 }

@@ -536,7 +536,24 @@ public:
 
 	}
 
+	/*
+	 * given a position i inside the string, return the interval [l,r) of the run containing i,
+	 * i.e. i \in [l,r) (right position always exclusive)
+	 */
+	pair<ulint,ulint> locate_run(ulint i){
 
+		assert(i<runs.size());
+
+		//number of 1 before position i excluded
+		ulint before = runs.rank(i);
+
+		ulint l = before==0 ? 0 : runs.select(before-1)+1;
+
+		ulint r = runs.select(before) + 1;
+
+		return {l,r};
+
+	}
 
 private:
 

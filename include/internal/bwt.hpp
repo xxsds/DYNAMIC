@@ -294,6 +294,12 @@ public:
 	ulint number_of_runs(pair<ulint,ulint> range);
 
 
+	/*
+	 * given a position i inside the BWT, return the interval [l,r) of the run containing i,
+	 * i.e. i \in [l,r) (right position always exclusive)
+	 */
+	pair<ulint,ulint> locate_run(ulint i);
+
 private:
 
 	/*
