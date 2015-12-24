@@ -307,9 +307,16 @@ public:
 	 */
 	pair<ulint,ulint> locate_run(ulint i);
 
+	/*
+	 * return alphabet, INCLUDED BWT terminator
+	 */
 	set<char_type> get_alphabet(){
 
-		return alphabet;
+		set<char_type> A(alphabet);
+
+		A.insert(ulint(TERMINATOR));
+
+		return A;
 
 	}
 

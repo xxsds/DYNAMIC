@@ -25,6 +25,8 @@ class rle_lz77{
 
 public:
 
+	using char_t = rle_bwt::char_type;
+
 	/*
 	 * Constructor #1: run-heads are gamma-coded
 	 */
@@ -71,8 +73,6 @@ public:
 	 */
 	void parse(istream& in, ostream& out){
 
-		using char_t = rle_bwt::char_type;
-
 		/*
 		 * Step 1: build dynamic RLBWT of reverse stream
 		 */
@@ -89,9 +89,13 @@ public:
 		 */
 
 		ulint n = RLBWT.size();	/* size of BWT (terminators included)  */
-		ulint j = 0;			/* last position (on text) of current LZ phrase prefix  */
 
-		ulint k = RLBWT.get_terminator_position();	/* position of terminator in RLBWT */
+		/* last position (on text) of current LZ phrase prefix.
+		 * at the beginning, j=1: we ignore the BWT terminator
+		 */
+		ulint j = 1;
+
+		ulint k = 0;			/* position in RLBWT corresponding to position 1 in the text*/
 
 		ulint l = 0;			/* Length of current LZ phrase prefix */
 		ulint p = 0;			/* Previous occurrence of current LZ phrase prefix.
@@ -99,7 +103,22 @@ public:
 								 * start at position 0 (because position 0 on the text
 								 * contains the BWT terminator.
 								 */
-		//TODO RBT
+
+		{
+
+			//initialize Suffix array samples
+
+			auto A = RLBWT.get_alphabet();	//get alphabet
+
+			//for each character, create a sparse vector of SA samples
+			for(auto c : A){
+
+				SA[c] = sparse_vec(n);
+
+			}
+
+		}
+
 		char_t c = RLBWT[k];	/* current T character */
 
 		pair<ulint, ulint> range = {0,n};	/* range of current LZ phrase prefix
@@ -111,10 +130,46 @@ public:
 		 * Step 2: start parsing
 		 */
 
-		for(ulint i=0;i<RLBWT.size();++i)
-			cout << uchar(RLBWT[i]==RLBWT.get_terminator()?'#':RLBWT[i]);
+		while(j<n){
 
-		cout << endl;
+			sparse_vec& B = SA[c];
+
+			auto u = RLBWT.number_of_runs(range);
+
+			if(u==1 or B.exists_non_NIL(range)){
+
+				if(u>1){
+
+					assert(B.find_non_NIL(range) >= l);
+
+					p = B.find_non_NIL(range) - l;
+
+				}
+
+				l++;
+				range = RLBWT.LF(range,c);
+
+			}else{
+
+				uchar cc = c==RLBWT.get_terminator() ? '#' : uchar(c);
+				out << "< " ;
+				if(p>0) out << p-1; else out << '-';
+				out << ", " << l << ", " << cc <<  ">" << endl;
+
+				l = 0;
+				p = 0;
+				range = {0,n};
+
+			}
+
+			auto range_run = RLBWT.locate_run(k);
+			B.update_interval(j,k,range_run);
+
+			j++;
+			k = RLBWT.LF(k);
+			c = RLBWT[k];
+
+		}
 
 	}
 
@@ -122,6 +177,10 @@ private:
 
 	//the run-length encoded BWT
 	rle_bwt RLBWT;
+
+	//suffix array samples (two per BWT run)
+	//one (sparse) vector of samples per character
+	map<char_t,sparse_vec> SA;
 
 };
 

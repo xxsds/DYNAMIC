@@ -696,52 +696,7 @@ void test_lz77(string in, string out){
 
 int main(int argc,char** argv) {
 
-	//test_lz77("/home/nico/test.txt", "/dev/null");
-
-	sparse_vec sv(15);
-
-	for(ulint i=0;i<sv.size();++i){
-
-		cout << i << " ";
-
-		if(sv[i]==sv.get_NIL()) cout << "-";
-		else cout << sv[i];
-
-		cout << endl;
-
-	}
-	cout << "------" << endl;
-
-	sv[3] = 7;
-	sv[6] = 2;
-
-	for(ulint i=0;i<sv.size();++i){
-
-		cout << i << " ";
-
-		if(sv[i]==sv.get_NIL()) cout << "-";
-		else cout << sv[i];
-
-		cout << endl;
-
-	}
-	cout << "------" << endl;
-
-	//cout << sv.exists_non_NIL({11,15}) << endl;
-
-	sv.update_interval(666,12,{3,13});
-
-	for(ulint i=0;i<sv.size();++i){
-
-		cout << i << " ";
-
-		if(sv[i]==sv.get_NIL()) cout << "-";
-		else cout << sv[i];
-
-		cout << endl;
-
-	}
-	cout << "------" << endl;
+	test_lz77(argv[1], argv[2]);
 
 }
 
