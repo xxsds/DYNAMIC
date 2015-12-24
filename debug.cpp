@@ -684,10 +684,9 @@ void test_lz77(string in, string out){
 	}
 
 	std::ifstream ifs(in);
-
 	std::ofstream os(out);
 
-	lz77.parse(ifs,os);
+	lz77.parse(ifs,os,true);
 
 	ifs.close();
 	os.close();

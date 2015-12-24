@@ -71,7 +71,10 @@ public:
 	 * saves to the output (could be a file) a series
 	 * of triples <pos,len,c> of type <ulint,ulint,uchar>
 	 */
-	void parse(istream& in, ostream& out){
+	void parse(istream& in, ostream& out, bool verbose = false){
+
+		long int step = 1000000;	//print status every step characters
+		long int last_step = 0;
 
 		/*
 		 * Step 1: build dynamic RLBWT of reverse stream
@@ -79,8 +82,29 @@ public:
 
 		{
 
+			ulint j = 0;
+
+			if(verbose) cout << "Building RLBWT ..." << endl;
+
 			char c;
-			while(in.get(c)) RLBWT.extend( char_t(c) );
+			while(in.get(c)){
+
+				if(verbose){
+
+					if(j>last_step+(step-1)){
+
+						last_step = j;
+						cout << " " << j << " characters processed ..." << endl;
+
+					}
+
+				}
+
+				RLBWT.extend( char_t(c) );
+
+				j++;
+
+			}
 
 		}
 
@@ -126,11 +150,28 @@ public:
 											 * are of the form [l,r)
 											 */
 
+		step = 5;
+		last_step = -step;
+
+		if(verbose) cout << "Parsing input ..." << endl;
+
 		/*
 		 * Step 2: start parsing
 		 */
 
 		while(j<n){
+
+			if(verbose){
+
+				int perc = (100*j)/n;
+				if(perc>last_step+(step-1)){
+
+					last_step = perc;
+					cout << " " << perc << "% done ..." << endl;
+
+				}
+
+			}
 
 			sparse_vec& B = SA[c];
 
