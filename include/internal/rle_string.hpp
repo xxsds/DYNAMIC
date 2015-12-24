@@ -9,7 +9,6 @@
 #define INCLUDE_INTERNAL_RLE_STRING_HPP_
 
 #include "includes.hpp"
-#include <typeinfo>
 
 namespace dyn{
 

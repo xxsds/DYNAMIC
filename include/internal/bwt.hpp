@@ -302,6 +302,8 @@ public:
 	/*
 	 * given a position i inside the BWT, return the interval [l,r) of the run containing i,
 	 * i.e. i \in [l,r) (right position always exclusive)
+	 *
+	 * defined only for rle_bwt (see dynamic.hpp)
 	 */
 	pair<ulint,ulint> locate_run(ulint i);
 

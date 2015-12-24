@@ -88,22 +88,24 @@ public:
 		 * initialize variables
 		 */
 
-		ulint n = RLBWT.size();	//size of BWT (terminators included)
-		ulint j = 0;			//last position (on text) of current LZ phrase prefix
-		ulint k = RLBWT.get_terminator_position();	//position of terminator in RLBWT
-		ulint l = 0;			//Length of current LZ phrase prefix
-		/*
-		 * Previous occurrence of current LZ phrase prefix. Value 0 is undefined (NULL)
-		 * since no phrase can start at position 0 (because position 0 on the text
-		 * contains the BWT terminator.
-		 */
-		ulint p = 0;
+		ulint n = RLBWT.size();	/* size of BWT (terminators included)  */
+		ulint j = 0;			/* last position (on text) of current LZ phrase prefix  */
 
-		//RBT
+		ulint k = RLBWT.get_terminator_position();	/* position of terminator in RLBWT */
 
-		char_t c = RLBWT[k];	// current T character
+		ulint l = 0;			/* Length of current LZ phrase prefix */
+		ulint p = 0;			/* Previous occurrence of current LZ phrase prefix.
+								 * Value 0 is undefined (NULL) since no phrase can
+								 * start at position 0 (because position 0 on the text
+								 * contains the BWT terminator.
+								 */
+		//TODO RBT
+		char_t c = RLBWT[k];	/* current T character */
 
-		pair<ulint, ulint> range = {0,n-1};
+		pair<ulint, ulint> range = {0,n};	/* range of current LZ phrase prefix
+											 * full interval is <0,n> : intervals
+											 * are of the form [l,r)
+											 */
 
 		/*
 		 * Step 2: start parsing

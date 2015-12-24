@@ -16,6 +16,7 @@
 #include <succinct_bitvector.hpp>
 #include <rle_string.hpp>
 #include <bwt.hpp>
+#include <sparse_vector.hpp>
 
 namespace dyn{
 
@@ -70,7 +71,11 @@ typedef bwt<com_str,rle_str> com_bwt;
  */
 typedef bwt<rle_str,rle_str> rle_bwt;
 
-
+/*
+ * dynamic sparse vector: <= m*k + O(m log n/m) bits of space, where k is the maximum
+ * number of bits of any integer > 0 and n is the total number of integers.
+ */
+typedef sparse_vector<packed_spsi,gap_bv> sparse_vec;
 
 
 // ------------- STRUCTURES DESIGNED ONLY FOR DEBUGGING PURPOSES -------------
