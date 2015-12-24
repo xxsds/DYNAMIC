@@ -44,7 +44,7 @@ vector<pair<ulint,double> > get_frequencies(istream& in){
 
 	}
 
-	for(auto &f : freqs) f = f/size;
+	for(auto &f : freqs) f /= size;
 
 	vector<pair<ulint,double> > res;
 
@@ -52,7 +52,7 @@ vector<pair<ulint,double> > get_frequencies(istream& in){
 
 		res.push_back({i,freqs[i]});
 
-		if(freqs[i]>0)	cout << uchar(i) << " -> " << freqs[i] << endl;
+		//if(freqs[i]>0)	cout << uchar(i) << " -> " << freqs[i] << endl;
 
 	}
 

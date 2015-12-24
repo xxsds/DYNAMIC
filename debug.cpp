@@ -440,6 +440,8 @@ void benchmark_dyn_str(uint64_t size, uint64_t sigma){
 
 	dyn_str_t bv;
 
+	bv=dyn_str_t();
+
 	srand(time(NULL));
 
 	using std::chrono::high_resolution_clock;
@@ -599,15 +601,14 @@ void test_strings(ulint size, ulint sigma){
 
 }
 
-void test_strings(){
+void test_strings(ulint n){
 
-	ulint n  = 1000000;
 	ulint sigma = 26;
 
 	cout << endl << " *** gap_bv:" << endl;
 	benchmark_dyn_str<gap_bv>(n, 2);
 
-	cout << endl << " *** suc_bv:" << endl;
+	/*cout << endl << " *** suc_bv:" << endl;
 	benchmark_dyn_str<suc_bv>(n, 2);
 
 	cout << endl << " *** com_str:" << endl;
@@ -620,7 +621,7 @@ void test_strings(){
 	benchmark_dyn_str<wtrle_str>(n, sigma);
 
 	cout << endl << " *** wtgap_str:" << endl;
-	benchmark_dyn_str<wtgap_str>(n, sigma);
+	benchmark_dyn_str<wtgap_str>(n, sigma);*/
 
 }
 
@@ -628,7 +629,9 @@ void test_bwt(){
 
 	rle_bwt rlbwt;
 
-	string m = "mississippi";
+	rlbwt = rle_bwt();
+
+	string m = "mississdqdqdsajdnisjndiqncqncncoqsnippi";
 
 	for(ulint i=0;i<m.size();++i)
 		rlbwt.extend(m[m.size()-i-1]);
@@ -668,7 +671,7 @@ void test_bwt(){
 
 }
 
-int main(int argc,char** argv) {
+void test_lz77(){
 
 	rle_lz77 lz77;
 
@@ -682,4 +685,17 @@ int main(int argc,char** argv) {
 
 	lz77.parse(ifs,os);
 
+	ifs.close();
+	os.close();
+
 }
+
+int main(int argc,char** argv) {
+
+	test_lz77();
+
+	cout << "EXITING ..." << endl;
+
+}
+
+

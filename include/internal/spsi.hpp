@@ -131,6 +131,9 @@ public:
 	 */
 	void operator=( const spsi & sp){
 
+		root->free_mem();
+		delete root;
+
 		root = new node(*sp.root);
 
 	}

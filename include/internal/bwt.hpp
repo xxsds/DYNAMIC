@@ -74,7 +74,7 @@ public:
 
 		}
 
-		F = dynamic_string_type(P);
+		F = rle_string_type(P);
 		L = dynamic_string_type(P);
 
 	}
