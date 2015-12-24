@@ -193,6 +193,10 @@ public:
 		assert(r <= size());
 		assert(k < size());
 
+		//k must be inside the interval
+		assert(k>=l);
+		assert(k<r);
+
 		assert(j != NIL);
 
 		assert(r>l);	//not defined for empty intervals
@@ -210,19 +214,19 @@ public:
 
 		}else{
 
-			assert(bv_.select1(rr)>0);
+			assert(rr>0);
 
 			/*
 			 * indexes of leftmost and rightmost non-NIL elements in range
 			 */
 			ulint k1 = bv_.select1(rl);
-			ulint k2 = bv_.select1(rr) - 1;
+			ulint k2 = bv_.select1(rr-1);
 
 			//the 2 elements must be distinct
 			assert(k2>k1);
 
-			bool left = k<k1;
-			bool right = k>k2;
+			bool left = k <= k1;
+			bool right = k >= k2;
 
 			/*
 			 * if k1 < k < k2: do nothing
@@ -231,7 +235,7 @@ public:
 
 			if(left){
 
-				//number of positions of which to move the 1
+				//number of positions of which to move the '1' in bv_
 				ulint delta = k1-k;
 
 				bv_.delete0(k,delta);
@@ -241,7 +245,13 @@ public:
 
 			}else{
 
+				//number of positions of which to move the '1' in bv_
+				ulint delta = k-k2;
 
+				bv_.insert0(k2,delta);
+				bv_.delete0(k+1,delta);
+
+				spsi_[rr-1] = j;
 
 			}
 
