@@ -71,14 +71,43 @@ public:
 	 */
 	void parse(istream& in, ostream& out){
 
-		char c;
-		while(in.get(c)){
+		using char_t = rle_bwt::char_type;
 
-			auto cc = rle_bwt::char_type(c);
-			RLBWT.extend( cc );
+		/*
+		 * Step 1: build dynamic RLBWT of reverse stream
+		 */
+
+		{
+
+			char c;
+			while(in.get(c)) RLBWT.extend( char_t(c) );
 
 		}
 
+		/*
+		 * initialize variables
+		 */
+
+		ulint n = RLBWT.size();	//size of BWT (terminators included)
+		ulint j = 0;			//last position (on text) of current LZ phrase prefix
+		ulint k = RLBWT.get_terminator_position();	//position of terminator in RLBWT
+		ulint l = 0;			//Length of current LZ phrase prefix
+		/*
+		 * Previous occurrence of current LZ phrase prefix. Value 0 is undefined (NULL)
+		 * since no phrase can start at position 0 (because position 0 on the text
+		 * contains the BWT terminator.
+		 */
+		ulint p = 0;
+
+		//RBT
+
+		char_t c = RLBWT[k];	// current T character
+
+		pair<ulint, ulint> range = {0,n-1};
+
+		/*
+		 * Step 2: start parsing
+		 */
 
 		for(ulint i=0;i<RLBWT.size();++i)
 			cout << uchar(RLBWT[i]==RLBWT.get_terminator()?'#':RLBWT[i]);

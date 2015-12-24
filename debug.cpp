@@ -662,26 +662,30 @@ void test_bwt(){
 	cout << endl;
 
 	auto r = rlbwt.get_full_interval();
-	r = rlbwt.BS(r,'i');
-	r = rlbwt.BS(r,'s');
-	r = rlbwt.BS(r,'s');
+	r = rlbwt.LF(r,'i');
+	r = rlbwt.LF(r,'s');
+	r = rlbwt.LF(r,'s');
 
 	cout << r.first << ", " << r.second<<endl;
 
-
 }
 
-void test_lz77(){
+void test_lz77(string in, string out){
 
 	rle_lz77 lz77;
 
-	std::ifstream ifs("/home/nico/test.txt");
-	std::ofstream os("/dev/null");
+	{
 
-	lz77 = rle_lz77(ifs);
+		std::ifstream ifs(in);
 
-	ifs.close();
-	ifs = std::ifstream("/home/nico/test.txt");
+		lz77 = rle_lz77(ifs);
+		ifs.close();
+
+	}
+
+	std::ifstream ifs(in);
+
+	std::ofstream os(out);
 
 	lz77.parse(ifs,os);
 
@@ -692,9 +696,7 @@ void test_lz77(){
 
 int main(int argc,char** argv) {
 
-	test_lz77();
-
-	cout << "EXITING ..." << endl;
+	test_lz77("/home/nico/test.txt", "/dev/null");
 
 }
 

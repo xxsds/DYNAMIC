@@ -150,7 +150,7 @@ public:
 	 * Note that intervals are [left,right) : right bound is excluded
 	 *
 	 */
-	pair<ulint, ulint> BS(pair <ulint,ulint> interval, char_type c){
+	pair<ulint, ulint> LF(pair <ulint,ulint> interval, char_type c){
 
 		assert(c!=TERMINATOR);
 
@@ -291,7 +291,6 @@ public:
 	 */
 	ulint number_of_runs();
 
-
 	/*
 	 * number of runs intersecting the interval range = [left,right).
 	 * Note: right bound is excluded!
@@ -299,7 +298,6 @@ public:
 	 * defined only for rle_bwt (see dynamic.hpp)
 	 */
 	ulint number_of_runs(pair<ulint,ulint> range);
-
 
 	/*
 	 * given a position i inside the BWT, return the interval [l,r) of the run containing i,
