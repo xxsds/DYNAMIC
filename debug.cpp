@@ -11,8 +11,10 @@
 #include <dynamic.hpp>
 #include "packed_block.hpp"
 #include <alphabet_encoder.hpp>
+#include "include/algorithms/rle_lz77_v1.hpp"
+#include "include/algorithms/rle_lz77_v2.hpp"
+
 #include "include/internal/compressed_string.hpp"
-#include "rle_lz77.hpp"
 
 using namespace std;
 using namespace dyn;
@@ -672,13 +674,13 @@ void test_bwt(){
 
 void test_lz77(string in, string out){
 
-	rle_lz77 lz77;
+	rle_lz77_v1 lz77;
 
 	{
 
 		std::ifstream ifs(in);
 
-		lz77 = rle_lz77(ifs);
+		lz77 = rle_lz77_v1(ifs);
 		ifs.close();
 
 	}

@@ -150,6 +150,37 @@ public:
 	}
 
 	/*
+	 * number of non-NIL elements before position i
+	 * excluded
+	 */
+	ulint rank(ulint i){
+
+		assert(i<=size());
+		return bv_.rank1(i);
+
+	}
+
+	/*
+	 * insert x at the i-th position
+	 */
+	void insert(ulint i, ulint x){
+
+		assert(i<=size());
+
+		if(x==NIL){
+
+			bv_.insert(i,false);
+
+		}else{
+
+			bv_.insert(i,true);
+			spsi_.insert( bv_.rank1(i), x);
+
+		}
+
+	}
+
+	/*
 	 * true iff there exists a non-NIL integer in the input range [l,r)
 	 */
 	bool exists_non_NIL(pair<ulint,ulint> range){

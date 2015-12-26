@@ -1,5 +1,5 @@
 /*
- * rle_lz77.hpp
+ * rle_lz77_v1.hpp
  *
  *  Created on: Dec 17, 2015
  *      Author: nico
@@ -8,20 +8,24 @@
  *  using a dynamic run-length encoded BWT with
  *  a sparse SA sampling (2 samples per BWT run).
  *
+ *  Space is O(R log n) bits; however, the constant hidden in
+ *  the big-O notation is quite high (around 6)
+ *
  *  Type of input text here is uchar
  *
  *  From the paper: Alberto Policriti and Nicola Prezza, "Computing LZ77 in Run-Compressed Space"
  *
+ *
  */
 
-#ifndef INCLUDE_ALGORITHMS_RLE_LZ77_HPP_
-#define INCLUDE_ALGORITHMS_RLE_LZ77_HPP_
+#ifndef INCLUDE_ALGORITHMS_rle_lz77_V1_HPP_
+#define INCLUDE_ALGORITHMS_rle_lz77_V1_HPP_
 
 #include <dynamic.hpp>
 
 namespace dyn{
 
-class rle_lz77{
+class rle_lz77_v1{
 
 public:
 
@@ -30,7 +34,7 @@ public:
 	/*
 	 * Constructor #1: run-heads are gamma-coded
 	 */
-	rle_lz77(){}
+	rle_lz77_v1(){}
 
 	/*
 	 * Constructor #2
@@ -39,7 +43,7 @@ public:
 	 * Characters are assigned codes 0,1,2,... in order of appearance
 	 *
 	 */
-	rle_lz77(uint64_t sigma){
+	rle_lz77_v1(uint64_t sigma){
 
 		assert(sigma>0);
 		RLBWT = rle_bwt(sigma);
@@ -58,7 +62,7 @@ public:
 	 * Here Run-heads are Huffman encoded.
 	 *
 	 */
-	rle_lz77(istream& in){
+	rle_lz77_v1(istream& in){
 
 		auto freqs = get_frequencies(in);
 		RLBWT = rle_bwt(freqs);
@@ -227,4 +231,4 @@ private:
 
 }
 
-#endif /* INCLUDE_ALGORITHMS_RLE_LZ77_HPP_ */
+#endif /* INCLUDE_ALGORITHMS_rle_lz77_V1_HPP_ */
