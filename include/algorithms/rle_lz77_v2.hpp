@@ -8,9 +8,9 @@
  *  using a dynamic run-length encoded BWT with
  *  a sparse SA sampling (1 sample per LZ factor).
  *
- *  Space is O(R log n + z log n) bits; the constants hidden in the
- *  big-O notation are much smaller than in rle_lz77_v1.hpp. Here, space
- *  is around (2R + 3z) log n
+ *  Space is O(R log n + z log n) bits. The constants hidden in the
+ *  big-O notation are much smaller than in rle_lz77_v1.hpp:
+ *  in this algorithm, space usage is around (2R + 3z) log n bits
  *
  *  Type of input text here is uchar
  *
@@ -97,8 +97,10 @@ public:
 
 		SA.insert_NIL(0);	/* at the beginning, RLBWT contains only the terminator */
 
-		char c;
-		while(in.get(c)){
+		char cc;
+		while(in.get(cc)){
+
+			auto c = uchar(cc);
 
 			if(verbose){
 
@@ -121,7 +123,7 @@ public:
 
 				/* empty range: end of a LZ factor */
 
-				factors_char.append( ulint(c) );
+				factors_char.append( c );
 				factors_len.append( l );
 
 				if(l>0){
@@ -179,7 +181,7 @@ public:
 
 			}
 
-			RLBWT.extend( char_t(c) );
+			RLBWT.extend( c );
 			SA.insert_NIL(RLBWT.get_terminator_position());
 
 			pos++;

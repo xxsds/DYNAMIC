@@ -8,8 +8,9 @@
  *  using a dynamic run-length encoded BWT with
  *  a sparse SA sampling (2 samples per BWT run).
  *
- *  Space is O(R log n) bits; however, the constant hidden in
- *  the big-O notation is quite high (space is around 6Rlog n bits)
+ *  Space is O(R log n) bits. Be aware however that the constant hidden in
+ *  the big-O notation is quite high: space is around 6Rlog n bits.
+ *  See the algorithm rle_lz77_v2 for a more space-efficient parse.
  *
  *  Type of input text here is uchar
  *
@@ -77,7 +78,7 @@ public:
 	 */
 	void parse(istream& in, ostream& out, bool verbose = false){
 
-		long int step = 100000;	//print status every step characters
+		long int step = 1000000;	//print status every step characters
 		long int last_step = 0;
 
 		/*
@@ -104,7 +105,7 @@ public:
 
 				}
 
-				RLBWT.extend( char_t(c) );
+				RLBWT.extend( uchar(c) );
 
 				j++;
 

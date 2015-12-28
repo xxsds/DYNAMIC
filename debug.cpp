@@ -679,10 +679,13 @@ void test_lz77(string in, string out){
 
 	{
 
+		cout << "Detecting alphabet ... " << flush;
 		std::ifstream ifs(in);
 
 		lz77 = lz77_t(ifs);
 		ifs.close();
+
+		cout << "done." << endl;
 
 	}
 

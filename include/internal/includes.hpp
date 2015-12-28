@@ -39,7 +39,9 @@ vector<pair<ulint,double> > get_frequencies(istream& in){
 	ulint size=0;
 	while(in.get(c)){
 
-		freqs[ulint(c)] += 1;
+		assert(uchar(c) < freqs.size());
+
+		freqs[uchar(c)] += 1;
 		size++;
 
 	}
