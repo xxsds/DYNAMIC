@@ -170,6 +170,11 @@ public:
 
 	}
 
+	/* append b at the end of the bitvector */
+	void append(bool b){
+		insert(size(),b);
+	}
+
 	/*
 	 * insert a bit not set at position i
 	 */

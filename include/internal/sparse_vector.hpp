@@ -93,14 +93,12 @@ public:
 	 *
 	 * The user can decide the value of the NIL. Default is 2^64 - 1
 	 */
-	sparse_vector(ulint n = ~ulint(0), ulint NIL = ~ulint(0)){
-
-		assert(n>0);
+	sparse_vector(ulint n = 0, ulint NIL = ~ulint(0)){
 
 		this->NIL = NIL;
 
 		//insert n NILs
-		bv_.insert0(0,n);
+		if(n>0) bv_.insert0(0,n);
 
 	}
 
@@ -178,6 +176,10 @@ public:
 
 		}
 
+	}
+
+	void insert_NIL(ulint i){
+		insert(i,get_NIL());
 	}
 
 	/*

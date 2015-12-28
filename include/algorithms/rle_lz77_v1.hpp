@@ -9,7 +9,7 @@
  *  a sparse SA sampling (2 samples per BWT run).
  *
  *  Space is O(R log n) bits; however, the constant hidden in
- *  the big-O notation is quite high (around 6)
+ *  the big-O notation is quite high (space is around 6Rlog n bits)
  *
  *  Type of input text here is uchar
  *
@@ -77,7 +77,7 @@ public:
 	 */
 	void parse(istream& in, ostream& out, bool verbose = false){
 
-		long int step = 1000000;	//print status every step characters
+		long int step = 100000;	//print status every step characters
 		long int last_step = 0;
 
 		/*
@@ -198,7 +198,7 @@ public:
 
 				uchar cc = c==RLBWT.get_terminator() ? '#' : uchar(c);
 				out << "< " ;
-				if(p>0) out << p-1; else out << '-';
+				if(l>0) out << p-1; else out << '-';
 				out << ", " << l << ", " << cc <<  ">" << endl;
 
 				l = 0;

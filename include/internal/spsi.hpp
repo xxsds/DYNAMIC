@@ -246,6 +246,10 @@ public:
 
 	}
 
+	void append(uint64_t x){
+		insert(size(),x);
+	}
+
 	/*
 	 * insert a new integer x at position i
 	 */

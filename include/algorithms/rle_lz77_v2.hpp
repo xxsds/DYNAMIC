@@ -9,7 +9,8 @@
  *  a sparse SA sampling (1 sample per LZ factor).
  *
  *  Space is O(R log n + z log n) bits; the constants hidden in the
- *  big-O notation are much smaller than in rle_lz77_v1.hpp
+ *  big-O notation are much smaller than in rle_lz77_v1.hpp. Here, space
+ *  is around (2R + 3z) log n
  *
  *  Type of input text here is uchar
  *
@@ -75,42 +76,187 @@ public:
 	 */
 	void parse(istream& in, ostream& out, bool verbose = false){
 
-		/* last position (on text) of current LZ phrase prefix.
-		 * at the beginning, j=1: we ignore the BWT terminator
-		 */
-		ulint j = 1;
-		ulint k = 0;			/* position in RLBWT corresponding to position 1 in the text*/
+		long int step = 1000000;	//print status every step characters
+		long int last_step = 0;
+
+		ulint pos = 0;			/* text characters processed */
+
 		ulint l = 0;			/* Length of current LZ phrase prefix */
 
-		pair<ulint, ulint> range = {0,0};	/* range of current LZ phrase prefix
+		ulint z = 0;			/* LZ phrase counter */
+
+		pair<ulint, ulint> range = {0,1};	/* range of current LZ phrase prefix
 											 * full interval is <0,n> : intervals
-											 * are of the form [l,r)
+											 * are of the form [l,r). At the beginning,
+											 * only BWT terminator is in the BWT
 											 */
+
+		/* STEP 1: parse input and store LZ-factors start positions in BWT-coordinate space */
+
+		if(verbose) cout << "Parsing input and building RLBWT ..." << endl;
+
+		SA.insert_NIL(0);	/* at the beginning, RLBWT contains only the terminator */
 
 		char c;
 		while(in.get(c)){
 
-			/* extend search */
+			if(verbose){
 
+				if(pos>last_step+(step-1)){
+
+					last_step = pos;
+					cout << " " << pos << " characters processed ..." << endl;
+
+				}
+
+			}
+
+			/* copy range */
+			pair<ulint, ulint> range_temp(range);
+
+			/* extend search */
 			range = RLBWT.LF(range,c);
 
 			if(range.second <= range.first){
 
 				/* empty range: end of a LZ factor */
 
+				factors_char.append( ulint(c) );
+				factors_len.append( l );
 
+				if(l>0){
+
+					/*j = start position of LZ factor, but in BWT coordinate-space */
+					auto j = range_temp.first;
+
+					auto SA_j = SA[j];
+
+					if(SA_j == SA.get_NIL()){
+
+						/* no sample here. Insert a new sample */
+
+						/* SA[j] points to the last bit set (appended with
+						 * the next instruction) in rep */
+						auto r = rep.rank1(rep.size());
+						SA[j] = r;
+
+						/* append bit set in rep */
+						rep.append(true);
+
+						/* append pointer to LZ factors in ptr*/
+						ptr.append(z);
+
+					}else{
+
+						/* this position is already marked (i.e. used by a LZ factor). */
+
+						/* SA[j]=t refers to the t-th bit set in rep*/
+						auto k = rep.select1(SA_j);
+
+						/* insert a 0 in rep */
+						rep.insert0(k);
+
+						/* insert current LZ phrase index in ptr */
+						ptr.insert(k,z);
+
+					}
+
+				}
+
+				/* reset range. Add 1 to right border because we still have to insert c */
+				range = {0,RLBWT.size()+1};
+
+				/* increment factor index */
+				z++;
+
+				/* reset phrase length */
+				l = 0;
 
 			}else{
 
+				l++;
+				range.second++; //new suffix falls inside range
 
 			}
 
 			RLBWT.extend( char_t(c) );
+			SA.insert_NIL(RLBWT.get_terminator_position());
+
+			pos++;
 
 		}
 
+		/* STEP 2 : convert LZ factors start coordinates from BWT-coordinate space to text-coordinate space*/
 
+		if(verbose) cout << "Converting BWT coordinates to text coordinates ..." << endl;
 
+		ulint n = RLBWT.size()-1; /* text length */
+
+		ulint width = 64 - __builtin_popcountll( n );	/* number of bits to store a text address */
+
+		factors_start = packed_vector(z,width);
+
+		ulint j = 0; /* position on text */
+		ulint k = RLBWT.LF(0); /* position on F column of RLBWT corresponding to text position j*/
+
+		step = 5;
+		last_step = -step;
+
+		while (j<n){
+
+			if(verbose){
+
+				int perc = (100*j)/n;
+				if(perc>last_step+(step-1)){
+
+					last_step = perc;
+					cout << " " << perc << "% done ..." << endl;
+
+				}
+
+			}
+
+			auto r = SA[k];
+
+			if(r != SA.get_NIL()){
+
+				l = r == 0 ? 0 : rep.select1(r-1)+1;
+				r = rep.select1(r);
+
+				for(ulint i = l; i<=r;++i){
+
+					auto factor = ptr[i];
+					auto len = factors_len[factor];
+
+					assert(factor<factors_start.size());
+
+					factors_start[factor] = len == 0 ? 0 : j - (len-1);
+
+				}
+
+			}
+
+			j++;
+			k = RLBWT.LF(k);
+
+		}
+
+		assert(factors_start.size() == z);
+		assert(factors_len.size() == z);
+		assert(factors_char.size() == z);
+
+		for(ulint j=0;j<z;++j) {
+
+			auto c = factors_char[j];
+			auto p = factors_start[j];
+			auto l = factors_len[j];
+
+			uchar cc = c==RLBWT.get_terminator() ? '#' : uchar(c);
+			out << "< " ;
+			if(l>0) out << p; else out << '-';
+			out << ", " << l << ", " << cc <<  ">" << endl;
+
+		}
 
 	}
 
@@ -127,16 +273,19 @@ private:
 	 * If SA[i] != NIL, then ptr[ rep.select1( SA.rank(i) ), ..., rep.select1( SA.rank(i) +1)-1 ]
 	 * are pointers to LZ factors that share the BWT position i as source.
 	 */
-	suc_bv rep;
+	suc_bv rep;	/* 00001 */
 	packed_spsi ptr;
 
-	/* the LZ factors. This vector stores 3z integers:
+	/* the LZ factors. These 3 vector stores z integers each:
 	 *
-	 *  factors[3*i+0] = start position of i-th factor
-	 * 	factors[3*i+1] = length of i-th factor (minus 1: trailing char is excluded)
-	 * 	factors[3*i+2] = trailing character of i-th factor
+	 * start, length and trailing character of each LZ factor.
+	 * Length is the length of a factor minus 1 (we do not
+	 * count the trailing character).
+	 *
 	 */
-	packed_spsi factors;
+	packed_vector factors_start;
+	packed_spsi factors_len;
+	packed_spsi factors_char;
 
 };
 

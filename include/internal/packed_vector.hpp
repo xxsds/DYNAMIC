@@ -12,19 +12,126 @@
 
 namespace dyn{
 
-class packed_block{
+template <class Container> class pv_reference{
 
 public:
 
-	packed_block(){
+	pv_reference(Container &c, uint64_t idx): _pv(c), _idx(idx) {}
 
-		words = vector<uint64_t>();
-		size_=0;
+    operator uint64_t() {
+        return _pv.at(_idx);
+    }
+
+    pv_reference const&operator=(uint64_t v) const {
+
+		_pv.set(_idx, v);
+
+        return *this;
+    }
+
+    pv_reference const&operator=(pv_reference& ref) const {
+
+		_pv.set(_idx, uint64_t(ref));
+
+        return *this;
+    }
+
+    //++pv[i]
+    pv_reference const&operator++() const {
+
+		_pv.increment(_idx,1);
+
+		return *this;
+
+    }
+
+    //pv[i]++
+    pv_reference const operator++(int) const {
+
+    	pv_reference copy(*this);
+
+		++(*this);
+
+		return copy;
+
+    }
+
+    //--pv[i]
+    pv_reference const&operator--() const {
+
+		_pv.increment(_idx,1,true);
+
+		return *this;
+
+    }
+
+    //pv[i]--
+    pv_reference const operator--(int) const {
+
+    	pv_reference copy(*this);
+
+		--(*this);
+
+		return copy;
+
+    }
+
+    pv_reference const&operator+=(uint64_t d) const {
+
+		_pv.increment(_idx,d);
+
+		return *this;
+
+    }
+
+    pv_reference const&operator-=(uint64_t d) const {
+
+		_pv.increment(_idx,d,true);
+
+		return *this;
+
+    }
+
+private:
+
+	Container &_pv;
+	uint64_t _idx;
+
+};
+
+
+class packed_vector{
+
+public:
+
+    using pv_ref = pv_reference<packed_vector>;
+
+	/* new packed vector containing size integers (initialized to 0) of width bits each*/
+	packed_vector(ulint size = 0, ulint width = 0){
+
+		/* if size > 0, then width must be > 0*/
+		assert(size == 0 or width > 0);
+		assert(width <= 64);
+
+		size_=size;
+		width_ = width;
 		psum_=0;
+
+		if(width_>0){
+
+			int_per_word_ = 64/width_;
+			MASK = (uint64_t(1) << width_)-1;
+
+		}
+
+		if(size_==0)
+			words = vector<uint64_t>();
+		else
+			words = vector<uint64_t>( size_/int_per_word_ +  ( size_%int_per_word_ != 0 ) );
 
 	}
 
-	packed_block(vector<uint64_t>& words, uint32_t new_size, uint8_t width){
+	packed_vector(vector<uint64_t>& words, uint64_t new_size, uint8_t width){
 
 		this->words = vector<uint64_t>(words);
 		this->size_= new_size;
@@ -34,6 +141,16 @@ public:
 		MASK = (uint64_t(1) << width_)-1;
 
 		psum_=psum(size_-1);
+
+	}
+
+	/*
+	 * high-level access to the vector. Supports assign, access,
+	 * increment (++, +=), decrement (--, -=)
+	 */
+	pv_ref operator[](uint64_t i){
+
+		return { *this, i };
 
 	}
 
@@ -61,11 +178,11 @@ public:
 		i++;
 
 		uint64_t s = 0;
-		uint32_t pos = 0;
+		uint64_t pos = 0;
 
 		// optimization for bitvectors
 
-		for(uint32_t j = 0;j<(i/64)*(width_==1);++j){
+		for(uint64_t j = 0;j<(i/64)*(width_==1);++j){
 
 			s += __builtin_popcountll(words[j]);
 			pos += 64;
@@ -78,7 +195,7 @@ public:
 
 		// end optimization for bitvectors
 
-		for(uint32_t j=pos;j<i*(width_>1);++j){
+		for(uint64_t j=pos;j<i*(width_>1);++j){
 
 			s += at(j);
 
@@ -98,11 +215,11 @@ public:
 
 		uint64_t s = 0;
 		uint64_t pop = 0;
-		uint32_t pos = 0;
+		uint64_t pos = 0;
 
 		// optimization for bitvectors
 
-		for(uint32_t j = 0; j < (size_/64)*(width_==1) and s < x;++j){
+		for(uint64_t j = 0; j < (size_/64)*(width_==1) and s < x;++j){
 
 			pop = __builtin_popcountll(words[j]);
 			pos += 64;
@@ -141,11 +258,11 @@ public:
 
 		uint64_t s = 0;
 		uint64_t pop = 0;
-		uint32_t pos = 0;
+		uint64_t pos = 0;
 
 		// optimization for bitvectors
 
-		for(uint32_t j = 0; j < size_/64 and s < x;++j){
+		for(uint64_t j = 0; j < size_/64 and s < x;++j){
 
 			pop = 64-__builtin_popcountll(words[j]);
 			pos += 64;
@@ -180,11 +297,11 @@ public:
 
 		uint64_t s = 0;
 		uint64_t pop = 0;
-		uint32_t pos = 0;
+		uint64_t pos = 0;
 
 		// optimization for bitvectors
 
-		for(uint32_t j = 0; j < (size_/64)*(width_==1) and s < x;++j){
+		for(uint64_t j = 0; j < (size_/64)*(width_==1) and s < x;++j){
 
 			pop = 64 + __builtin_popcountll(words[j]);
 			pos += 64;
@@ -219,7 +336,7 @@ public:
 
 		uint64_t s = 0;
 
-		for(uint32_t j=0;j<size_ and s<x;++j){
+		for(uint64_t j=0;j<size_ and s<x;++j){
 
 			s += at(j);
 
@@ -239,7 +356,7 @@ public:
 
 		uint64_t s = 0;
 
-		for(uint32_t j=0;j<size_ and s<x;++j){
+		for(uint64_t j=0;j<size_ and s<x;++j){
 
 			s += (at(j)+1);
 
@@ -259,7 +376,7 @@ public:
 		if(subtract){
 
 			assert(pvi>=delta);
-			set(i,pvi-delta);
+			set_without_psum_update(i,pvi-delta);
 
 			psum_ -= delta;
 
@@ -282,11 +399,17 @@ public:
 
 				psum_ += delta;
 
-				set(i,s);
+				set_without_psum_update(i,s);
 
 			}
 
 		}
+
+	}
+
+	void append(uint64_t x){
+
+		insert(size(),x);
 
 	}
 
@@ -320,7 +443,7 @@ public:
 		shift_right(i);
 
 		//insert x
-		set(i,x);
+		set_without_psum_update(i,x);
 
 		psum_+=x;
 		size_++;
@@ -338,7 +461,7 @@ public:
 	 */
 	uint64_t bit_size(){
 
-		return 8*sizeof(packed_block) + words.capacity()*64;
+		return 8*sizeof(packed_vector) + words.capacity()*64;
 
 	}
 
@@ -346,8 +469,8 @@ public:
 
 		vector<uint64_t> vec(size_);
 
-		uint32_t i = 0;
-		for(uint32_t i=0;i<size_;++i) vec[i] = at(i);
+		uint64_t i = 0;
+		for(uint64_t i=0;i<size_;++i) vec[i] = at(i);
 
 		return vec;
 
@@ -358,24 +481,24 @@ public:
 	 * Left part remains in this block, right part in the
 	 * new returned block
 	 */
-	packed_block* split(){
+	packed_vector* split(){
 
 		uint64_t prev_size = size_;
 
-		uint32_t tot_words = (size_/int_per_word_) + (size_%int_per_word_!=0);
+		uint64_t tot_words = (size_/int_per_word_) + (size_%int_per_word_!=0);
 
 		assert(tot_words <= words.size());
 
-		uint32_t nr_left_words = tot_words/2;
-		uint32_t nr_right_words = tot_words-nr_left_words;
+		uint64_t nr_left_words = tot_words/2;
+		uint64_t nr_right_words = tot_words-nr_left_words;
 
 		assert(nr_left_words>0);
 		assert(nr_right_words>0);
 
-		uint32_t nr_left_ints = nr_left_words*int_per_word_;
+		uint64_t nr_left_ints = nr_left_words*int_per_word_;
 
 		assert(size_ > nr_left_ints);
-		uint32_t nr_right_ints = size_ - nr_left_ints;
+		uint64_t nr_right_ints = size_ - nr_left_ints;
 
 		auto right_words = vector<uint64_t>(words.begin()+nr_left_words, words.begin()+tot_words);
 
@@ -384,20 +507,57 @@ public:
 		size_ = nr_left_ints;
 		psum_ = psum(size_-1);
 
-		auto right = new packed_block(right_words,nr_right_ints,width_);
+		auto right = new packed_vector(right_words,nr_right_ints,width_);
 
 		return right;
 
 	}
 
+	/* set i-th eleent to x. updates psum */
+	void set(uint64_t i, uint64_t x){
+
+		assert(bitsize(x) <= width_);
+
+		auto y = at(i);
+
+		psum_ = x<y ? psum_ - (y-x) : psum_ + (x-y);
+
+		uint64_t word_nr = i/int_per_word_;
+		uint8_t pos = i%int_per_word_;
+
+		//set to 0 i-th entry
+		uint64_t MASK1 = ~(MASK<<(width_*pos));
+		words[word_nr] &= MASK1;
+
+		//insert x inside i-th position
+		words[word_nr] |= (x<<(width_*pos));
+
+	}
+
 private:
 
-	vector<uint64_t> to_vector(uint32_t j,uint64_t y){
+	void set_without_psum_update(uint64_t i, uint64_t x){
+
+		assert(bitsize(x)<=width_);
+
+		uint64_t word_nr = i/int_per_word_;
+		uint8_t pos = i%int_per_word_;
+
+		//set to 0 i-th entry
+		uint64_t MASK1 = ~(MASK<<(width_*pos));
+		words[word_nr] &= MASK1;
+
+		//insert x inside i-th position
+		words[word_nr] |= (x<<(width_*pos));
+
+	}
+
+	vector<uint64_t> to_vector(uint64_t j,uint64_t y){
 
 		vector<uint64_t> vec(size_+1);
 
-		uint32_t i = 0;
-		for(uint32_t k=0;k<size_;++k){
+		uint64_t i = 0;
+		for(uint64_t k=0;k<size_;++k){
 
 			if(k==j) vec[i++] = y;
 
@@ -414,27 +574,27 @@ private:
 	//shift right of 1 position elements starting
 	//from the i-th.
 	//assumption: last element does not overflow!
-	void shift_right(uint32_t i){
+	void shift_right(uint64_t i){
 
 		//number of integers that fit in a memory word
 		assert(int_per_word_>0);
 
 		assert(size_+1 <= words.size()*int_per_word_);
 
-		uint32_t current_word = i/int_per_word_;
+		uint64_t current_word = i/int_per_word_;
 
-		uint32_t falling_out_idx = current_word*int_per_word_+(int_per_word_-1);
+		uint64_t falling_out_idx = current_word*int_per_word_+(int_per_word_-1);
 
 		//integer that falls out from the right of current word
 		uint64_t falling_out = at(falling_out_idx);
 
-		for(uint32_t j = falling_out_idx;j>i;--j) set(j,at(j-1));
+		for(uint64_t j = falling_out_idx;j>i;--j) set_without_psum_update(j,at(j-1));
 
 		//now for the remaining integers we can work blockwise
 
 		uint64_t falling_out_temp;
 
-		for(uint32_t j = current_word+1;j<words.size();++j){
+		for(uint64_t j = current_word+1;j<words.size();++j){
 
 			falling_out_temp = at( j*int_per_word_+(int_per_word_-1) );
 
@@ -442,7 +602,7 @@ private:
 
 			assert(at(j*int_per_word_)==0);
 
-			set(j*int_per_word_,falling_out);
+			set_without_psum_update(j*int_per_word_,falling_out);
 
 			falling_out = falling_out_temp;
 
@@ -464,24 +624,8 @@ private:
 
 		words = vector<uint64_t>( size_/int_per_word_ + (size_%int_per_word_ != 0) + extra_ );
 
-		uint32_t i = 0;
-		for(auto x:vec) set(i++, x);
-
-	}
-
-	void set(uint32_t i, uint64_t x){
-
-		assert(bitsize(x)<=width_);
-
-		uint32_t word_nr = i/int_per_word_;
-		uint8_t pos = i%int_per_word_;
-
-		//set to 0 i-th entry
-		uint64_t MASK1 = ~(MASK<<(width_*pos));
-		words[word_nr] &= MASK1;
-
-		//insert x inside i-th position
-		words[word_nr] |= (x<<(width_*pos));
+		uint64_t i = 0;
+		for(auto x:vec) set_without_psum_update(i++, x);
 
 	}
 
@@ -522,7 +666,7 @@ private:
 	vector<uint64_t> words;
 	uint64_t psum_=0;
 	uint64_t MASK=0;
-	uint16_t size_=0;
+	uint64_t size_=0;
 	uint8_t width_=0;
 	uint8_t int_per_word_=0;
 

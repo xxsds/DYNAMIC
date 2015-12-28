@@ -9,7 +9,6 @@
 #define DYNAMIC_TYPEDEFS_HPP_
 
 #include <spsi.hpp>
-#include <packed_block.hpp>
 #include <gap_bitvector.hpp>
 #include <spsi_check.hpp>
 #include <compressed_string.hpp>
@@ -17,6 +16,7 @@
 #include <rle_string.hpp>
 #include <bwt.hpp>
 #include <sparse_vector.hpp>
+#include "internal/packed_vector.hpp"
 
 namespace dyn{
 
@@ -24,7 +24,7 @@ namespace dyn{
  * a succinct searchable partial sum with inserts implemented with cache-efficient
  * B trees.
  */
-typedef spsi<packed_block,256,16> packed_spsi;
+typedef spsi<packed_vector,256,16> packed_spsi;
 
 /*
  * dynamic gap-encoded bitvector
@@ -34,7 +34,7 @@ typedef gap_bitvector<packed_spsi> gap_bv;
 /*
  * dynamic succinct bitvector (about 1.1n bits)
  */
-typedef succinct_bitvector<spsi<packed_block,8192,16> > suc_bv;
+typedef succinct_bitvector<spsi<packed_vector,8192,16> > suc_bv;
 
 /*
  * succinct/compressed dynamic string implemented with wavelet trees.

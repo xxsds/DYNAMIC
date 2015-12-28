@@ -9,12 +9,12 @@
 #include "spsi_check.hpp"
 #include <chrono>
 #include <dynamic.hpp>
-#include "packed_block.hpp"
 #include <alphabet_encoder.hpp>
 #include "include/algorithms/rle_lz77_v1.hpp"
 #include "include/algorithms/rle_lz77_v2.hpp"
 
 #include "include/internal/compressed_string.hpp"
+#include "include/internal/packed_vector.hpp"
 
 using namespace std;
 using namespace dyn;
@@ -672,15 +672,16 @@ void test_bwt(){
 
 }
 
+template<class lz77_t>
 void test_lz77(string in, string out){
 
-	rle_lz77_v1 lz77;
+	lz77_t lz77;
 
 	{
 
 		std::ifstream ifs(in);
 
-		lz77 = rle_lz77_v1(ifs);
+		lz77 = lz77_t(ifs);
 		ifs.close();
 
 	}
@@ -697,7 +698,8 @@ void test_lz77(string in, string out){
 
 int main(int argc,char** argv) {
 
-	test_lz77(argv[1], argv[2]);
+	//test_strings(10000,200);
+	test_lz77<rle_lz77_v2>(argv[1], argv[2]);
 
 }
 
