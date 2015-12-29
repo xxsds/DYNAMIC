@@ -39,3 +39,57 @@ Finally, build the executables:
 > make
 
 The above command creates the executables in the bin directory.
+
+### Usage
+
+The header include/dynamic.hpp contains all type definitions and is all you need to include in your code. The folder algorithms/ contains some algorithms implemented with the library's structures. This is a snapshot of dynamic.hpp:
+
+    /*
+     * a succinct searchable partial sum with inserts implemented with cache-efficient
+     * B trees.
+     */
+    typedef spsi<packed_vector,256,16> packed_spsi;
+
+    /*
+     * dynamic gap-encoded bitvector
+     */
+    typedef gap_bitvector<packed_spsi> gap_bv;
+
+    /*
+     * dynamic succinct bitvector (about 1.1n bits)
+     */
+    typedef succinct_bitvector<spsi<packed_vector,8192,16> > suc_bv;
+
+    /*
+     * succinct/compressed dynamic string implemented with wavelet trees.
+     * user can choose (at construction time) between fixed-length / gamma / Huffman encoding of characters.
+     */
+    typedef compressed_string<suc_bv> com_str;
+
+    /*
+     * run-length encoded (RLE) string. This string uses 1 sparse bitvector
+     * for all runs, one dynamic string for run heads, and sigma sparse bitvectors (one per character)
+     */
+    typedef rle_string<gap_bv, com_str> rle_str;
+
+    /*
+     * RLE string implemented with a run-length encoded wavelet tree. Each
+     * WT node is run-length encoded. 
+     */
+    typedef compressed_string<rle_str> wtrle_str;
+
+    /*
+     * succinct/compressed BWT (see description of com_str)
+     */
+    typedef bwt<com_str,rle_str> com_bwt;
+
+    /*
+     * run-length encoded BWT
+     */
+    typedef bwt<rle_str,rle_str> rle_bwt;
+
+    /*
+     * dynamic sparse vector: <= m*k + O(m log n/m) bits of space, where k is the maximum
+     * number of bits of any integer > 0 and n is the total number of integers.
+     */
+    typedef sparse_vector<packed_spsi,gap_bv> sparse_vec;
