@@ -10,8 +10,11 @@ This library offers space- and time-efficient implementations of some basic succ
 - A succinct Searchable Partial Sums with Inserts (SPSI) structure. Space: about 1.3 * n * k bits (n integers of bit-size k). The structure supports also update operations (i.e. modify internal elements).
 - A Succinct dynamic bitvector supporting rank/select/access/insert (RSAI) operations. Space: about 1.1 * n bits.
 - A gap-compressed dynamic bitvector supporting RSAI operations. Space: about 1.3 * b * log(n/b) bits,  where b is the number of bits set. All operations take log(b) time.
+- A dynamic sparse vector (of integers).
 - A dynamic string supporting RSAI operations. The user can choose at construction time between fixed-length/gamma/Huffman encoding of the alphabet. All operations take log(n) * log(sigma) time (or log(n) * H0 with Huffman encoding).
 - A run-length encoded dynamic string supporting RSAI operations. Space: approximately R*(1.1 * log(sigma) + 2.6 * log(n/R)) bits, where R is the number of runs in the string. All operations take log(R) time.
+- A dynamic entropy/run-length compressed BWT
+- Two algorithms to build LZ77 in repetition-aware RAM working space. Both algorithms use a run-length encoded BWT with sparse Suffix array sampling. The first algorithm stores 2 SA samples per BWT run. The second algorithm (much more space efficient) stores 1 SA sample per LZ factor.
 
 The SPSI structure is the building block on which all other structures are based. This structure is implemented with cache-efficient B-trees.
 
