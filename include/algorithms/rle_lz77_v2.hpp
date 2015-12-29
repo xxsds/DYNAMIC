@@ -123,8 +123,8 @@ public:
 
 				/* empty range: end of a LZ factor */
 
-				factors_char.append( c );
-				factors_len.append( l );
+				factors_char.push_back( c );
+				factors_len.push_back( l );
 
 				if(l>0){
 
@@ -143,10 +143,10 @@ public:
 						SA[j] = r;
 
 						/* append bit set in rep */
-						rep.append(true);
+						rep.push_back(true);
 
 						/* append pointer to LZ factors in ptr*/
-						ptr.append(z);
+						ptr.push_back(z);
 
 					}else{
 
@@ -283,11 +283,10 @@ private:
 	 * start, length and trailing character of each LZ factor.
 	 * Length is the length of a factor minus 1 (we do not
 	 * count the trailing character).
-	 *
 	 */
 	packed_vector factors_start;
-	packed_spsi factors_len;
-	packed_spsi factors_char;
+	packed_vector factors_len;
+	packed_vector factors_char;
 
 };
 

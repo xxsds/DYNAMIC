@@ -386,12 +386,15 @@ public:
 
 			if(bitsize(s)>width_){
 
-				//in this case rebuild the whole vector
+				//in this case rebuild the whole vector with a new bitsize
 
-				auto vec = to_vector();
-				vec[i] += delta;
+				packed_vector temp(size_,bitsize(s));
 
-				rebuild(vec);
+				for(ulint j=0;j<size();++j)	temp[j] = at(j);
+
+				temp[i] += delta;
+
+				rebuild(temp);
 
 			}else{
 
@@ -450,6 +453,34 @@ public:
 
 	}
 
+	/*
+	 * efficient push-back, implemented with a push-back on the underlying container
+	 * the insertion of an element whose bit-size exceeds the current width causes a
+	 * rebuild of the whole vector!
+	 */
+	void push_back(uint64_t x){
+
+		if(bitsize(x)>width_){
+
+			auto vec = to_vector(size(),x);
+			rebuild(vec);
+
+			return;
+
+		}
+
+		//not enough space for the new element:
+		//push back a new word
+		if(size_+1>(words.size()*(int_per_word_))) words.push_back(0);
+
+		//insert x
+		set_without_psum_update(size(),x);
+
+		psum_+=x;
+		size_++;
+
+	}
+
 	uint64_t size(){
 
 		return size_;
@@ -465,16 +496,6 @@ public:
 
 	}
 
-	vector<uint64_t> to_vector(){
-
-		vector<uint64_t> vec(size_);
-
-		uint64_t i = 0;
-		for(uint64_t i=0;i<size_;++i) vec[i] = at(i);
-
-		return vec;
-
-	}
 
 	/*
 	 * split content of this vector into 2 packed blocks:
@@ -536,6 +557,17 @@ public:
 
 private:
 
+	/*vector<uint64_t> to_vector(){
+
+		vector<uint64_t> vec(size_);
+
+		uint64_t i = 0;
+		for(uint64_t i=0;i<size_;++i) vec[i] = at(i);
+
+		return vec;
+
+	}*/
+
 	void set_without_psum_update(uint64_t i, uint64_t x){
 
 		assert(bitsize(x)<=width_);
@@ -552,15 +584,17 @@ private:
 
 	}
 
-	vector<uint64_t> to_vector(uint64_t j,uint64_t y){
+	packed_vector to_vector(uint64_t j,uint64_t y){
 
-		vector<uint64_t> vec(size_+1);
+		auto w2 = std::max(width_,bitsize(y));
+		auto vec = packed_vector(size_+1,w2);
+
+		//vector<uint64_t> vec(size_+1);
 
 		uint64_t i = 0;
 		for(uint64_t k=0;k<size_;++k){
 
 			if(k==j) vec[i++] = y;
-
 			vec[i++] = at(k);
 
 		}
@@ -610,7 +644,7 @@ private:
 
 	}
 
-	void rebuild(vector<uint64_t>& vec){
+	void rebuild(packed_vector& vec){
 
 		assert(vec.size()>0);
 
@@ -624,16 +658,22 @@ private:
 
 		words = vector<uint64_t>( size_/int_per_word_ + (size_%int_per_word_ != 0) + extra_ );
 
-		uint64_t i = 0;
-		for(auto x:vec) set_without_psum_update(i++, x);
+		for(ulint j=0;j<vec.size();++j){
+
+			auto x = vec[j];
+			set_without_psum_update(j, x);
+
+		}
 
 	}
 
-	uint8_t max_bitsize(vector<uint64_t> &vec){
+	uint8_t max_bitsize(packed_vector &vec){
 
 		uint8_t max_b=bitsize(vec[0]);
 
-		for(auto x:vec){
+		for(ulint i=0;i<vec.size();++i){
+
+			auto x = vec[i];
 
 			uint8_t bs = bitsize(x);
 
@@ -645,11 +685,16 @@ private:
 
 	}
 
-	uint64_t sum(vector<uint64_t> &vec){
+	uint64_t sum(packed_vector &vec){
 
 		uint64_t res = 0;
 
-		for(auto x:vec) res += x;
+		for(ulint i=0;i<vec.size();++i){
+
+			auto x = vec[i];
+			res += x;
+
+		}
 
 		return res;
 

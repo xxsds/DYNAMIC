@@ -246,7 +246,7 @@ public:
 
 	}
 
-	void append(uint64_t x){
+	void push_back(uint64_t x){
 		insert(size(),x);
 	}
 

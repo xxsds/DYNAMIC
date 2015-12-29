@@ -171,7 +171,7 @@ public:
 	}
 
 	/* append b at the end of the bitvector */
-	void append(bool b){
+	void push_back(bool b){
 		insert(size(),b);
 	}
 
@@ -190,12 +190,6 @@ public:
 	void insert1(uint64_t i){
 
 		insert(i,true);
-
-	}
-
-	void push_back(bool b){
-
-		insert(size(),b);
 
 	}
 

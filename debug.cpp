@@ -610,7 +610,7 @@ void test_strings(ulint n){
 	cout << endl << " *** gap_bv:" << endl;
 	benchmark_dyn_str<gap_bv>(n, 2);
 
-	/*cout << endl << " *** suc_bv:" << endl;
+	cout << endl << " *** suc_bv:" << endl;
 	benchmark_dyn_str<suc_bv>(n, 2);
 
 	cout << endl << " *** com_str:" << endl;
@@ -623,7 +623,7 @@ void test_strings(ulint n){
 	benchmark_dyn_str<wtrle_str>(n, sigma);
 
 	cout << endl << " *** wtgap_str:" << endl;
-	benchmark_dyn_str<wtgap_str>(n, sigma);*/
+	benchmark_dyn_str<wtgap_str>(n, sigma);
 
 }
 
@@ -701,8 +701,8 @@ void test_lz77(string in, string out){
 
 int main(int argc,char** argv) {
 
-	//test_strings(10000,200);
-	test_lz77<rle_lz77_v2>(argv[1], argv[2]);
+	test_strings(1000000);
+	//test_lz77<rle_lz77_v2>(argv[1], argv[2]);
 
 }
 
