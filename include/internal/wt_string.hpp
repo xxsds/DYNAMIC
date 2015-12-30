@@ -1,5 +1,5 @@
 /*
- * compressed_string.hpp
+ * wt_string.hpp
  *
  *  Created on: Nov 30, 2015
  *      Author: nico
@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef INCLUDE_INTERNAL_COMPRESSED_STRING_HPP_
-#define INCLUDE_INTERNAL_COMPRESSED_STRING_HPP_
+#ifndef INCLUDE_INTERNAL_WT_STRING_HPP_
+#define INCLUDE_INTERNAL_WT_STRING_HPP_
 
 #include <includes.hpp>
 #include <alphabet_encoder.hpp>
@@ -24,7 +24,7 @@
 namespace dyn{
 
 template<class dynamic_bitvector_t>
-class compressed_string{
+class wt_string{
 
 public:
 
@@ -37,7 +37,7 @@ public:
 	 * Alphabet is unknown. Characters are gamma-coded
 	 *
 	 */
-	compressed_string(){}
+	wt_string(){}
 
 	/*
 	 * Constructor #2
@@ -46,7 +46,7 @@ public:
 	 * Characters are assigned codes 0,1,2,... in order of appearance
 	 *
 	 */
-	compressed_string(uint64_t sigma){
+	wt_string(uint64_t sigma){
 
 		assert(sigma>0);
 		ae = alphabet_encoder(sigma);
@@ -61,7 +61,7 @@ public:
 	 * Here the alphabet is Huffman encoded.
 	 *
 	 */
-	compressed_string(vector<pair<char_type,double> >& P){
+	wt_string(vector<pair<char_type,double> >& P){
 
 		ae = alphabet_encoder(P);
 
@@ -442,4 +442,4 @@ private:
 }
 
 
-#endif /* INCLUDE_INTERNAL_COMPRESSED_STRING_HPP_ */
+#endif /* INCLUDE_INTERNAL_WT_STRING_HPP_ */

@@ -477,42 +477,6 @@ public:
 	//total number of runs
 	ulint number_of_runs(){return run_heads_.size();}
 
-	/*bool check_consistency(){
-
-		ulint n=0;
-		ulint R=0;
-
-		for(auto m:runs_per_letter){
-
-			//cout << m.first << ": ";
-			//for(ulint i=0;i<m.second.size();++i) cout << m.second[i];cout << endl;
-
-			n += m.second.size();
-			R += m.second.rank(m.second.size());
-
-		}
-
-		assert(n==size() and R==number_of_runs());
-
-		map<char_type, ulint> cnt;
-
-		for(ulint i=0;i<number_of_runs();++i){
-
-			char_type c = run_heads_[i];
-
-			ulint run_global = run_at(i);
-			ulint run_char = run_at( cnt[c], c );
-
-			cnt[c]++;
-
-			assert(run_global==run_char);
-
-		}
-
-		return true;
-
-	}*/
-
 	//length of i-th run
 	ulint run_at(ulint i){
 
@@ -587,10 +551,6 @@ private:
 
 	//store run heads in a compressed string supporting access/rank/select/insert
 	string_t run_heads_;
-
-	//text length and number of runs
-	//ulint n=0;
-	//ulint R=0;
 
 };
 

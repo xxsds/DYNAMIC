@@ -20,8 +20,8 @@
 #include <includes.hpp>
 
 #include <gap_bitvector.hpp>
-#include <compressed_string.hpp>
 #include <rle_string.hpp>
+#include "wt_string.hpp"
 
 namespace dyn {
 

@@ -13,8 +13,8 @@
 #include "include/algorithms/rle_lz77_v1.hpp"
 #include "include/algorithms/rle_lz77_v2.hpp"
 
-#include "include/internal/compressed_string.hpp"
 #include "include/internal/packed_vector.hpp"
+#include "include/internal/wt_string.hpp"
 
 using namespace std;
 using namespace dyn;
@@ -512,7 +512,7 @@ void benchmark_dyn_str(uint64_t size, uint64_t sigma){
 
 void test_strings(ulint size, ulint sigma){
 
-	com_str s1;
+	wt_str s1;
 	wtrle_str s2;
 	//str_check s2;
 	//rle_str_check s3;
@@ -614,7 +614,7 @@ void test_strings(ulint n){
 	benchmark_dyn_str<suc_bv>(n, 2);
 
 	cout << endl << " *** com_str:" << endl;
-	benchmark_dyn_str<com_str>(n, sigma);
+	benchmark_dyn_str<wt_str>(n, sigma);
 
 	cout << endl << " *** rle_str:" << endl;
 	benchmark_dyn_str<rle_str>(n, sigma);

@@ -11,12 +11,12 @@
 #include <spsi.hpp>
 #include <gap_bitvector.hpp>
 #include <spsi_check.hpp>
-#include <compressed_string.hpp>
 #include <succinct_bitvector.hpp>
 #include <rle_string.hpp>
 #include <bwt.hpp>
 #include <sparse_vector.hpp>
 #include "internal/packed_vector.hpp"
+#include "internal/wt_string.hpp"
 
 namespace dyn{
 
@@ -40,31 +40,31 @@ typedef succinct_bitvector<spsi<packed_vector,8192,16> > suc_bv;
  * succinct/compressed dynamic string implemented with wavelet trees.
  * user can choose (at construction time) between fixed-length / gamma / Huffman encoding of characters.
  */
-typedef compressed_string<suc_bv> com_str;
+typedef wt_string<suc_bv> wt_str;
 
 /*
  * run-length encoded (RLE) string. This string uses 1 sparse bitvector
  * for all runs, one dynamic string for run heads, and sigma sparse bitvectors (one per character)
  */
-typedef rle_string<gap_bv, com_str> rle_str;
+typedef rle_string<gap_bv, wt_str> rle_str;
 
 /*
  * RLE string implemented with a run-length encoded wavelet tree. Each
  * WT node is run-length encoded. rle_str is much more efficient and
  * thus preferable
  */
-typedef compressed_string<rle_str> wtrle_str;
+typedef wt_string<rle_str> wtrle_str;
 
 /*
  * string implemented with a gap-compressed wavelet tree. Each
  * WT node is gap-compressed.
  */
-typedef compressed_string<gap_bv> wtgap_str;
+typedef wt_string<gap_bv> wtgap_str;
 
 /*
  * succinct/compressed BWT (see description of com_str)
  */
-typedef bwt<com_str,rle_str> com_bwt;
+typedef bwt<wt_str,rle_str> com_bwt;
 
 /*
  * run-length encoded BWT
@@ -87,7 +87,7 @@ typedef sparse_vector<packed_spsi,gap_bv> sparse_vec;
  */
 typedef succinct_bitvector<spsi_check<> > bv_check;
 
-typedef compressed_string<bv_check> str_check;
+typedef wt_string<bv_check> str_check;
 
 typedef rle_string<bv_check, str_check> rle_str_check;
 

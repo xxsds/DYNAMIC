@@ -17,6 +17,7 @@
 #include <fstream>
 #include <sstream>
 #include <cassert>
+#include <map>
 
 #define WORD_SIZE 64;
 
