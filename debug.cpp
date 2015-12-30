@@ -701,7 +701,7 @@ void test_lz77(string in, string out){
 
 int main(int argc,char** argv) {
 
-	test_strings(1000000);
+	test_strings(1000);
 	//test_lz77<rle_lz77_v2>(argv[1], argv[2]);
 
 }

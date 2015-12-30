@@ -23,3 +23,5 @@ set(CMAKE_CXX_FLAGS_RELEASE "-ggdb -Ofast -fstrict-aliasing -DNDEBUG -march=nati
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -ggdb -Ofast -fstrict-aliasing -march=native")
 
 add_executable(debug debug.cpp)
+add_executable(rle_lz77_v1 rle_lz77_v1.cpp)
+add_executable(rle_lz77_v2 rle_lz77_v2.cpp)

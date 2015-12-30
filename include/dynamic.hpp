@@ -64,7 +64,7 @@ typedef wt_string<gap_bv> wtgap_str;
 /*
  * succinct/compressed BWT (see description of com_str)
  */
-typedef bwt<wt_str,rle_str> com_bwt;
+typedef bwt<wt_str,rle_str> wt_bwt;
 
 /*
  * run-length encoded BWT

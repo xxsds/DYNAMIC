@@ -26,7 +26,7 @@ TODO: implement delete operations!
 
 ### Compile
 
-To compile, firstly create and enter a bin/ directory
+Thre library feratures some example executables. To compile them, firstly create and enter a bin/ directory
 
 > mkdir bin; cd bin
 
@@ -64,24 +64,24 @@ The header include/dynamic.hpp contains all type definitions and is all you need
      * succinct/compressed dynamic string implemented with wavelet trees.
      * user can choose (at construction time) between fixed-length / gamma / Huffman encoding of characters.
      */
-    typedef compressed_string<suc_bv> com_str;
+    typedef wt_string<suc_bv> wt_str;
 
     /*
      * run-length encoded (RLE) string. This string uses 1 sparse bitvector
      * for all runs, one dynamic string for run heads, and sigma sparse bitvectors (one per character)
      */
-    typedef rle_string<gap_bv, com_str> rle_str;
+    typedef rle_string<gap_bv, wt_str> rle_str;
 
     /*
      * RLE string implemented with a run-length encoded wavelet tree. Each
      * WT node is run-length encoded. 
      */
-    typedef compressed_string<rle_str> wtrle_str;
+    typedef wt_string<rle_str> wtrle_str;
 
     /*
-     * succinct/compressed BWT (see description of com_str)
+     * succinct/compressed BWT (see description of wt_str)
      */
-    typedef bwt<com_str,rle_str> com_bwt;
+    typedef bwt<wt_str,rle_str> wt_bwt;
 
     /*
      * run-length encoded BWT
