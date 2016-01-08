@@ -219,7 +219,7 @@ void test_spsi(uint64_t n){
 
 void benchmark_spsi(uint64_t size){
 
-	uint32_t sigma = 300;
+	uint32_t sigma = 256;
 
 	using std::chrono::high_resolution_clock;
 	using std::chrono::duration_cast;
@@ -619,11 +619,11 @@ void test_strings(ulint n){
 	cout << endl << " *** rle_str:" << endl;
 	benchmark_dyn_str<rle_str>(n, sigma);
 
-	cout << endl << " *** wtrle_str:" << endl;
-	benchmark_dyn_str<wtrle_str>(n, sigma);
+	//cout << endl << " *** wtrle_str:" << endl;
+	//benchmark_dyn_str<wtrle_str>(n, sigma);
 
-	cout << endl << " *** wtgap_str:" << endl;
-	benchmark_dyn_str<wtgap_str>(n, sigma);
+	//cout << endl << " *** wtgap_str:" << endl;
+	//benchmark_dyn_str<wtgap_str>(n, sigma);
 
 }
 
@@ -701,7 +701,8 @@ void test_lz77(string in, string out){
 
 int main(int argc,char** argv) {
 
-	test_strings(1000);
+	//benchmark_spsi(10000000);
+	test_strings(5000000);
 	//test_lz77<rle_lz77_v2>(argv[1], argv[2]);
 
 }

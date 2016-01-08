@@ -72,7 +72,9 @@ public:
 	 * input: an input stream and an output stream
 	 * the algorithms scans the input (just 1 scan) and
 	 * saves to the output (could be a file) a series
-	 * of triples <pos,len,c> of type <ulint,ulint,uchar>
+	 * of triples <pos,len,c> of type <ulint,ulint,uchar>. Types
+	 * are converted to char* before streaming them to out
+	 * (i.e. ulint to 8 bytes and uchar to 1 byte)
 	 */
 	void parse(istream& in, ostream& out, bool verbose = false){
 
@@ -249,14 +251,19 @@ public:
 
 		for(ulint j=0;j<z;++j) {
 
-			auto c = factors_char[j];
-			auto p = factors_start[j];
-			auto l = factors_len[j];
+			auto start = (char*)(new ulint(factors_start[j]));
+			auto len = (char*)(new ulint(factors_len[j]));
 
-			uchar cc = c==RLBWT.get_terminator() ? '#' : uchar(c);
-			out << "< " ;
-			if(l>0) out << p; else out << '-';
-			out << ", " << l << ", " << cc <<  ">" << endl;
+			assert(factors_char[j]!=RLBWT.get_terminator());
+
+			auto cc = (char)factors_char[j];
+
+			out.write(start,sizeof(ulint));
+			out.write(len,sizeof(ulint));
+			out.write(&cc,1);
+
+			delete start;
+			delete len;
 
 		}
 
