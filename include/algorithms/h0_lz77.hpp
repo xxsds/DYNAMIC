@@ -79,7 +79,7 @@ public:
 	 */
 	void parse(istream& in, ostream& out, bool verbose = false){
 
-		long int step = 100000;	//print status every step characters
+		long int step = 1000000;	//print status every step characters
 		long int last_step = 0;
 
 		assert(fmi.size()==1);	//only terminator
