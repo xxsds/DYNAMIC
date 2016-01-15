@@ -75,6 +75,11 @@ public:
 	 * of triples <pos,len,c> of type <ulint,ulint,uchar>. Types
 	 * are converted to char* before streaming them to out
 	 * (i.e. ulint to 8 bytes and uchar to 1 byte)
+	 *
+	 * to get also the last factor, input stream should
+	 * terminate with a character that does not appear elsewhere
+	 * in the stream
+	 *
 	 */
 	void parse(istream& in, ostream& out, bool verbose = false){
 

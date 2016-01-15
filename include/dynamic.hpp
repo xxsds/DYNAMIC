@@ -15,8 +15,10 @@
 #include <rle_string.hpp>
 #include <bwt.hpp>
 #include <sparse_vector.hpp>
-#include "internal/packed_vector.hpp"
-#include "internal/wt_string.hpp"
+#include <packed_vector.hpp>
+#include <wt_string.hpp>
+#include <fm_index.hpp>
+#include <h0_lz77.hpp>
 
 namespace dyn{
 
@@ -76,6 +78,25 @@ typedef bwt<rle_str,rle_str> rle_bwt;
  * number of bits of any integer > 0 and n is the total number of integers.
  */
 typedef sparse_vector<packed_spsi,gap_bv> sparse_vec;
+
+/*
+ * dynamic succinct/entropy compressed FM index. BWT positions are
+ * marked with a succinct bitvector (n+o(n) additional bits but fast)
+ *
+ * ( n*H0 + n + (n/k)*log n )(1+o(1)) bits of space, where k is the SA sample rate
+ *
+ */
+typedef fm_index<wt_bwt, suc_bv, packed_spsi> wt_fmi;
+
+/*
+ * dynamic run-length encoded FM index. BWT positions are
+ * marked with a gap-encoded bitvector.
+ *
+ * ( 2*R*log(n/R) + R*H0 + (n/k)*log(n/k) + (n/k)*log n )(1+o(1)) bits of space, where
+ * k is the SA sample rate and R is the number of runs in the BWT
+ *
+ */
+typedef fm_index<rle_bwt, gap_bv, packed_spsi> rle_fmi;
 
 
 // ------------- STRUCTURES DESIGNED ONLY FOR DEBUGGING PURPOSES -------------

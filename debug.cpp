@@ -702,8 +702,25 @@ void test_lz77(string in, string out){
 int main(int argc,char** argv) {
 
 	//benchmark_spsi(10000000);
-	test_strings(5000000);
+	//test_strings(5000000);
 	//test_lz77<rle_lz77_v2>(argv[1], argv[2]);
+
+	wt_fmi a;
+
+	string x = "mississipp";
+
+	for(int i=0;i<40;++i){
+
+		for(int j=0;j<x.size();++j) a.extend(x[x.size()-j-1]);
+
+	}
+
+	auto r = a.get_full_interval();
+	for(int j=0;j<x.size();++j) r = a.LF(r,x[x.size()-j-1]);
+
+	auto occ = a.locate(r);
+
+	for(auto o:occ) cout << o << endl;
 
 }
 

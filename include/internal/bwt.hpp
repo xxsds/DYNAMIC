@@ -37,7 +37,8 @@ public:
 	/*
 	 * Constructor #1
 	 *
-	 * Alphabet is unknown. Characters are gamma-coded
+	 * Alphabet is unknown. Characters are gamma-coded.
+	 * BWT is initialized with only terminator character (size=1)
 	 *
 	 */
 	bwt(){}
@@ -47,6 +48,7 @@ public:
 	 *
 	 * We know only alphabet size. Each character is assigned log2(sigma) bits.
 	 * Characters are assigned codes 0,1,2,... in order of appearance
+	 * BWT is initialized with only terminator character (size=1)
 	 *
 	 */
 	bwt(uint64_t sigma){
@@ -64,6 +66,7 @@ public:
 	 * We know character probabilities. Input: pairs <character, probability>
 	 *
 	 * Here the alphabet is Huffman encoded.
+	 * BWT is initialized with only terminator character (size=1)
 	 *
 	 */
 	bwt(vector<pair<char_type,double> >& P){
