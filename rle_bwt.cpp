@@ -86,6 +86,8 @@ int main(int argc,char** argv) {
 
 	}
 
+	cout << "Number of runs in the BWT : " << bwt.number_of_runs() << endl;
+
 	ifs.close();
 	os.close();
 

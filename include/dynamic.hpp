@@ -81,7 +81,7 @@ typedef sparse_vector<packed_spsi,gap_bv> sparse_vec;
 
 /*
  * dynamic succinct/entropy compressed FM index. BWT positions are
- * marked with a succinct bitvector (n+o(n) additional bits but fast)
+ * marked with a succinct bitvector
  *
  * ( n*H0 + n + (n/k)*log n )(1+o(1)) bits of space, where k is the SA sample rate
  *
