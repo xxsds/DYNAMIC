@@ -83,7 +83,15 @@ int main(int argc,char** argv) {
 
 	uint64_t sec = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
 
-	cout << endl << "done. Total time: " << (double)sec << " seconds" << endl;
+	ulint bitsize = lz77.bit_size();
+
+	cout << endl << "done" << endl;
+	cout << " Total time: " << (double)sec << " seconds" << endl;
+	cout << " Size of the structures (bits): " << bitsize << endl;
+	cout << " Size of the structures (Bytes): " << bitsize/8 << endl;
+	cout << " Size of the structures (KB): " << (bitsize/8)/1024 << endl;
+	cout << " Size of the structures (MB): " << ((bitsize/8)/1024)/1024 << endl;
+
 
 }
 

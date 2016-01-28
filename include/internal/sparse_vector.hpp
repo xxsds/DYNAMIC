@@ -307,6 +307,15 @@ public:
 		return NIL;
 	}
 
+	/*
+	 * Total number of bits allocated in RAM for this structure
+	 */
+	ulint bit_size(){
+
+		return sizeof(sparse_vector<spsi_type, gap_bv_type>)*8 + spsi_.bit_size() + bv_.bit_size();
+
+	}
+
 private:
 
 	ulint NIL;

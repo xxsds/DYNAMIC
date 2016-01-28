@@ -86,10 +86,22 @@ int main(int argc,char** argv) {
 
 	}
 
+	auto t2 = high_resolution_clock::now();
+	uint64_t sec = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
+
 	cout << "Number of runs in the BWT : " << bwt.number_of_runs() << endl;
 
 	ifs.close();
 	os.close();
+
+	ulint bitsize = bwt.bit_size();
+
+	cout << endl << "done" << endl;
+	cout << " Total time: " << (double)sec << " seconds" << endl;
+	cout << " Size of the structures (bits): " << bitsize << endl;
+	cout << " Size of the structures (Bytes): " << bitsize/8 << endl;
+	cout << " Size of the structures (KB): " << (bitsize/8)/1024 << endl;
+	cout << " Size of the structures (MB): " << ((bitsize/8)/1024)/1024 << endl;
 
 }
 

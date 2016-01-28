@@ -234,6 +234,27 @@ public:
 
 	}
 
+	/*
+	 * Total number of bits allocated in RAM for this structure
+	 *
+	 * WARNING: this measure is good only for relatively small alphabets (e.g. ASCII)
+	 * as we use STL containers such as set and map which do not give direct info on
+	 * the total memory allocated. The sizes of these containers are proportional
+	 * to the alphabet size (but the constants involved are high since internally
+	 * they can use heavy structures as RBT)
+	 */
+	ulint bit_size(){
+
+		ulint size = sizeof(rle_lz77_v1)*8 + RLBWT.bit_size();
+
+		size += SA.size()*(sizeof(char_t)+sizeof(sparse_vec))*8;
+
+		for(auto e:SA) size += e.second.bit_size();
+
+		return size;
+
+	}
+
 private:
 
 	//the run-length encoded BWT

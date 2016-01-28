@@ -157,6 +157,8 @@ public:
 		return size_;
 	}
 
+	ulint bit_size(){return 0;}
+
 private:
 
 	vector<uint64_t> vec;

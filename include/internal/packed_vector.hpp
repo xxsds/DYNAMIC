@@ -1,5 +1,5 @@
 /*
- * packed_block.hpp
+ * packed_vector.hpp
  *
  *  Created on: Oct 21, 2015
  *      Author: nico
@@ -488,16 +488,6 @@ public:
 	}
 
 	/*
-	 * returns total bit size of the structure
-	 */
-	uint64_t bit_size(){
-
-		return 8*sizeof(packed_vector) + words.capacity()*64;
-
-	}
-
-
-	/*
 	 * split content of this vector into 2 packed blocks:
 	 * Left part remains in this block, right part in the
 	 * new returned block
@@ -554,6 +544,16 @@ public:
 		words[word_nr] |= (x<<(width_*pos));
 
 	}
+
+	/*
+	 * return total number of bits occupied in memory by this object instance
+	 */
+	ulint bit_size(){
+
+		return ( sizeof(packed_vector) + words.capacity()*sizeof(ulint) )*8;
+
+	}
+
 
 private:
 

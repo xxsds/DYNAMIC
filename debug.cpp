@@ -701,6 +701,18 @@ void test_lz77(string in, string out){
 
 int main(int argc,char** argv) {
 
+
+	suc_bv B;
+
+	for(int i=0;i<100000;++i)
+	B.push_front(true);
+
+	cout << sizeof(B) << endl;
+	cout << sizeof(suc_bv) << endl;
+	cout << B.bit_size() << endl;
+
+	exit(0);
+
 	//benchmark_spsi(10000000);
 	//test_strings(5000000);
 	//test_lz77<rle_lz77_v2>(argv[1], argv[2]);

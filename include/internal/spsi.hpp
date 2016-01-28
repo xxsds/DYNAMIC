@@ -284,7 +284,7 @@ public:
 	}
 
 	/*
-	 * return total bit size of the structure
+	 * Total number of bits allocated in RAM for this structure
 	 */
 	uint64_t bit_size(){
 
@@ -468,11 +468,11 @@ private:
 
 			uint64_t bs = 8*sizeof(node);
 
-			bs += subtree_sizes.size()*sizeof(uint64_t)*8;
-			bs += subtree_psums.size()*sizeof(uint64_t)*8;
+			bs += subtree_sizes.capacity()*sizeof(uint64_t)*8;
+			bs += subtree_psums.capacity()*sizeof(uint64_t)*8;
 
-			bs += children.size()*sizeof(node*)*8;
-			bs += leaves.size()*sizeof(leaf_type*)*8;
+			bs += children.capacity()*sizeof(node*)*8;
+			bs += leaves.capacity()*sizeof(leaf_type*)*8;
 
 			if(has_leaves()){
 

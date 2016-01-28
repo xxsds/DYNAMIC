@@ -175,7 +175,11 @@ public:
 
 	}
 
-	uint64_t bit_size();
+	uint64_t bit_size(){
+
+		return sizeof(wt_string<dynamic_bitvector_t>)*8 + ae.bit_size() + root.bit_size();
+
+	}
 
 	ulint alphabet_size(){
 
@@ -415,18 +419,39 @@ private:
 
 		}
 
-	private:
+		/*
+		 * Total number of bits allocated in RAM for this structure
+		 *
+		 * WARNING: this measure is good only for relatively small alphabets (e.g. ASCII)
+		 * as we use STL containers such as set and map which do not give direct info on
+		 * the total memory allocated. The sizes of these containers are proportional
+		 * to the alphabet size (but the constants involved are high since internally
+		 * they can use heavy structures as RBT)
+		 */
+		ulint bit_size(){
 
-		bool is_leaf_ = false;
+			ulint size = sizeof(node)*8;
+
+			size += bv.bit_size();
+
+			if(has_child0()) size += child0_->bit_size();
+			if(has_child1()) size += child1_->bit_size();
+
+			return size;
+
+		}
+
+	private:
 
 		node* child0_ = NULL;
 		node* child1_ = NULL;
 		node* parent_ = NULL;		//parent (NULL if root)
 
+		dynamic_bitvector_t bv;
+
 		//if is_leaf_, then node is labeled
 		char_type l_ = 0;
-
-		dynamic_bitvector_t bv;
+		bool is_leaf_ = false;
 
 	};
 

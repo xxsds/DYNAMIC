@@ -132,6 +132,27 @@ public:
 
 	}
 
+	/*
+	 * Total number of bits allocated in RAM for this structure
+	 *
+	 * WARNING: this measure is good only for relatively small alphabets (e.g. ASCII)
+	 * as we use STL containers such as set and map which do not give direct info on
+	 * the total memory allocated. The sizes of these containers are proportional
+	 * to the alphabet size (but the constants involved are high since internally
+	 * they can use heavy structures as RBT)
+	 */
+	ulint bit_size(){
+
+		ulint size = sizeof(fm_index<dyn_bwt,dyn_bv,dyn_vec>)*8;
+
+		size += dyn_bwt::bit_size();
+		size += marked.bit_size();
+		size += SA.bit_size();
+
+		return size;
+
+	}
+
 private:
 
 	/*

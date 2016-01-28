@@ -208,6 +208,9 @@ public:
 
 	}
 
+	/*
+	 * Total number of bits allocated in RAM for this structure
+	 */
 	uint64_t bit_size() {
 		return sizeof(succinct_bitvector<spsi_type>)*8 + spsi_.bit_size();
 	}
