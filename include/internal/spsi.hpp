@@ -291,7 +291,7 @@ public:
 		assert(root != NULL);
 
 		uint64_t bs = 8*sizeof(spsi<leaf_type,B_LEAF,B>);
-		bs += root->bit_size();
+		if(root != NULL) bs += root->bit_size();
 
 		return bs;
 
@@ -476,11 +476,19 @@ private:
 
 			if(has_leaves()){
 
-				for(uint32_t i = 0;i<nr_children;++i) bs += leaves[i]->bit_size();
+				for(auto l : leaves){
+
+					if(l != NULL) bs += l->bit_size();
+
+				}
 
 			}else{
 
-				for(uint32_t i = 0;i<nr_children;++i) bs += children[i]->bit_size();
+				for(auto c : children){
+
+					if(c != NULL) bs += c->bit_size();
+
+				}
 
 			}
 

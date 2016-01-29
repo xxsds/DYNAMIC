@@ -434,8 +434,8 @@ private:
 
 			size += bv.bit_size();
 
-			if(has_child0()) size += child0_->bit_size();
-			if(has_child1()) size += child1_->bit_size();
+			if(child0_ != NULL) size += child0_->bit_size();
+			if(child1_ != NULL) size += child1_->bit_size();
 
 			return size;
 
