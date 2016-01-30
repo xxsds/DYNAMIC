@@ -192,15 +192,25 @@ public:
 
 		for(auto e : encode_){
 
+			//cout << "alph enc 1 " << endl;
+
 			size += (sizeof(e.first) + sizeof(e.second))*8 + e.second.capacity();
+
+			//cout << "alph enc 2 " << endl;
 
 		}
 
 		for(auto e : decode_){
 
+			//cout << "alph enc 3 " << endl;
+
 			size += (sizeof(e.first) + sizeof(e.second))*8 + e.first.capacity();
 
+			//cout << "alph enc 4 " << endl;
+
 		}
+
+		//cout << "alph enc 5 " << endl;
 
 		return sizeof(alphabet_encoder)*8 + size;
 

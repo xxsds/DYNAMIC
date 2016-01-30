@@ -432,10 +432,15 @@ private:
 
 			ulint size = sizeof(node)*8;
 
+			//cout << "wt_str 1" << endl;
 			size += bv.bit_size();
+			//cout << "wt_str 2" << endl;
 
 			if(child0_ != NULL) size += child0_->bit_size();
+			//cout << "wt_str 3" << endl;
+
 			if(child1_ != NULL) size += child1_->bit_size();
+			//cout << "wt_str 4" << endl;
 
 			return size;
 

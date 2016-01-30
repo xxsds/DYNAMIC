@@ -290,8 +290,14 @@ public:
 
 		assert(root != NULL);
 
+		//cout << "spsi 1" << endl;
 		uint64_t bs = 8*sizeof(spsi<leaf_type,B_LEAF,B>);
+
+		//cout << "spsi 2" << endl;
+
 		if(root != NULL) bs += root->bit_size();
+
+		//cout << "spsi 3" << endl;
 
 		return bs;
 
@@ -352,14 +358,30 @@ private:
 			subtree_sizes = {n.subtree_sizes};
 			subtree_psums = {n.subtree_psums};
 
-			children = vector<node*>(n.children.size(),NULL);
-			for(uint64_t i=0;i<n.children.size();++i) children[i] = new node(*n.children[i]);
+			if(n.has_leaves_){
 
-			leaves = vector<leaf_type*>(n.leaves.size(),NULL);
-			for(uint64_t i=0;i<n.leaves.size();++i) leaves[i] = new leaf_type(*n.leaves[i]);
+				leaves = vector<leaf_type*>(n.nr_children,NULL);
 
-			node* parent = NULL; 		//NULL for root
-			if(n.parent!=NULL) parent = new node(*n.parent);
+				for(uint64_t i=0;i<n.nr_children;++i){
+
+					leaves[i] = new leaf_type(*n.leaves[i]);
+
+				}
+
+			}else{
+
+				children = vector<node*>(n.nr_children, NULL);
+
+				for(uint64_t i=0;i<n.nr_children;++i){
+
+					children[i] = new node(*n.children[i]);
+					children[i]->overwrite_parent(this);
+
+				}
+
+			}
+
+			node* parent = NULL; 	//NULL for root
 
 			rank_ = n.rank_; 		//rank of this node among its siblings
 
@@ -468,30 +490,39 @@ private:
 
 			uint64_t bs = 8*sizeof(node);
 
+			//cout << "spsi 4 " << endl;
 			bs += subtree_sizes.capacity()*sizeof(uint64_t)*8;
+
+			//cout << "spsi 5 " << endl;
 			bs += subtree_psums.capacity()*sizeof(uint64_t)*8;
 
+			//cout << "spsi 6 " << endl;
 			bs += children.capacity()*sizeof(node*)*8;
+
+			//cout << "spsi 7 " << endl;
 			bs += leaves.capacity()*sizeof(leaf_type*)*8;
 
 			if(has_leaves()){
 
-				for(auto l : leaves){
+				for(ulint i=0;i<nr_children;++i){
 
-					if(l != NULL) bs += l->bit_size();
+					assert(leaves[i] != NULL);
+					bs += leaves[i]->bit_size();
 
 				}
 
 			}else{
 
-				for(auto c : children){
+				for(ulint i=0;i<nr_children;++i){
 
-					if(c != NULL) bs += c->bit_size();
+					assert(children[i] != NULL);
+					bs += children[i]->bit_size();
 
 				}
 
 			}
 
+			//cout << "spsi 12 " << endl;
 			return bs;
 
 		}
@@ -1213,19 +1244,27 @@ private:
 
 			if(has_leaves()){
 
-				vector<leaf_type*> right_children_l;
+				vector<leaf_type*> right_children_l(nr_children-nr_children/2);
+
+				ulint k=0;
 
 				for(uint32_t i = nr_children/2; i<nr_children;++i)
-					right_children_l.push_back(leaves[i]);
+					right_children_l[k++] = leaves[i];
+
+				assert(k==right_children_l.size());
 
 				right = new node(right_children_l, parent, rank()+1);
 
 			}else{
 
-				vector<node*> right_children_n;
+				vector<node*> right_children_n(nr_children-nr_children/2);
+
+				ulint k=0;
 
 				for(uint32_t i = nr_children/2; i<nr_children;++i)
-					right_children_n.push_back(children[i]);
+					right_children_n[k++] = children[i];
+
+				assert(k==right_children_n.size());
 
 				right = new node(right_children_n, parent, rank()+1);
 
