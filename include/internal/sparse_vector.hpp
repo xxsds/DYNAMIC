@@ -312,7 +312,6 @@ public:
 	 */
 	ulint bit_size(){
 
-		//cout << "spsi sparse vec " << endl;
 		return sizeof(sparse_vector<spsi_type, gap_bv_type>)*8 + spsi_.bit_size() + bv_.bit_size();
 
 	}

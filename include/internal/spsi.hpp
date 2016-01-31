@@ -290,14 +290,9 @@ public:
 
 		assert(root != NULL);
 
-		//cout << "spsi 1" << endl;
 		uint64_t bs = 8*sizeof(spsi<leaf_type,B_LEAF,B>);
 
-		//cout << "spsi 2" << endl;
-
 		if(root != NULL) bs += root->bit_size();
-
-		//cout << "spsi 3" << endl;
 
 		return bs;
 
@@ -490,16 +485,12 @@ private:
 
 			uint64_t bs = 8*sizeof(node);
 
-			//cout << "spsi 4 " << endl;
 			bs += subtree_sizes.capacity()*sizeof(uint64_t)*8;
 
-			//cout << "spsi 5 " << endl;
 			bs += subtree_psums.capacity()*sizeof(uint64_t)*8;
 
-			//cout << "spsi 6 " << endl;
 			bs += children.capacity()*sizeof(node*)*8;
 
-			//cout << "spsi 7 " << endl;
 			bs += leaves.capacity()*sizeof(leaf_type*)*8;
 
 			if(has_leaves()){
@@ -522,7 +513,6 @@ private:
 
 			}
 
-			//cout << "spsi 12 " << endl;
 			return bs;
 
 		}

@@ -334,23 +334,11 @@ public:
 	 */
 	ulint bit_size(){
 
-		//cout << "bwt 1 " << endl;
-
 		ulint size = sizeof(bwt<dynamic_string_type,rle_string_type>)*8;
 
-		//cout << "bwt 2 " << endl;
-
 		size += F.bit_size();
-
-		//cout << "bwt 3 " << endl;
-
 		size += L.bit_size();
-
-		//cout << "bwt 4 " << endl;
-
 		size += alphabet.size()*sizeof(char_type*)*8;
-
-		//cout << "bwt 5 " << endl;
 
 		return size;
 

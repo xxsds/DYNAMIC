@@ -253,8 +253,8 @@ public:
 	 */
 	uint64_t bit_size() {
 
-		//cout << "gap bv " << endl;
 		return sizeof(gap_bitvector<spsi_type>)*8 + spsi_.bit_size();
+
 	}
 
 	/*

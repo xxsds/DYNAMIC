@@ -534,27 +534,18 @@ public:
 	 */
 	ulint bit_size(){
 
-		//cout << "rle str 1 " << endl;
 		ulint size = sizeof(rle_string<sparse_bitvector_t,string_t>)*8;
 
-		//cout << "rle str 2 " << endl;
 		size += runs.bit_size();
 
-		//cout << "rle str 3 " << endl;
 		size += run_heads_.bit_size();
 
-		//cout << "rle str 4 " << endl;
 		for(auto e : runs_per_letter){
 
-			//cout << "rle str 5 " << endl;
 			size += (sizeof(e.first) + sizeof(e.second))*8;
-			//cout << "rle str 6 " << endl;
 			size += e.second.bit_size();
-			//cout << "rle str 7 " << endl;
 
 		}
-
-		//cout << "rle str 8 " << endl;
 
 		return size;
 

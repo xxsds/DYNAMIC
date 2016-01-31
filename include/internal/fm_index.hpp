@@ -143,23 +143,11 @@ public:
 	 */
 	ulint bit_size(){
 
-		//cout << "fmi 1 " << endl;
-
 		ulint size = sizeof(fm_index<dyn_bwt,dyn_bv,dyn_vec>)*8;
 
-		//cout << "fmi 2 " << endl;
-
 		size += dyn_bwt::bit_size();
-
-		//cout << "fmi 3 " << endl;
-
 		size += marked.bit_size();
-
-		//cout << "fmi 4 " << endl;
-
 		size += SA.bit_size();
-
-		//cout << "fmi 5 " << endl;
 
 		return size;
 
