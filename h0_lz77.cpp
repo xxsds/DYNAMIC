@@ -29,7 +29,7 @@ int main(int argc,char** argv) {
 
 		cout << "Build LZ77 using a zero-order compressed FM index." << endl << endl;
 		cout << "Usage: h0_lz77 [sample_rate] <input_file> <output_file> " << endl;
-		cout << "   sample_rate: store one SA sample every sample_rate positions. default: 64." << endl;
+		cout << "   sample_rate: store one SA sample every sample_rate positions. default: 256." << endl;
 		cout << "   input_file: file to be parsed" << endl;
 		cout << "   output_file: LZ77 triples <start,length,char> will be saved in text format in this file" << endl;
 
@@ -74,7 +74,7 @@ int main(int argc,char** argv) {
 	std::ifstream ifs(in);
 	std::ofstream os(out);
 
-	lz77.parse(ifs,os,true);
+	lz77.parse(ifs,os,0,true);
 
 	ifs.close();
 	os.close();

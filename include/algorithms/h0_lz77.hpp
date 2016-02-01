@@ -72,12 +72,15 @@ public:
 	 * are converted to char* before streaming them to out
 	 * (i.e. ulint to 8 bytes and uchar to 1 byte)
 	 *
+	 * after the end of a phrase, skiip 'skip' characters (LZ77
+	 * sparsification, experimental)
+	 *
 	 * to get also the last factor, input stream should
 	 * terminate with a character that does not appear elsewhere
 	 * in the stream
 	 *
 	 */
-	void parse(istream& in, ostream& out, bool verbose = false){
+	void parse(istream& in, ostream& out, ulint skip = 0, bool verbose = false){
 
 		long int step = 1000000;	//print status every step characters
 		long int last_step = 0;
@@ -90,10 +93,14 @@ public:
 		ulint i = 0;	//position of terminator character in bwt
 		ulint p = 0;	//phrase occurrence
 
+		ulint z = 0; 	//number of LZ77 phrases
+
 		if(verbose) cout << "Parsing ..." << endl;
 
 		char cc;
 		while(in.get(cc)){
+
+			//cout << cc;
 
 			if(verbose){
 
@@ -112,6 +119,8 @@ public:
 
 			if(new_range.first >= new_range.second){
 
+				//cout << ":";
+
 				//empty range: new factor
 
 				ulint occ;
@@ -124,7 +133,6 @@ public:
 				}
 
 				fmi.extend(c);
-				range = fmi.get_full_interval();
 
 				//cout << p << " " << len << " " << cc << endl;
 
@@ -138,8 +146,26 @@ public:
 				delete start;
 				delete l;
 
+				z++;
 				len = 0;
 				p = 0;
+
+				//skip characters
+
+				ulint k = 0;
+
+				while(k < skip && in.get(cc)){
+
+					//cout << cc;
+
+					fmi.extend(uchar(cc));
+					k++;
+
+				}
+
+				//cout << "|";
+
+				range = fmi.get_full_interval();
 
 			}else{
 
@@ -152,6 +178,9 @@ public:
 
 
 		}
+
+		if(verbose) cout << "\nNumber of LZ77 phrases: " << z << endl;
+
 
 	}
 
