@@ -70,7 +70,8 @@ public:
 	 * saves to the output stream (could be a file) a series
 	 * of triples <pos,len,c> of type <ulint,ulint,uchar>. Types
 	 * are converted to char* before streaming them to out
-	 * (i.e. ulint to 8 bytes and uchar to 1 byte)
+	 * (i.e. ulint to 8 bytes and uchar to 1 byte). len is the length
+	 * of the copied string (i.e. excluded skipped characters in the end)
 	 *
 	 * after the end of a phrase, skiip 'skip' characters (LZ77
 	 * sparsification, experimental)

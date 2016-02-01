@@ -8,17 +8,16 @@
 #ifndef DYNAMIC_TYPEDEFS_HPP_
 #define DYNAMIC_TYPEDEFS_HPP_
 
-#include <spsi.hpp>
-#include <gap_bitvector.hpp>
-#include <spsi_check.hpp>
-#include <succinct_bitvector.hpp>
-#include <rle_string.hpp>
-#include <bwt.hpp>
-#include <sparse_vector.hpp>
-#include <packed_vector.hpp>
-#include <wt_string.hpp>
-#include <fm_index.hpp>
-#include <h0_lz77.hpp>
+#include <internal/spsi.hpp>
+#include <internal/gap_bitvector.hpp>
+#include <internal/spsi_check.hpp>
+#include <internal/succinct_bitvector.hpp>
+#include <internal/rle_string.hpp>
+#include <internal/bwt.hpp>
+#include <internal/sparse_vector.hpp>
+#include <internal/packed_vector.hpp>
+#include <internal/wt_string.hpp>
+#include <internal/fm_index.hpp>
 
 namespace dyn{
 

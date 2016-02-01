@@ -14,7 +14,7 @@
 
 #include <chrono>
 #include <dynamic.hpp>
-#include "include/algorithms/rle_lz77_v2.hpp"
+#include <algorithms/h0_lz77.hpp>
 
 using namespace std;
 using namespace dyn;
