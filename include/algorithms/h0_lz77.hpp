@@ -73,7 +73,7 @@ public:
 	 * (i.e. ulint to 8 bytes and uchar to 1 byte). len is the length
 	 * of the copied string (i.e. excluded skipped characters in the end)
 	 *
-	 * after the end of a phrase, skiip 'skip' characters (LZ77
+	 * after the end of a phrase, skip 'skip'>0 characters, included trailing character (LZ77
 	 * sparsification, experimental)
 	 *
 	 * to get also the last factor, input stream should
@@ -81,7 +81,9 @@ public:
 	 * in the stream
 	 *
 	 */
-	void parse(istream& in, ostream& out, ulint skip = 0, bool verbose = false){
+	void parse(istream& in, ostream& out, ulint skip = 1, bool verbose = false){
+
+		assert(skip>0);
 
 		long int step = 1000000;	//print status every step characters
 		long int last_step = 0;
@@ -135,14 +137,13 @@ public:
 
 				fmi.extend(c);
 
-				//cout << p << " " << len << " " << cc << endl;
-
 				auto start = (char*)(new ulint(p));
 				auto l = (char*)(new ulint(len));
 
 				out.write(start,sizeof(ulint));
 				out.write(l,sizeof(ulint));
 				out.write(&cc,1);
+
 
 				delete start;
 				delete l;
@@ -155,7 +156,7 @@ public:
 
 				ulint k = 0;
 
-				while(k < skip && in.get(cc)){
+				while(k < skip-1 && in.get(cc)){
 
 					//cout << cc;
 
