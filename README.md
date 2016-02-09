@@ -15,6 +15,8 @@ This library offers space- and time-efficient implementations of some basic succ
 - A run-length encoded dynamic string supporting RSAI operations. Space: approximately R*(1.1 * log(sigma) + 2.6 * log(n/R)) bits, where R is the number of runs in the string. All operations take log(R) time.
 - A dynamic entropy/run-length compressed BWT
 - Two algorithms to build LZ77 in repetition-aware RAM working space. Both algorithms use a run-length encoded BWT with sparse Suffix array sampling. The first algorithm stores 2 SA samples per BWT run. The second algorithm (much more space efficient) stores 1 SA sample per LZ factor.
+- An algorithm to build the BWT in run-compressed space
+- An algorithm to build LZ77 in nH0(1+o(1)) space and n log n time
 
 The SPSI structure is the building block on which all other structures are based. This structure is implemented with cache-efficient B-trees.
 
@@ -38,7 +40,7 @@ Finally, build the executables:
 
 > make
 
-The above command creates the executables in the bin directory.
+The above command creates the executables in the bin directory. 
 
 ### Usage
 

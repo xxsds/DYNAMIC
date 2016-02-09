@@ -437,8 +437,9 @@ void compare_bitvectors(uint64_t size){
 
 }
 
+//p=probability of nonzero element
 template<class dyn_str_t>
-void benchmark_dyn_str(uint64_t size, uint64_t sigma){
+void benchmark_dyn_str(uint64_t size, uint64_t sigma, double p = 0.5){
 
 	dyn_str_t bv;
 
@@ -457,7 +458,9 @@ void benchmark_dyn_str(uint64_t size, uint64_t sigma){
 
 		//if(i%10000==0 and i>0) cout << endl << i << " characters processed ...";
 
-		bv.insert(rand()%(bv.size()+1),rand()%sigma);
+		ulint c = double(rand())/RAND_MAX < p ? rand()%(sigma-1)+1 : 0;
+
+		bv.insert(rand()%(bv.size()+1),c);
 
 	}
 	cout << "done." << endl;
@@ -507,6 +510,8 @@ void benchmark_dyn_str(uint64_t size, uint64_t sigma){
 	cout << (double)sec_access/bv.size() << " microseconds/access" << endl;
 	cout << (double)sec_rank/bv.size() << " microseconds/rank" << endl;
 	cout << (double)sec_sel/size << " microseconds/sel" << endl;
+
+	cout << "Bit size of the structure: " << bv.bit_size() << endl;
 
 }
 
@@ -603,21 +608,21 @@ void test_strings(ulint size, ulint sigma){
 
 }
 
-void test_strings(ulint n){
+void test_strings(ulint n, double P = 0.5){
 
 	ulint sigma = 26;
 
 	cout << endl << " *** gap_bv:" << endl;
-	benchmark_dyn_str<gap_bv>(n, 2);
+	benchmark_dyn_str<gap_bv>(n, 2,P);
 
 	cout << endl << " *** suc_bv:" << endl;
-	benchmark_dyn_str<suc_bv>(n, 2);
+	benchmark_dyn_str<suc_bv>(n, 2,P);
 
-	cout << endl << " *** com_str:" << endl;
-	benchmark_dyn_str<wt_str>(n, sigma);
+	//cout << endl << " *** com_str:" << endl;
+	//benchmark_dyn_str<wt_str>(n, sigma);
 
-	cout << endl << " *** rle_str:" << endl;
-	benchmark_dyn_str<rle_str>(n, sigma);
+	//cout << endl << " *** rle_str:" << endl;
+	//benchmark_dyn_str<rle_str>(n, sigma);
 
 	//cout << endl << " *** wtrle_str:" << endl;
 	//benchmark_dyn_str<wtrle_str>(n, sigma);
@@ -701,7 +706,7 @@ void test_lz77(string in, string out){
 
 int main(int argc,char** argv) {
 
-	test_strings(10000,30);
+	test_strings(50000000*8,0.01);
 	//test_lz77<rle_lz77_v2>(argv[1], argv[2]);
 
 }
