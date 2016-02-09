@@ -52,7 +52,10 @@ public:
 	bool at(uint64_t i){
 
 		assert(i<size());
-		return spsi_.contains_r(i+1);
+
+		return i==0 ? rank1(1) : rank1(i+1)-rank1(i);
+
+		//return spsi_.contains_r(i+1);
 
 	}
 

@@ -515,7 +515,7 @@ void benchmark_dyn_str(uint64_t size, uint64_t sigma, double p = 0.5){
 
 }
 
-void test_strings(ulint size, ulint sigma){
+void check_strings(ulint size, ulint sigma){
 
 	wt_str s1;
 	wtrle_str s2;
@@ -706,7 +706,7 @@ void test_lz77(string in, string out){
 
 int main(int argc,char** argv) {
 
-	test_strings(50000000*8,0.01);
+	check_strings(10000,20);
 	//test_lz77<rle_lz77_v2>(argv[1], argv[2]);
 
 }
