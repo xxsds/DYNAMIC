@@ -238,13 +238,13 @@ public:
 	/*
 	 * true iif x is one of  0, I_0+1, I_0+I_1+2, ...
 	 */
-	bool contains_r(uint64_t x){
+	/*bool contains_r(uint64_t x){
 
 		assert(x<=psum()+size());
 
 		return root->contains_r(x);
 
-	}
+	}*/
 
 	void push_back(uint64_t x){
 		insert(size(),x);
