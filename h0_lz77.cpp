@@ -1,9 +1,9 @@
 /*
- * h0_lz77_v2.cpp
+ * h0_lz77.cpp
  *
  *  Compute the LZ77 parsing in zero-order compressed space
  *  using a dynamic Huffman-encoded FM index with
- *  a sparse SA sampling (1 sample every 128 characters)
+ *  a sparse SA sampling (1 sample every 256 characters)
  *
  *  Space is ( n*H0 + n + (n/k)*log n )(1+o(1)) bits.
  *
@@ -48,7 +48,7 @@ int main(int argc,char** argv) {
 	auto t1 = high_resolution_clock::now();
 
 	lz77_t lz77;
-	const ulint DEFAULT_SA_RATE = 256;
+	ulint DEFAULT_SA_RATE = lz77_t::DEFAULT_SA_RATE;
 
 	ulint sa_rate = argc == 3 ? DEFAULT_SA_RATE : atoi(argv[1]);
 

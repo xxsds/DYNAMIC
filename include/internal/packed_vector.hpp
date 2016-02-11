@@ -512,7 +512,6 @@ public:
 		uint64_t nr_right_ints = size_ - nr_left_ints;
 
 		auto right_words = vector<uint64_t>(words.begin()+nr_left_words, words.begin()+tot_words);
-
 		words = vector<uint64_t>(words.begin(), words.begin()+nr_left_words+extra_);
 
 		size_ = nr_left_ints;

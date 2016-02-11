@@ -1,5 +1,5 @@
 //============================================================================
-// Name        : ho_lz77.hpp
+// Name        : h0_lz77.hpp
 // Author      : Nicola Prezza
 // Version     : 1.0
 
@@ -27,14 +27,14 @@ class h0_lz77 {
 public:
 
 	/*
-	 * Constructor #1: run-heads are gamma-coded
+	 * Constructor #1: chars are gamma-coded
 	 */
 	h0_lz77(){}
 
 	/*
 	 * Constructor #2
 	 *
-	 * We know only alphabet size. Each Run-head char is assigned log2(sigma) bits.
+	 * We know only alphabet size. Each char is assigned log2(sigma) bits.
 	 * Characters are assigned codes 0,1,2,... in order of appearance
 	 *
 	 */
@@ -54,7 +54,7 @@ public:
 	 * should be the same used in parse(istream& in, ostream& out)
 	 * (but it is not necesssary)
 	 *
-	 * Here Run-heads are Huffman encoded.
+	 * Here chars are Huffman encoded.
 	 *
 	 */
 	h0_lz77(istream& in, ulint sample_rate = DEFAULT_SA_RATE){
@@ -201,12 +201,12 @@ public:
 
 	}
 
+	static const ulint DEFAULT_SA_RATE = 256;
+
 private:
 
 	//the dynamic compressed BWT
 	dyn_fmi fmi;
-
-	static const ulint DEFAULT_SA_RATE = 256;
 
 };
 
