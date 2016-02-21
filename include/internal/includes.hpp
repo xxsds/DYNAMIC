@@ -32,7 +32,7 @@ typedef pair<uint64_t,uint64_t> range_t;
  * input: an input stream of characters
  * output: character frequencies
  */
-vector<pair<ulint,double> > get_frequencies(istream& in){
+inline vector<pair<ulint,double> > get_frequencies(istream& in){
 
 	vector<double> freqs(256,0);
 
