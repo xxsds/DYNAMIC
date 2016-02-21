@@ -116,6 +116,7 @@ typedef rle_string<bv_check, str_check> rle_str_check;
 // ------------- template specializations ------------------------------------
 
 template<>
+inline
 ulint rle_bwt::number_of_runs(){
 
 	return L.number_of_runs()+1;
@@ -123,6 +124,7 @@ ulint rle_bwt::number_of_runs(){
 }
 
 template<>
+inline
 ulint rle_bwt::number_of_runs(pair<ulint,ulint> interval){
 
 	//coordinates on BWT with terminator
@@ -155,6 +157,7 @@ ulint rle_bwt::number_of_runs(pair<ulint,ulint> interval){
  * i.e. i \in [l,r) (right position always exclusive)
  */
 template<>
+inline
 pair<ulint,ulint> rle_bwt::locate_run(ulint i){
 
 	assert(i<bwt_length());
