@@ -131,8 +131,6 @@ void test_spsi(uint64_t n){
 
 		//if(sp.contains_r(r)!=spc.contains_r(r)) cout << r << " " << sp.contains_r(r) << " " << spc.contains_r(r) << endl;
 
-		assert(sp.contains_r(r)==spc.contains_r(r));
-
 	}
 	cout << " ok." << endl;
 
@@ -706,7 +704,72 @@ void test_lz77(string in, string out){
 
 int main(int argc,char** argv) {
 
-	check_strings(10000,20);
+	string filename("/home/nico/file_spsi_test");
+
+	vector<ulint> v1,v2;
+
+	{
+
+		packed_spsi sp;
+
+		cout << "populating spsi ... " << flush;
+
+		srand(time(NULL));
+		for(ulint i=0;i<50000000;++i) sp.insert(rand()%(sp.size()+1),rand()%1000);
+
+		cout << "done" << endl;
+
+		ofstream ofs(filename);
+
+		cout << "serializing spsi ... " << flush;
+
+		sp.serialize(ofs);
+
+		cout << "done" << endl;
+
+		ofs.close();
+
+		cout << "extracting from spsi ... " << flush;
+
+		for(ulint i=0;i<sp.size();++i) v1.push_back(sp[i]);
+
+		cout << "done" << endl;
+
+	}
+
+	{
+
+		packed_spsi sp;
+
+		ifstream ifs(filename);
+
+		cout << "loading spsi ... " << flush;
+
+		sp.load(ifs);
+
+		cout << "done" << endl;
+
+		ifs.close();
+
+		cout << "extracting from spsi ... " << flush;
+
+		for(ulint i=0;i<sp.size();++i) v2.push_back(sp[i]);
+
+		cout << "done" << endl;
+
+	}
+
+	if(v1==v2){
+
+		cout << "Vectors coincide! well done." << endl;
+
+	}else{
+
+		cout << "ooops ... " << endl;
+
+	}
+
+	//check_strings(10000,20);
 	//test_lz77<rle_lz77_v2>(argv[1], argv[2]);
 
 }

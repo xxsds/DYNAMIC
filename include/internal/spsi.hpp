@@ -339,6 +339,21 @@ public:
 
 	}
 
+	ulint serialize(ostream &out){
+
+		assert(root);
+		return root->serialize(out);
+
+	}
+
+	void load(istream &in){
+
+		root = new node();
+		root->load(in);
+
+	}
+
+
 private:
 
 	class node{
@@ -966,6 +981,110 @@ private:
 
 		uint32_t number_of_children(){
 			return nr_children;
+		}
+
+		ulint serialize(ostream &out){
+
+			ulint w_bytes=0;
+			ulint subtree_sizes_len = subtree_sizes.size();
+			ulint subtree_psums_len = subtree_psums.size();
+			ulint children_len = children.size();
+			ulint leaves_len = leaves.size();
+
+
+			out.write((char*)&subtree_sizes_len,sizeof(subtree_sizes_len));
+			w_bytes += sizeof(subtree_sizes_len);
+
+			out.write((char*)&subtree_psums_len,sizeof(subtree_psums_len));
+			w_bytes += sizeof(subtree_psums_len);
+
+			out.write((char*)&children_len,sizeof(children_len));
+			w_bytes += sizeof(children_len);
+
+			out.write((char*)&leaves_len,sizeof(leaves_len));
+			w_bytes += sizeof(leaves_len);
+
+
+			out.write((char*)subtree_sizes.data(),sizeof(uint64_t)*subtree_sizes_len);
+			w_bytes += sizeof(uint64_t)*subtree_sizes_len;
+
+			out.write((char*)subtree_psums.data(),sizeof(uint64_t)*subtree_psums_len);
+			w_bytes += sizeof(uint64_t)*subtree_psums_len;
+
+			out.write((char*)&has_leaves_,sizeof(has_leaves_));
+			w_bytes += sizeof(has_leaves_);
+
+			if(has_leaves_){
+
+				for(auto l : leaves) l->serialize(out);
+
+			}else{
+
+				for(auto c : children) c->serialize(out);
+
+			}
+
+			out.write((char*)&rank_,sizeof(rank_));
+			w_bytes += sizeof(rank_);
+
+			out.write((char*)&nr_children,sizeof(nr_children));
+			w_bytes += sizeof(nr_children);
+
+			return w_bytes;
+
+		}
+
+		void load(istream &in){
+
+			ulint subtree_sizes_len;
+			ulint subtree_psums_len;
+			ulint children_len;
+			ulint leaves_len;
+
+			in.read((char*)&subtree_sizes_len,sizeof(subtree_sizes_len));
+
+			in.read((char*)&subtree_psums_len,sizeof(subtree_psums_len));
+
+			in.read((char*)&children_len,sizeof(children_len));
+
+			in.read((char*)&leaves_len,sizeof(leaves_len));
+
+			assert(subtree_sizes_len>0);
+			assert(subtree_psums_len>0);
+
+			subtree_sizes = vector<uint64_t>(subtree_sizes_len);
+			in.read((char*)subtree_sizes.data(),sizeof(uint64_t)*subtree_sizes_len);
+
+			subtree_psums = vector<uint64_t>(subtree_psums_len);
+			in.read((char*)subtree_psums.data(),sizeof(uint64_t)*subtree_psums_len);
+
+
+			in.read((char*)&has_leaves_,sizeof(has_leaves_));
+
+
+			if(has_leaves_){
+
+				assert(leaves_len>0);
+				leaves = vector<leaf_type*>(leaves_len);
+
+				for(auto& l : leaves) l = new leaf_type();
+				for(auto& l : leaves) l->load(in);
+
+			}else{
+
+				assert(children_len>0);
+				children = vector<node*>(children_len);
+
+				for(auto& c : children) c = new node();
+				for(auto& c : children) c->overwrite_parent(this);
+				for(auto& c : children) c->load(in);
+
+			}
+
+			in.read((char*)&rank_,sizeof(rank_));
+
+			in.read((char*)&nr_children,sizeof(nr_children));
+
 		}
 
 	private:
