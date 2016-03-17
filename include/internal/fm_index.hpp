@@ -107,6 +107,16 @@ public:
 	}
 
 	/*
+	 * input: pattern P
+	 * output: occurrences of P in the text
+	 */
+	vector<ulint> locate(vector<char_type> P){
+
+		return locate(dyn_bwt::count(P));
+
+	}
+
+	/*
 	 * build FM index of cW from FM index of W
 	 */
 	void extend(char_type c){

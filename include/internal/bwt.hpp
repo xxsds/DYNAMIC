@@ -190,6 +190,20 @@ public:
 	}
 
 	/*
+	 * count number of occurrences of pattern P
+	 * returns range [l,r) (right-exclusive) on BWT of P
+	 */
+	pair<ulint,ulint> count(vector<char_type> P){
+
+		pair<ulint,ulint> rn = {0,size()};
+
+		for(ulint i=0;i<P.size();++i) rn = LF(rn, P[P.size()-i-1]);
+
+		return rn;
+
+	}
+
+	/*
 	 * LF function
 	 */
 	ulint LF(ulint i){
@@ -386,6 +400,8 @@ public:
 		L.load(in);
 
 	}
+
+
 
 private:
 
