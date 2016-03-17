@@ -704,24 +704,24 @@ void test_lz77(string in, string out){
 
 int main(int argc,char** argv) {
 
-	string filename("/home/nico/file_spsi_test");
+	string filename("/home/nico/dynamic_test");
 
 	vector<ulint> v1,v2;
 
 	{
 
-		packed_spsi sp;
+		wt_str sp;
 
-		cout << "populating spsi ... " << flush;
+		cout << "populating ... " << flush;
 
 		srand(time(NULL));
-		for(ulint i=0;i<50000000;++i) sp.insert(rand()%(sp.size()+1),rand()%1000);
+		for(ulint i=0;i<1000000;++i) sp.insert(rand()%(sp.size()+1),rand()%10);
 
 		cout << "done" << endl;
 
 		ofstream ofs(filename);
 
-		cout << "serializing spsi ... " << flush;
+		cout << "serializing ... " << flush;
 
 		sp.serialize(ofs);
 
@@ -729,7 +729,7 @@ int main(int argc,char** argv) {
 
 		ofs.close();
 
-		cout << "extracting from spsi ... " << flush;
+		cout << "extracting ... " << flush;
 
 		for(ulint i=0;i<sp.size();++i) v1.push_back(sp[i]);
 
@@ -739,11 +739,11 @@ int main(int argc,char** argv) {
 
 	{
 
-		packed_spsi sp;
+		wt_str sp;
 
 		ifstream ifs(filename);
 
-		cout << "loading spsi ... " << flush;
+		cout << "loading ... " << flush;
 
 		sp.load(ifs);
 
@@ -751,7 +751,7 @@ int main(int argc,char** argv) {
 
 		ifs.close();
 
-		cout << "extracting from spsi ... " << flush;
+		cout << "extracting ... " << flush;
 
 		for(ulint i=0;i<sp.size();++i) v2.push_back(sp[i]);
 
