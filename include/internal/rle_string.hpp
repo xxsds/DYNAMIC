@@ -551,6 +551,51 @@ public:
 
 	}
 
+	ulint serialize(ostream &out){
+
+		ulint w_bytes=0;
+
+		w_bytes += runs.serialize(out);
+		w_bytes += run_heads_.serialize(out);
+
+		ulint rpl_size = runs_per_letter.size();
+
+		out.write((char*)&rpl_size, sizeof(rpl_size));
+		w_bytes += sizeof(rpl_size);
+
+		for(auto &e : runs_per_letter){
+
+			out.write((char*)&e.first,sizeof(e.first));
+			w_bytes += sizeof(e.first);
+
+			w_bytes += e.second.serialize(out);
+
+		}
+
+		return w_bytes;
+
+	}
+
+	void load(istream &in){
+
+		runs.load(in);
+		run_heads_.load(in);
+
+		ulint rpl_size;
+
+		in.read((char*)&rpl_size, sizeof(rpl_size));
+
+		for(ulint i=0;i<rpl_size;++i){
+
+			char_type key;
+			in.read((char*)&key,sizeof(key));
+
+			runs_per_letter[key].load(in);
+
+		}
+
+	}
+
 private:
 
 

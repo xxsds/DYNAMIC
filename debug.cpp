@@ -710,12 +710,13 @@ int main(int argc,char** argv) {
 
 	{
 
-		wt_str sp;
+		rle_fmi sp(20);
 
 		cout << "populating ... " << flush;
 
 		srand(time(NULL));
-		for(ulint i=0;i<1000000;++i) sp.insert(rand()%(sp.size()+1),rand()%10);
+		//for(ulint i=0;i<100000;++i) sp.insert(rand()%(sp.size()+1),rand()%10);
+		for(ulint i=0;i<1000000;++i) sp.extend(rand()%20);
 
 		cout << "done" << endl;
 
@@ -739,7 +740,7 @@ int main(int argc,char** argv) {
 
 	{
 
-		wt_str sp;
+		rle_fmi sp;
 
 		ifstream ifs(filename);
 

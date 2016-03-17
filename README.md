@@ -27,7 +27,6 @@ The SPSI structure is the building block on which all other structures are based
 ### TODO: 
 
 - Implement delete operations
-- Add support for serialization / deserialization
 - Implement a good memory allocator. At the moment the default allocator is used, which results in about 25% of memory being wasted due to fragmentation
 
 ### Download

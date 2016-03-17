@@ -153,6 +153,33 @@ public:
 
 	}
 
+	ulint serialize(ostream &out){
+
+		ulint w_bytes=0;
+
+		w_bytes += dyn_bwt::serialize(out);
+
+		out.write((char*)&sample_rate,sizeof(sample_rate));
+		w_bytes += sizeof(sample_rate);
+
+		w_bytes += marked.serialize(out);
+		w_bytes += SA.serialize(out);
+
+		return w_bytes;
+
+	}
+
+	void load(istream &in){
+
+		dyn_bwt::load(in);
+
+		in.read((char*)&sample_rate,sizeof(sample_rate));
+
+		marked.load(in);
+		SA.load(in);
+
+	}
+
 private:
 
 	/*
