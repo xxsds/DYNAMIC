@@ -131,8 +131,6 @@ void test_spsi(uint64_t n){
 
 		//if(sp.contains_r(r)!=spc.contains_r(r)) cout << r << " " << sp.contains_r(r) << " " << spc.contains_r(r) << endl;
 
-		assert(sp.contains_r(r)==spc.contains_r(r));
-
 	}
 	cout << " ok." << endl;
 
@@ -704,10 +702,99 @@ void test_lz77(string in, string out){
 
 }
 
+template<class fmi_t>
+int test_fmi(ulint n, ulint sigma, ulint n_str = 100, ulint str_len = 5) {
+
+	string filename("/home/nico/fmi_test");
+
+	fmi_t sp(sigma);
+
+	cout << "populating ... " << flush;
+
+	srand(time(NULL));
+
+	vector<ulint> T;
+
+	{
+		vector<ulint> rev_text;
+
+		for(ulint i=0;i<n;++i){
+
+			ulint c = rand()%sigma;
+
+			rev_text.push_back(c);
+			sp.extend(c);
+
+		}
+
+		for(ulint i=0;i<n;++i) T.push_back(rev_text[n-i-1]);
+
+	}
+	cout << "done" << endl;
+
+	ofstream ofs(filename);
+
+	cout << "serializing ... " << flush;
+
+	sp.serialize(ofs);
+
+	cout << "done" << endl;
+
+	ofs.close();
+
+
+	fmi_t sp2;
+
+	ifstream ifs(filename);
+
+	cout << "loading ... " << flush;
+
+	sp2.load(ifs);
+
+	cout << "done" << endl;
+
+	ifs.close();
+
+	cout << "testing equality ... " << flush;
+	for(ulint i=0;i<sp.size();++i){
+
+		if(sp[i]!=sp2[i]){
+			cout << "error in extract.\n";
+			exit(0);
+		}
+
+	}
+	cout << "done" << endl;
+
+	cout << "testing locate ... " << endl;
+	for(ulint i=0;i<n_str;++i){
+
+		ulint j = rand() % (sp.size() - str_len + 1 );
+
+		vector<ulint> P;
+
+		//extract pattern from text
+		for(ulint k=j;k<j+str_len;++k) P.push_back(T[k]);
+
+		auto o1 = sp.locate(P);
+		auto o2 = sp2.locate(P);
+
+		cout << "Checking " << o1.size() << " occurrences ... " << flush;
+		if(o1!=o2){
+			cout << "error in locate.\n";
+			exit(0);
+		}
+		cout << "ok" << endl;
+
+	}
+	cout << "done" << endl;
+
+
+}
+
 int main(int argc,char** argv) {
 
-	check_strings(10000,20);
-	//test_lz77<rle_lz77_v2>(argv[1], argv[2]);
+	test_fmi<wt_fmi>(100000, 5, 100, 4);
 
 }
 

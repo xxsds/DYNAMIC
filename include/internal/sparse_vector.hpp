@@ -316,6 +316,29 @@ public:
 
 	}
 
+	ulint serialize(ostream &out){
+
+		ulint w_bytes=0;
+
+		out.write((char*)&NIL,sizeof(NIL));
+		w_bytes += sizeof(NIL);
+
+		w_bytes += spsi_.serialize(out);
+		w_bytes += bv_.serialize(out);
+
+		return w_bytes;
+
+	}
+
+	void load(istream &in){
+
+		in.read((char*)&NIL,sizeof(NIL));
+
+		spsi_.load(in);
+		bv_.load(in);
+
+	}
+
 private:
 
 	ulint NIL;

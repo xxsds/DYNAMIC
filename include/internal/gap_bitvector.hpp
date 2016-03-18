@@ -273,6 +273,31 @@ public:
 
 	}*/
 
+	ulint serialize(ostream &out){
+
+		ulint w_bytes=0;
+
+		out.write((char*)&size_,sizeof(size_));
+		w_bytes += sizeof(size_);
+
+		out.write((char*)&bits_set_,sizeof(bits_set_));
+		w_bytes += sizeof(bits_set_);
+
+		w_bytes += spsi_.serialize(out);
+
+		return w_bytes;
+
+	}
+
+	void load(istream &in){
+
+		in.read((char*)&size_,sizeof(size_));
+		in.read((char*)&bits_set_,sizeof(bits_set_));
+
+		spsi_.load(in);
+
+	}
+
 
 private:
 

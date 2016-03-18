@@ -206,7 +206,145 @@ public:
 
 	}
 
+	ulint serialize(ostream &out){
+
+		ulint w_bytes=0;
+		ulint encode_size = encode_.size();
+		ulint decode_size = decode_.size();
+
+
+		out.write((char*)&encode_size,sizeof(encode_size));
+		w_bytes += sizeof(encode_size);
+
+		out.write((char*)&decode_size,sizeof(decode_size));
+		w_bytes += sizeof(decode_size);
+
+		for(map<char_type,vector<bool> >::value_type e : encode_){
+
+			out.write((char*)&e.first,sizeof(e.first));
+			w_bytes += sizeof(e.first);
+
+			auto B = e.second;
+			w_bytes += serialize_vec_bool(out, B);
+
+		}
+
+		for(map<vector<bool>, char_type>::value_type d : decode_){
+
+			auto B = d.first;
+			w_bytes += serialize_vec_bool(out, B);
+
+			out.write((char*)&d.second,sizeof(d.second));
+			w_bytes += sizeof(d.second);
+
+		}
+
+		out.write((char*)&sigma,sizeof(sigma));
+		w_bytes += sizeof(sigma);
+
+		out.write((char*)&log_sigma,sizeof(log_sigma));
+		w_bytes += sizeof(log_sigma);
+
+		out.write((char*)&enc_type,sizeof(enc_type));
+		w_bytes += sizeof(enc_type);
+
+		return w_bytes;
+
+	}
+
+	void load(istream &in){
+
+		ulint encode_size;
+		ulint decode_size;
+
+		in.read((char*)&encode_size,sizeof(encode_size));
+		in.read((char*)&decode_size,sizeof(decode_size));
+
+		for(ulint i=0;i<encode_size;++i){
+
+			char_type c;
+			in.read((char*)&c,sizeof(c));
+
+			vector<bool> B;
+			load_vec_bool(in,B);
+
+			encode_.insert({c,B});
+
+		}
+
+		for(ulint i=0;i<decode_size;++i){
+
+			vector<bool> B;
+			load_vec_bool(in,B);
+
+			char_type c;
+			in.read((char*)&c,sizeof(c));
+
+			decode_.insert({B,c});
+
+		}
+
+		in.read((char*)&sigma,sizeof(sigma));
+
+		in.read((char*)&log_sigma,sizeof(log_sigma));
+
+		in.read((char*)&enc_type,sizeof(enc_type));
+
+	}
+
 private:
+
+	ulint serialize_vec_bool(ostream &out, vector<bool>& vb){
+
+		ulint size = vb.size();
+		ulint n_words = (size/64) + (size%64 != 0);
+
+		out.write((char*)&size,sizeof(size));
+
+		vector<uint64_t> w(n_words);
+
+		ulint i=0;
+		for(auto b : vb){
+
+			w[i/64] = (w[i/64]<<1) + b;
+
+		}
+
+		//shift last word
+		if(size%64 != 0){
+
+			w[size/64] = w[size/64] << (64 - size%64);
+
+		}
+
+		out.write((char*)w.data(),n_words*sizeof(uint64_t));
+
+		return n_words*sizeof(uint64_t) + sizeof(size);
+
+	}
+
+	void load_vec_bool(istream &in, vector<bool>& vb){
+
+		ulint size;
+		in.read((char*)&size,sizeof(size));
+
+		vb = vector<bool>(size);
+
+		ulint n_words = (size/64) + (size%64 != 0);
+
+		vector<uint64_t> w(n_words);
+		in.read((char*)w.data(),n_words*sizeof(uint64_t));
+
+		for(ulint i = 0; i<size;++i){
+
+			bool b = (w[i/64]>>63)&ulint(1);
+			w[i/64] = w[i/64]<<1;
+
+			vb[i] = b;
+
+		}
+
+	}
 
 	//recursive tree definition
 	//left/right children are stored in the 2 void pointers
@@ -341,6 +479,8 @@ private:
 	}
 
 	enum type {huffman, gamma, fixed};
+
+
 
 	map<char_type,vector<bool> > encode_;
 

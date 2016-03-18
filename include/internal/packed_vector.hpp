@@ -553,19 +553,68 @@ public:
 
 	}
 
+	ulint serialize(ostream &out){
+
+		ulint w_bytes = 0;
+
+		ulint w_size = words.size();
+
+		out.write((char*)&w_size,sizeof(w_size));
+		w_bytes += sizeof(w_size);
+
+		if(w_size>0){
+
+			out.write((char*)words.data(),sizeof(uint64_t)*w_size);
+			w_bytes += sizeof(uint64_t)*w_size;
+
+		}
+
+		out.write((char*)&psum_,sizeof(psum_));
+		w_bytes += sizeof(psum_);
+
+		out.write((char*)&MASK,sizeof(MASK));
+		w_bytes += sizeof(MASK);
+
+		out.write((char*)&size_,sizeof(size_));
+		w_bytes += sizeof(size_);
+
+		out.write((char*)&width_,sizeof(width_));
+		w_bytes += sizeof(width_);
+
+		out.write((char*)&int_per_word_,sizeof(int_per_word_));
+		w_bytes += sizeof(int_per_word_);
+
+		return w_bytes;
+
+	}
+
+	void load(istream &in){
+
+		ulint w_size;
+
+		in.read((char*)&w_size,sizeof(w_size));
+
+		if(w_size>0){
+
+			words = vector<uint64_t>(w_size);
+			in.read((char*)words.data(),sizeof(uint64_t)*w_size);
+
+		}
+
+		in.read((char*)&psum_,sizeof(psum_));
+
+		in.read((char*)&MASK,sizeof(MASK));
+
+		in.read((char*)&size_,sizeof(size_));
+
+		in.read((char*)&width_,sizeof(width_));
+
+		in.read((char*)&int_per_word_,sizeof(int_per_word_));
+
+	}
+
 
 private:
-
-	/*vector<uint64_t> to_vector(){
-
-		vector<uint64_t> vec(size_);
-
-		uint64_t i = 0;
-		for(uint64_t i=0;i<size_;++i) vec[i] = at(i);
-
-		return vec;
-
-	}*/
 
 	void set_without_psum_update(uint64_t i, uint64_t x){
 

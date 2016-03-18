@@ -190,6 +190,20 @@ public:
 	}
 
 	/*
+	 * count number of occurrences of pattern P
+	 * returns range [l,r) (right-exclusive) on BWT of P
+	 */
+	pair<ulint,ulint> count(vector<char_type> P){
+
+		pair<ulint,ulint> rn = {0,size()};
+
+		for(ulint i=0;i<P.size();++i) rn = LF(rn, P[P.size()-i-1]);
+
+		return rn;
+
+	}
+
+	/*
 	 * LF function
 	 */
 	ulint LF(ulint i){
@@ -343,6 +357,51 @@ public:
 		return size;
 
 	}
+
+	ulint serialize(ostream &out){
+
+		ulint w_bytes=0;
+
+		ulint a_size = alphabet.size();
+
+		out.write((char*)&a_size,sizeof(a_size));
+		w_bytes += sizeof(a_size);
+
+		out.write((char*)&terminator_position,sizeof(terminator_position));
+		w_bytes += sizeof(terminator_position);
+
+		for(auto a:alphabet) out.write((char*)&a,sizeof(a));
+		w_bytes += a_size*sizeof(char_type);
+
+		w_bytes += F.serialize(out);
+		w_bytes += L.serialize(out);
+
+		return w_bytes;
+
+	}
+
+	void load(istream &in){
+
+		ulint a_size;
+
+		in.read((char*)&a_size,sizeof(a_size));
+		in.read((char*)&terminator_position,sizeof(terminator_position));
+
+		for(ulint i=0;i<a_size;++i){
+
+			char_type a;
+			in.read((char*)&a,sizeof(a));
+
+			alphabet.insert(a);
+
+		}
+
+		F.load(in);
+		L.load(in);
+
+	}
+
+
 
 private:
 

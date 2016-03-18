@@ -217,6 +217,18 @@ public:
 
 	}
 
+	ulint serialize(ostream &out){
+
+		return spsi_.serialize(out);
+
+	}
+
+	void load(istream &in){
+
+		spsi_.load(in);
+
+	}
+
 private:
 
 	//underlying Searchable partial sum with inserts structure.

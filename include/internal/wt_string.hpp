@@ -187,6 +187,29 @@ public:
 
 	}
 
+	ulint serialize(ostream &out){
+
+		ulint w_bytes=0;
+
+		out.write((char*)&n,sizeof(n));
+		w_bytes += sizeof(n);
+
+		w_bytes += root.serialize(out);
+
+		w_bytes += ae.serialize(out);
+
+		return w_bytes;
+
+	}
+
+	void load(istream &in){
+
+		in.read((char*)&n,sizeof(n));
+		root.load(in);
+		ae.load(in);
+
+	}
+
 private:
 
 	class node{
@@ -438,6 +461,69 @@ private:
 			if(child1_ != NULL) size += child1_->bit_size();
 
 			return size;
+
+		}
+
+		ulint serialize(ostream &out){
+
+			ulint w_bytes=0;
+
+			out.write((char*)&l_,sizeof(l_));
+			w_bytes += sizeof(l_);
+
+			out.write((char*)&is_leaf_,sizeof(is_leaf_));
+			w_bytes += sizeof(is_leaf_);
+
+			w_bytes += bv.serialize(out);
+
+			bool has_child0 = child0_ != NULL;
+			bool has_child1 = child1_ != NULL;
+
+			out.write((char*)&has_child0,sizeof(has_child0));
+			w_bytes += sizeof(has_child0);
+
+			out.write((char*)&has_child1,sizeof(has_child1));
+			w_bytes += sizeof(has_child1);
+
+			if(child0_) w_bytes += child0_->serialize(out);
+			if(child1_) w_bytes += child1_->serialize(out);
+
+			return w_bytes;
+
+		}
+
+		void load(istream &in){
+
+			in.read((char*)&l_,sizeof(l_));
+
+			in.read((char*)&is_leaf_,sizeof(is_leaf_));
+
+			bv.load(in);
+
+			bool has_child0;
+			bool has_child1;
+
+			in.read((char*)&has_child0,sizeof(has_child0));
+			in.read((char*)&has_child1,sizeof(has_child1));
+
+			child0_ = NULL;
+			child1_ = NULL;
+
+			if(has_child0){
+
+				child0_ = new node();
+				child0_->load(in);
+				child0_->parent_ = this;
+
+			}
+
+			if(has_child1){
+
+				child1_ = new node();
+				child1_->load(in);
+				child1_->parent_ = this;
+
+			}
 
 		}
 
