@@ -13,14 +13,14 @@ This library offers space- and time-efficient implementations of some basic succ
 - A dynamic sparse vector (of integers).
 - A dynamic string supporting RSAI operations. The user can choose at construction time between fixed-length/gamma/Huffman encoding of the alphabet. All operations take log(n) * log(sigma) time (or log(n) * H0 with Huffman encoding).
 - A run-length encoded dynamic string supporting RSAI operations. Space: approximately R*(1.1 * log(sigma) + 2.6 * log(n/R)) bits, where R is the number of runs in the string. All operations take log(R) time.
-- A dynamic entropy/run-length compressed BWT
-- A dynamic (left-extend only)  entropy/run-length compressed FM-index
+- A dynamic (left-extend only) entropy/run-length compressed BWT
+- A dynamic (left-extend only) entropy/run-length compressed FM-index. This structure consists in the above BWT + a dynamic suffix array sampling
 
 ### Algorithms
 
 - Two algorithms to build LZ77 in repetition-aware RAM working space. Both algorithms use a run-length encoded BWT with sparse Suffix array sampling. The first algorithm stores 2 SA samples per BWT run. The second algorithm (much more space efficient) stores 1 SA sample per LZ factor. From the paper "Computing LZ77 in Run-Compressed Space", Alberto Policriti and Nicola Prezza, DCC2016
 - An algorithm to build the BWT in run-compressed space
-- An algorithm to build LZ77 in nH0(1+o(1)) space and n log n time. From the paper "Fast Online Lempel-Ziv Factorization in Compressed Space", Alberto Policriti and Nicola Prezza, SPIRE2015
+- An algorithm to build LZ77 in nH0(1+o(1)) space and n * log n * H0 time. From the paper "Fast Online Lempel-Ziv Factorization in Compressed Space", Alberto Policriti and Nicola Prezza, SPIRE2015
 
 The SPSI structure is the building block on which all other structures are based. This structure is implemented with cache-efficient B-trees.
 
@@ -28,10 +28,11 @@ The SPSI structure is the building block on which all other structures are based
 
 - Implement delete operations
 - Implement a good memory allocator. At the moment the default allocator is used, which results in about 25% of memory being wasted due to fragmentation
+- Geometric data structures (predecessor/2D range search)
 
 ### Download
 
-> git clone --recursive https://github.com/nicolaprezza/dynamic
+> git clone https://github.com/nicolaprezza/dynamic
 
 ### Compile
 
