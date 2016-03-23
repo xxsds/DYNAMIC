@@ -1016,11 +1016,11 @@ private:
 
 			if(has_leaves_){
 
-				for(auto l : leaves) l->serialize(out);
+				for(auto l : leaves) w_bytes += l->serialize(out);
 
 			}else{
 
-				for(auto c : children) c->serialize(out);
+				for(auto c : children) w_bytes += c->serialize(out);
 
 			}
 

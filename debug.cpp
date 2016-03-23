@@ -734,9 +734,9 @@ int test_fmi(ulint n, ulint sigma, ulint n_str = 100, ulint str_len = 5) {
 
 	ofstream ofs(filename);
 
-	cout << "serializing ... " << flush;
+	cout << "serializing ... " << endl;
 
-	sp.serialize(ofs);
+	cout << "Written " << sp.serialize(ofs) << " Bytes." << endl;
 
 	cout << "done" << endl;
 
@@ -794,7 +794,7 @@ int test_fmi(ulint n, ulint sigma, ulint n_str = 100, ulint str_len = 5) {
 
 int main(int argc,char** argv) {
 
-	test_fmi<wt_fmi>(100000, 5, 100, 4);
+	test_fmi<wt_fmi>(203010, 17, 15, 3);
 
 }
 
