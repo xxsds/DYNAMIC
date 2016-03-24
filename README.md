@@ -29,6 +29,7 @@ The SPSI structure is the building block on which all other structures are based
 - Implement delete operations
 - Implement a good memory allocator. At the moment the default allocator is used, which results in about 25% of memory being wasted due to fragmentation
 - Geometric data structures (predecessor/2D range search)
+- Batch inserts
 
 ### Download
 
