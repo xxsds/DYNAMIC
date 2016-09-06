@@ -23,9 +23,16 @@ namespace dyn{
 
 /*
  * a succinct searchable partial sum with inserts implemented with cache-efficient
- * B trees.
+ * B trees. Logarithmic-sized leaves
  */
 typedef spsi<packed_vector,256,16> packed_spsi;
+
+/*
+ * a succinct searchable partial sum with inserts implemented with cache-efficient
+ * B trees. Quadratic-log sized leaves
+ */
+typedef spsi<packed_vector,8192,16> succinct_spsi;
+
 
 /*
  * dynamic gap-encoded bitvector
@@ -35,7 +42,7 @@ typedef gap_bitvector<packed_spsi> gap_bv;
 /*
  * dynamic succinct bitvector (about 1.1n bits)
  */
-typedef succinct_bitvector<spsi<packed_vector,8192,16> > suc_bv;
+typedef succinct_bitvector<succinct_spsi> suc_bv;
 
 /*
  * succinct/compressed dynamic string implemented with wavelet trees.
