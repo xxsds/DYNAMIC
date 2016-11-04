@@ -13,6 +13,7 @@ project (dynamic)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/include/internal)
 include_directories(${PROJECT_SOURCE_DIR}/include/algorithms)
+include_directories(${PROJECT_SOURCE_DIR}/include/algorithms/cw-bwt)
 
 message("Building in ${CMAKE_BUILD_TYPE} mode")
 
@@ -27,4 +28,5 @@ add_executable(rle_lz77_v1 rle_lz77_v1.cpp)
 add_executable(rle_lz77_v2 rle_lz77_v2.cpp)
 add_executable(h0_lz77 h0_lz77.cpp)
 add_executable(rle_bwt rle_bwt.cpp)
+add_executable(cw-bwt cw-bwt.cpp)
 add_executable(benchmark benchmark.cpp)
