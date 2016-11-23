@@ -46,13 +46,13 @@ public:
 
 	}
 
-	//overhead : k will be chosen such that the automata will require approximately space n*overhead/100 bits, where n is the text length
+	//overhead : k will be chosen such that the automaton will require approximately space n*overhead/100 bits, where n is the text length
 	ContextAutomata(BackwardIterator * bfr, uint64_t overhead, bool verbose){
 		init(bfr, verbose);
 
-		//detect optimal k and build automata
+		//detect optimal k and build automaton
 
-		if(verbose) cout << "\n Allowed memory overhead for the automata = " << overhead << "%" << endl;
+		if(verbose) cout << "\n Allowed memory overhead for the automaton = " << overhead << "%" << endl;
 		if(verbose) cout << " Detecting optimal k ... " << endl;
 
 		uint64_t _k = optimalK(overhead, bfr, verbose);
@@ -68,10 +68,10 @@ public:
 
 		init(bfr, verbose);
 
-		//detect optimal k and build automata
+		//detect optimal k and build automaton
 		//default 5% of overhead
 
-		if(verbose) cout << "\n Allowed memory overhead for the automata = 5%" << endl;
+		if(verbose) cout << "\n Allowed memory overhead for the automaton = 5%" << endl;
 		if(verbose) cout << " Detecting optimal k ... " << endl;
 
 		uint64_t _k = optimalK(5, bfr, verbose);
@@ -290,7 +290,7 @@ private:
 
 	void init(BackwardIterator * bfr, bool verbose){
 
-		if(verbose) cout << "\n*** Building context automata ***\n\n";
+		if(verbose) cout << "\n*** Building context automaton ***\n\n";
 
 		bwIt = bfr;
 
@@ -442,7 +442,7 @@ private:
 
 		if(verbose) cout << "done. " << k_mers.size() << " nonempty contexts of length k = " << k << " (including contexts containing terminator character)"  << endl;
 
-		if(verbose) cout << " building automata edges ... "<< endl;
+		if(verbose) cout << " building automaton edges ... "<< endl;
 
 		uint64_t nr_of_prefixes=0;
 		prefix_nr.push_back(nr_of_prefixes);
@@ -505,7 +505,7 @@ private:
 		rewind();//go back to initial state
 
 		if(verbose) cout << " done." << endl;
-		if(verbose) cout << "\nContext automata completed." << endl;
+		if(verbose) cout << "\nContext automaton completed." << endl;
 
 	}
 

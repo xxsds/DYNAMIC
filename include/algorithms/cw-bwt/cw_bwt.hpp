@@ -118,7 +118,7 @@ public:
 
 		n = bwIt->length();
 
-		ca = ContextAutomata(bwIt, 10, verbose);//Default automata overhead
+		ca = ContextAutomata(bwIt, 10, verbose);//Default automaton overhead
 		k = ca.contextLength();
 
 		init();
@@ -351,7 +351,7 @@ private:
 
 		while(not bwIt->begin()){
 
-			s = ca.ASCIItoCode( bwIt->read() );//this symbol has as context the current state of the automata
+			s = ca.ASCIItoCode( bwIt->read() );//this symbol has as context the current state of the automaton
 
 			lengths[ ca.currentState() ]++;//new symbol in this context:increment
 
