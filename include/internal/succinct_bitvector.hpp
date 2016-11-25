@@ -118,7 +118,11 @@ public:
 	 */
 	uint64_t rank(uint64_t i, bool b = true){
 
-		return b ? rank1(i) : rank0(i);
+		assert(i<=size());
+
+		auto r1 = i==0 ? 0 : spsi_.psum(i-1);
+
+		return  b ? r1 : i-r1 ;
 
 	}
 
