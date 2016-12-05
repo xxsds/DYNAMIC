@@ -120,9 +120,11 @@ public:
 	 */
 	void load_bwt(string& rev_bwt, uchar terminator, bool verbose = false){
 
-		if(verbose) cout << "Building RLBWT ..." << endl;
+		if(verbose) cout << "Loading RLBWT into internal structures..." << flush;
 
 		RLBWT.build_from_string(rev_bwt, terminator, verbose);
+
+		if(verbose) cout << " done." << endl;
 
 	}
 
