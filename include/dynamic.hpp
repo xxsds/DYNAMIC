@@ -122,6 +122,88 @@ typedef rle_string<bv_check, str_check> rle_str_check;
 
 // ------------- template specializations ------------------------------------
 
+/*
+ * build structure given as input the BWT in string format
+ * and the terminator character.
+ *
+ * Efficient constructor: pushes back runs
+ *
+ */
+template<>
+inline
+void rle_bwt::build_from_string(string& bwt, char_type terminator, bool verbose){
+
+	long int step = 1000000;	//print status every step characters
+	long int last_step = 0;
+
+	terminator_position = bwt.size();
+
+	char_type c = bwt[0];
+	ulint k=1;
+
+	for(ulint i=1; i<bwt.size();++i){
+
+		if(bwt[i] != c){
+
+			if(c == terminator){
+
+				//there must be only one terminator in the string
+				assert(terminator_position == bwt.size());
+				assert(k==1);
+
+				terminator_position = i-1;
+
+			}else{
+
+				insert_in_F(c,k);
+				L.insert(L.size(),c,k);
+
+			}
+
+			c = bwt[i];
+			k = 1;
+
+		}else{
+
+			k++;
+
+		}
+
+		if(verbose){
+
+			if(i>last_step+(step-1)){
+
+				last_step = i;
+				cout << " " << i << " characters processed ..." << endl;
+
+			}
+
+		}
+
+	}
+
+	//last run
+	if(c == terminator){
+
+		//there must be only one terminator in the string
+		assert(terminator_position == bwt.size());
+		assert(k==1);
+
+		//terminator in last BWT position
+		terminator_position = bwt.size() - 1;
+
+	}else{
+
+		insert_in_F(c,k);
+		L.insert(L.size(),c,k);
+
+	}
+
+	assert(size() == bwt.size());
+	assert(terminator_position != bwt.size());
+
+}
+
 template<>
 inline
 ulint rle_bwt::number_of_runs(){

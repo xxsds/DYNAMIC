@@ -794,7 +794,30 @@ int test_fmi(ulint n, ulint sigma, ulint n_str = 100, ulint str_len = 5) {
 
 int main(int argc,char** argv) {
 
-	test_fmi<wt_fmi>(203010, 17, 15, 3);
+	//test_fmi<wt_fmi>(203010, 17, 15, 3);
+
+	rle_bwt bwt;
+
+	string s = "AAACCCCCC$CCCDDDDDDD";
+
+	bwt.build_from_string(s,'$');
+
+	cout << "BWT built." << endl;
+
+	for(ulint i=0;i<bwt.size();++i){
+
+		ulint b = bwt[i];
+		ulint t =  bwt.get_terminator();
+
+		auto c = b==t ? '$' : (char)bwt[i];
+
+		cout << c;
+
+	}
+
+	cout << endl;
+
+
 
 }
 
