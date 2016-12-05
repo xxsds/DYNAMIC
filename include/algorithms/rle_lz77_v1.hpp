@@ -245,17 +245,15 @@ public:
 
 			}
 
-			sparse_vec& B = SA[c];
-
 			auto u = RLBWT.number_of_runs(range);
 
-			if(u==1 or B.exists_non_NIL(range)){
+			if(u==1 or SA[c].exists_non_NIL(range)){
 
 				if(u>1){
 
-					assert(B.find_non_NIL(range) >= l);
+					assert(SA[c].find_non_NIL(range) >= l);
 
-					p = B.find_non_NIL(range) - l;
+					p = SA[c].find_non_NIL(range) - l;
 
 				}
 
@@ -263,7 +261,7 @@ public:
 				range = RLBWT.LF(range,c);
 
 				auto range_run = RLBWT.locate_run(k);
-				B.update_interval(j,k,range_run);
+				SA[c].update_interval(j,k,range_run);
 
 				j++;
 				k = RLBWT.LF(k);
@@ -271,7 +269,7 @@ public:
 
 			}else{
 
-				auto start = (char*)(new ulint(p-1));
+				auto start = (char*)(new ulint(l==0 ? 0 : p-1));
 				auto len = (char*)(new ulint(l));
 
 				assert(c!=RLBWT.get_terminator());
@@ -293,7 +291,7 @@ public:
 				for(ulint s=0;s<skip and j<n;++s){
 
 					auto range_run = RLBWT.locate_run(k);
-					B.update_interval(j,k,range_run);
+					SA[c].update_interval(j,k,range_run);
 
 					j++;
 					k = RLBWT.LF(k);
