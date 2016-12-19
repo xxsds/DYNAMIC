@@ -7,12 +7,12 @@ mail: nicola.prezza@gmail.com
 
 This library offers space- and time-efficient implementations of some basic succinct/compressed dynamic data structures. Note that at the moment the library does not feature delete operations (only inserts). DYNAMIC features:
 
-- A succinct Searchable Partial Sums with Inserts (SPSI) structure. Space: about 1.3 * n * k bits (n integers of bit-size k). The structure supports also update operations (i.e. modify internal elements).
+- A succinct Searchable Partial Sums with Inserts (SPSI) structure. Space: about 1.19 * n * ( log(M/m) + log log m ) bits, m being the number of integers stored in the structure and M being their sum, plus m. The structure supports also update operations (i.e. modify internal elements).
 - A Succinct dynamic bitvector supporting rank/select/access/insert (RSAI) operations. Space: about 1.1 * n bits.
-- A gap-compressed dynamic bitvector supporting RSAI operations. Space: about 1.3 * b * log(n/b) bits,  where b is the number of bits set. All operations take log(b) time.
+- A gap-compressed dynamic bitvector supporting RSAI operations. Space: about 1.19 * b * ( log(n/b) + log log b ) bits,  b being the number of bits set and n being the bitvector length. All operations take log(b) time.
 - A dynamic sparse vector (of integers).
 - A dynamic string supporting RSAI operations. The user can choose at construction time between fixed-length/gamma/Huffman encoding of the alphabet. All operations take log(n) * log(sigma) time (or log(n) * H0 with Huffman encoding).
-- A run-length encoded dynamic string supporting RSAI operations. Space: approximately R*(1.1 * log(sigma) + 2.6 * log(n/R)) bits, where R is the number of runs in the string. All operations take log(R) time.
+- A run-length encoded dynamic string supporting RSAI operations. Space: approximately R*(1.1 * log(sigma) + 2.4 * (log(n/R)+log log R) ) bits, where R is the number of runs in the string. All operations take log(R) time.
 - A dynamic (left-extend only) entropy/run-length compressed BWT
 - A dynamic (left-extend only) entropy/run-length compressed FM-index. This structure consists in the above BWT + a dynamic suffix array sampling
 
@@ -111,7 +111,7 @@ The header include/dynamic.hpp contains all type definitions and is all you need
      * dynamic succinct/entropy compressed FM index. BWT positions are
      * marked with a succinct bitvector
      *
-     * ( n*H0 + n + (n/k)*log n )(1+o(1)) bits of space, where k is the SA sample  rate
+     * roughly n*H0 + n + (n/k)*log n bits of space, where k is the SA sample  rate
      *
      */
     typedef fm_index<wt_bwt, suc_bv, packed_spsi> wt_fmi;
@@ -120,7 +120,7 @@ The header include/dynamic.hpp contains all type definitions and is all you need
      * dynamic run-length encoded FM index. BWT positions are
      * marked with a gap-encoded bitvector.
      *
-     * ( 2*R*log(n/R) + R*H0 + (n/k)*log(n/k) + (n/k)*log n )(1+o(1)) bits of  space, where
+     * roughly 2.4*R*log(n/R) + 2.4 log log R + 1.1*R*log(sigma) + (n/k)*log n bits of  space, where
      * k is the SA sample rate and R is the number of runs in the BWT
      *
      */
