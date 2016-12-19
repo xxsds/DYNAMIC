@@ -7,7 +7,7 @@ mail: nicola.prezza@gmail.com
 
 This library offers space- and time-efficient implementations of some basic succinct/compressed dynamic data structures. Note that at the moment the library does not feature delete operations (only inserts). DYNAMIC features:
 
-- A succinct Searchable Partial Sums with Inserts (SPSI) structure. Space: about 1.19 * n * ( log(M/m) + log log m ) bits, m being the number of integers stored in the structure and M being their sum, plus m. The structure supports also update operations (i.e. modify internal elements).
+- A succinct Searchable Partial Sums with Inserts (SPSI) structure. Space: about 1.19 * m * ( log(M/m) + log log m ) bits, m being the number of integers stored in the structure and M being their sum, plus m. The structure supports also update operations (i.e. modify internal elements).
 - A Succinct dynamic bitvector supporting rank/select/access/insert (RSAI) operations. Space: about 1.1 * n bits.
 - A gap-compressed dynamic bitvector supporting RSAI operations. Space: about 1.19 * b * ( log(n/b) + log log b ) bits,  b being the number of bits set and n being the bitvector length. All operations take log(b) time.
 - A dynamic sparse vector (of integers).
