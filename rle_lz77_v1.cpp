@@ -63,7 +63,7 @@ int main(int argc,char** argv) {
 	std::ifstream ifs(in);
 	std::ofstream os(out);
 
-	lz77.parse(ifs,os,true);
+	lz77.parse(ifs,os,15,true);
 
 	ifs.close();
 	os.close();

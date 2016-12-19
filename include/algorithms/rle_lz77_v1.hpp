@@ -70,20 +70,8 @@ public:
 
 	}
 
-	/*
-	 * input: an input stream and an output stream
-	 * the algorithms scans the input (just 1 scan) and
-	 * saves to the output stream (could be a file) a series
-	 * of triples <pos,len,c> of type <ulint,ulint,uchar>. Types
-	 * are converted to char* before streaming them to out
-	 * (i.e. ulint to 8 bytes and uchar to 1 byte)
-	 *
-	 * to get also the last factor, input stream should
-	 * terminate with a character that does not appear elsewhere
-	 * in the stream
-	 *
-	 */
-	void parse(istream& in, ostream& out, bool verbose = false){
+	void build_bwt(istream& in, bool verbose = false){
+
 
 		long int step = 1000000;	//print status every step characters
 		long int last_step = 0;
@@ -119,6 +107,80 @@ public:
 			}
 
 		}
+
+	}
+
+	/*
+	 * load BWT from input string to the internal structures.
+	 *
+	 * Note: rev_bwt must be the BWT of reversed text
+	 *
+	 * requires as input the BWT as string and the char
+	 * that is used in the BWT as terminator
+	 */
+	void load_bwt(string& rev_bwt, uchar terminator, bool verbose = false){
+
+		if(verbose) cout << "Loading RLBWT into internal structures..." << flush;
+
+		RLBWT.build_from_string(rev_bwt, terminator, verbose);
+
+		if(verbose) cout << " done." << endl;
+
+	}
+
+	/*
+	 * input: an input stream and an output stream
+	 * the algorithms scans the input (just 1 scan) and
+	 * saves to the output stream (could be a file) a series
+	 * of triples <pos,len,c> of type <ulint,ulint,uchar>. Types
+	 * are converted to char* before streaming them to out
+	 * (i.e. ulint to 8 bytes and uchar to 1 byte)
+	 *
+	 * after a phrase, skip 'skip' characters before opening a
+	 * new phrase. if skip>1, third element in the output triples is
+	 * the first skipped char
+	 *
+	 * to get also the last factor, input stream should
+	 * terminate with a character that does not appear elsewhere
+	 * in the stream
+	 *
+	 */
+	void parse(istream& in, ostream& out, ulint skip = 1, bool verbose = false){
+
+		build_bwt(in,verbose);
+		bwt_to_lz77(out,skip,verbose);
+
+	}
+
+	/*
+	 * input: an output stream. Note that the RLBWT must have been
+	 * built before calling this procedure.
+	 * the algorithms computes LZ77 using the RLBWT. output is
+	 * saved to the output stream (could be a file) as a series
+	 * of triples <pos,len,c> of type <ulint,ulint,uchar>. Types
+	 * are converted to char* before streaming them to out
+	 * (i.e. ulint to 8 bytes and uchar to 1 byte)
+	 *
+	 * after a phrase, skip 'skip' characters before opening a
+	 * new phrase. if skip>1, third element in the output triples is
+	 * the first skipped char
+	 *
+	 * to get also the last factor, input stream should
+	 * terminate with a character that does not appear elsewhere
+	 * in the stream
+	 *
+	 */
+	void bwt_to_lz77(ostream& out, ulint skip = 1, bool verbose = false){
+
+		assert(skip>0);
+
+		ulint z = 0;//number of phrases
+
+		long int step = 1000000;	//print status every step characters
+		long int last_step = 0;
+
+		//RLBWT must have been built
+		assert(RLBWT.size()>1);
 
 		/*
 		 * initialize variables
@@ -185,26 +247,31 @@ public:
 
 			}
 
-			sparse_vec& B = SA[c];
-
 			auto u = RLBWT.number_of_runs(range);
 
-			if(u==1 or B.exists_non_NIL(range)){
+			if(u==1 or SA[c].exists_non_NIL(range)){
 
 				if(u>1){
 
-					assert(B.find_non_NIL(range) >= l);
+					assert(SA[c].find_non_NIL(range) >= l);
 
-					p = B.find_non_NIL(range) - l;
+					p = SA[c].find_non_NIL(range) - l;
 
 				}
 
 				l++;
 				range = RLBWT.LF(range,c);
 
+				auto range_run = RLBWT.locate_run(k);
+				SA[c].update_interval(j,k,range_run);
+
+				j++;
+				k = RLBWT.LF(k);
+				c = RLBWT[k];
+
 			}else{
 
-				auto start = (char*)(new ulint(p-1));
+				auto start = (char*)(new ulint(l==0 ? 0 : p-1));
 				auto len = (char*)(new ulint(l));
 
 				assert(c!=RLBWT.get_terminator());
@@ -214,6 +281,8 @@ public:
 				out.write(len,sizeof(ulint));
 				out.write(&cc,1);
 
+				z++;
+
 				delete start;
 				delete len;
 
@@ -221,16 +290,22 @@ public:
 				p = 0;
 				range = {0,n};
 
+				for(ulint s=0;s<skip and j<n;++s){
+
+					auto range_run = RLBWT.locate_run(k);
+					SA[c].update_interval(j,k,range_run);
+
+					j++;
+					k = RLBWT.LF(k);
+					c = RLBWT[k];
+
+				}
+
 			}
 
-			auto range_run = RLBWT.locate_run(k);
-			B.update_interval(j,k,range_run);
-
-			j++;
-			k = RLBWT.LF(k);
-			c = RLBWT[k];
-
 		}
+
+		if(verbose) cout << "Done. Number of phrases: " << z << endl;
 
 	}
 

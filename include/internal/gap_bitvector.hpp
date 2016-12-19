@@ -178,6 +178,8 @@ public:
 	 */
 	void insert0(uint64_t i, uint64_t nr = 1){
 
+		if(nr==0) return;
+
 		uint64_t j = spsi_.search_r(i+1);
 		spsi_[j] += nr;
 
