@@ -7,21 +7,22 @@ mail: nicola.prezza@gmail.com
 
 This library offers space- and time-efficient implementations of some basic succinct/compressed dynamic data structures. Note that at the moment the library does not feature delete operations (only inserts). DYNAMIC features:
 
-- A succinct Searchable Partial Sums with Inserts (SPSI) structure. Space: about 1.19 * m * ( log(M/m) + log log m ) bits, m being the number of integers stored in the structure and M being their sum, plus m. The structure supports also update operations (i.e. modify internal elements).
-- A Succinct dynamic bitvector supporting rank/select/access/insert (RSAI) operations. Space: about 1.1 * n bits.
-- A gap-compressed dynamic bitvector supporting RSAI operations. Space: about 1.19 * b * ( log(n/b) + log log b ) bits,  b being the number of bits set and n being the bitvector length. All operations take log(b) time.
+- A succinct Searchable Partial Sums with Inserts (SPSI) structure representing a list of integers s_1, s_2, ..., s_m. Space: about 1.2 * m * ( log(M/m) + log log m ) bits, where M = m + s_1 + s_2 + ... + s_m. The structure supports also update operations (i.e. s_i = s_i + delta).
+- A Succinct dynamic bitvector supporting rank/select/access/insert (RSAI) operations. Space: about 1.2 * n bits.
+- A gap-compressed dynamic bitvector supporting RSAI operations. Space: about 1.2 * b * ( log(n/b) + log log b ) bits,  b being the number of bits set and n being the bitvector length. All operations take log(b) time.
 - A dynamic sparse vector (of integers).
 - A dynamic string supporting RSAI operations. The user can choose at construction time between fixed-length/gamma/Huffman encoding of the alphabet. All operations take log(n) * log(sigma) time (or log(n) * H0 with Huffman encoding).
-- A run-length encoded dynamic string supporting RSAI operations. Space: approximately R*(1.1 * log(sigma) + 2.4 * (log(n/R)+log log R) ) bits, where R is the number of runs in the string. All operations take log(R) time.
+- A run-length encoded dynamic string supporting RSAI operations. Space: approximately R*(1.2 * log(sigma) + 2.4 * (log(n/R)+log log R) ) bits, where R is the number of runs in the string. All operations take log(R) time.
 - A dynamic (left-extend only) entropy/run-length compressed BWT
 - A dynamic (left-extend only) entropy/run-length compressed FM-index. This structure consists in the above BWT + a dynamic suffix array sampling
 
 ### Algorithms
 
-- Two algorithms to build LZ77 in repetition-aware RAM working space. Both algorithms use a run-length encoded BWT with sparse Suffix array sampling. The first algorithm stores 2 SA samples per BWT run. The second algorithm (much more space efficient) stores 1 SA sample per LZ factor. From the paper "Computing LZ77 in Run-Compressed Space", Alberto Policriti and Nicola Prezza, DCC2016
+- Two algorithms to build LZ77 in repetition-aware RAM working space. Both algorithms use a run-length encoded BWT with sparse Suffix array sampling. The first algorithm stores 2 SA samples per BWT run. The second algorithm (much more space efficient) stores 1 SA sample per LZ factor. From the papers "Computing LZ77 in Run-Compressed Space", Alberto Policriti and Nicola Prezza, DCC2016 and "
+LZ77 Computation Based on the Run-Length Encoded BWT", Alberto Policriti and Nicola Prezza (accepted for publication in Algorithmica)
 - An algorithm to build the BWT in run-compressed space
-- An algorithm to build LZ77 in nH0(1+o(1)) space and n * log n * H0 time. From the paper "Fast Online Lempel-Ziv Factorization in Compressed Space", Alberto Policriti and Nicola Prezza, SPIRE2015
-- An algorithm to build the BWT in high-order compressed space. The algorithm runs in O(n * H_k * log log n) average-case time (good for DNA) and O(n * H_k * log n) worst-case time. From the paper "Average linear time and compressed space construction of the Burrows-Wheeler transform"
+- An algorithm to build LZ77 in nH0(2+o(1)) space and n * log n * H0 time. From the paper "Fast Online Lempel-Ziv Factorization in Compressed Space", Alberto Policriti and Nicola Prezza, SPIRE2015
+- An algorithm to build the BWT in high-order compressed space. The algorithm runs in O(n * H_k * log log n) average-case time (e.g. good for DNA) and O(n * H_k * log n) worst-case time. From the paper "Average linear time and compressed space construction of the Burrows-Wheeler transform"
 Policriti A., Gigante N. and Prezza N., LATA 2015
 
 The SPSI structure is the building block on which all other structures are based. This structure is implemented with cache-efficient B-trees.
@@ -69,7 +70,7 @@ The header include/dynamic.hpp contains all type definitions and is all you need
     typedef gap_bitvector<packed_spsi> gap_bv;
 
     /*
-     * dynamic succinct bitvector (about 1.1n bits)
+     * dynamic succinct bitvector (about 1.2n bits)
      */
     typedef succinct_bitvector<spsi<packed_vector,8192,16> > suc_bv;
 
@@ -120,7 +121,7 @@ The header include/dynamic.hpp contains all type definitions and is all you need
      * dynamic run-length encoded FM index. BWT positions are
      * marked with a gap-encoded bitvector.
      *
-     * roughly 2.4*R*log(n/R) + 2.4 log log R + 1.1*R*log(sigma) + (n/k)*log n bits of  space, where
+     * roughly 2.4*R*log(n/R) + 2.4 log log R + 1.2*R*log(sigma) + (n/k)*log n bits of  space, where
      * k is the SA sample rate and R is the number of runs in the BWT
      *
      */
