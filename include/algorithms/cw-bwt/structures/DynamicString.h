@@ -1,18 +1,7 @@
-/*
- *  This file is part of BWTIL.
- *  Copyright (c) by
- *  Nicola Prezza <nicolapr@gmail.com>
- *
- *   BWTIL is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation, either version 3 of the License, or
- *   (at your option) any later version.
+// Copyright (c) 2017, Nicola Prezza.  All rights reserved.
+// Use of this source code is governed
+// by a MIT license that can be found in the LICENSE file.
 
- *   BWTIL is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details (<http://www.gnu.org/licenses/>).
- */
 
 /*
  * DynamicString.h

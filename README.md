@@ -3,6 +3,16 @@ DYNAMIC: a succinct and compressed dynamic data structures library
 Author: Nicola Prezza
 mail: nicola.prezza@gmail.com
 
+Please cite this library as: 
+
+@inproceedings{prezza2017framework,
+  title={A Framework of Dynamic Data Structures for String Processing},
+  author={Prezza, Nicola},
+  booktitle={International Symposium on Experimental Algorithms},
+  year={2017},
+  organization={Leibniz International Proceedings in Informatics (LIPIcs)}
+}
+
 ### Data structures
 
 This library offers space- and time-efficient implementations of some basic succinct/compressed dynamic data structures. Note that at the moment the library does not feature delete operations (only inserts). DYNAMIC features:
