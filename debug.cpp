@@ -821,8 +821,7 @@ int main(int argc,char** argv) {
 
 	cout << endl;
 
-
-
+	test_spsi( 100000 );
 }
 
 

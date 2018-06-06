@@ -18,6 +18,7 @@
 #include "include/algorithms/rle_lz77_v2.hpp"
 
 #include "include/internal/packed_vector.hpp"
+
 #include "include/internal/wt_string.hpp"
 
 using namespace std;
