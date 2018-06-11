@@ -25,7 +25,6 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -ggdb -Ofast -fstrict-aliasing -march=nat
 
 add_executable(debug debug.cpp)
 add_executable(debug-alan debug-alan.cpp)
-add_executable(debug-alan-vec debug-alan-vec.cpp)
 add_executable(rle_lz77_v1 rle_lz77_v1.cpp)
 add_executable(rle_lz77_v2 rle_lz77_v2.cpp)
 add_executable(h0_lz77 h0_lz77.cpp)

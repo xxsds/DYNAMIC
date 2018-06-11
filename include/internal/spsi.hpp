@@ -116,6 +116,7 @@ namespace dyn{
 		//leaf is B_LEAF <= m <= 2*B_LEAF (except at the beginning)
 		uint32_t B		//Order of the tree: number of elements n in each internal node
 		//is always B <= n <= 2B+1  (except at the beginning)
+		//Alan: Actually, B + 1 <= n <= 2B+2  (except at the beginning)
 		>
    class spsi{
 
@@ -269,6 +270,17 @@ namespace dyn{
 
 	 }
 
+      }
+
+      /*
+       * remove the integer x at position i
+       */
+      void remove(uint64_t i){
+	 node* new_root = root->remove(i);
+	 if (new_root != NULL) {
+	    delete root;
+	    root = new_root;
+	 }
       }
 
       /*
@@ -884,6 +896,20 @@ namespace dyn{
 	    return nr_children == (2*B + 2);
 	 }
 
+	 /*
+	  * true iff this node can lose
+	  * a child and remain above the min.
+	  * number of children, B + 1
+	  * OR this node is the root
+	  */
+	 bool can_lose() {
+	    return (nr_children >= (B + 2) || (is_root())) ;
+	 }
+
+	 bool leaf_can_lose( leaf_type* leaf ) {
+	    return (leaf->size() >= (B_LEAF + 1));
+	 }
+
 	 void increment_rank(){
 	    rank_++;
 	 }
@@ -959,6 +985,460 @@ namespace dyn{
 	    //if not root, do not return anything.
 	    return new_root;
 
+	 }
+	 
+	 /*
+	  * remove the integer at position i.
+	  * If the root changes, return the new root.
+	  *
+	  * new root could be different than current root if current root
+	  * has only one non-leaf child.
+	  *
+	  */
+	 node* remove(uint64_t i) {
+
+	    assert(i < size());
+	    assert(is_root() || parent->can_lose());
+	    	    
+	    node* x = this;
+	    
+	    if (not x->can_lose()) {
+	       //Need to ensure that *x
+	       //can lose a child and still have
+	       //the min # of children
+
+	       if (x != x->parent->children[ x->rank() ] ) {
+		  uint32_t real_r = 0;
+		  while (real_r < x->parent->nr_children) {
+		     if (x->parent->children[ real_r ] == x) {
+			cerr << real_r << ' ' << x->rank() << endl;
+			cerr << x->has_leaves() << endl;
+			break;
+		     }
+		     ++real_r;
+		  }
+	       }
+	       assert( x == x->parent->children[ x->rank() ] );
+	       node* y; //an adjacent sibling of x
+	       bool y_is_prev; //is y the previous sibling?
+	       if ( rank() > 0 ) {
+		  y = x->parent->children[ rank() - 1 ];
+		  y_is_prev = true;
+	       } else {
+		  y = x->parent->children[ rank() + 1 ];
+		  y_is_prev = false;
+	       }
+
+	       if ( y->can_lose() ) {
+		  if (not x->has_leaves()) {
+		     //steal a child of y,
+		     //and give it to x
+		     node* z; //the child
+		     if (y_is_prev) {
+			//y is the previous sibling of x
+			z = y->children.back();
+			
+			assert( z->rank() == (y->nr_children - 1) );
+			//update z
+			z->overwrite_parent( x );
+			z->overwrite_rank( 0 );
+		     
+			//update y
+			--(y->nr_children);
+			(y->children).pop_back();
+
+			//update x
+			++(x->nr_children);
+			(x->children).insert( (x->children).begin(), z );
+
+			i = i + z->size(); //update the removal position to reflect x's new child z
+
+			uint64_t si = 0;
+			uint64_t ps = 0;
+			for (size_t j = 0; j < x->nr_children; ++j) {
+			   si += (x->children)[j]->size();
+			   ps += (x->children)[j]->psum();
+
+			   (x->subtree_sizes)[j] = si;
+			   (x->subtree_psums)[j] = ps;
+			}
+
+			//update ranks of x's children
+			uint32_t r = 0;
+			for (auto cc : x->children) {
+			   cc->overwrite_rank( r );
+			   ++r;
+			}
+
+			//update x->parent subtree info
+			
+			x->parent->subtree_sizes[ x->rank() - 1 ] -= z->size();
+			x->parent->subtree_psums[ x->rank() - 1 ] -= z->psum();
+			
+		     
+		     } else {
+			//y is the next sibling of x
+			z = y->children.front();
+		     
+			assert( z->rank() == 0 );
+			//update z
+			z->overwrite_parent( x );
+			z->overwrite_rank( x->nr_children );
+		     
+			//update y
+			--(y->nr_children);
+			(y->children).erase( y->children.begin() );
+			uint64_t si = 0;
+			uint64_t ps = 0;
+			for (size_t j = 0; j < y->nr_children; ++j) {
+			   si += (y->children)[j]->size();
+			   ps += (y->children)[j]->psum();
+
+			   (y->subtree_sizes)[j] = si;
+			   (y->subtree_psums)[j] = ps;
+			}
+			//update ranks of y's children
+			uint32_t r = 0;
+			for (auto cc : y->children) {
+			   cc->overwrite_rank( r );
+			   ++r;
+			}
+		     
+			//update x
+			++(x->nr_children);
+			(x->children).insert( (x->children).end(), z );
+			x->subtree_sizes[ x->nr_children - 1 ] = x->subtree_sizes[ x->nr_children - 2 ] + z->size();
+			x->subtree_psums[ x->nr_children - 1 ] = x->subtree_psums[ x->nr_children - 2 ] + z->psum();
+		     
+
+			//update x->parent subtree info
+			x->parent->subtree_sizes[ x->rank() ] += z->size();
+			x->parent->subtree_psums[ x->rank() ] += z->psum();
+		     }
+		  } else {     //x has leaves
+		     //steal a child of y,
+		     //and give it to x
+		     leaf_type* z; //the child
+		     if (y_is_prev) {
+			//y is the previous sibling of x
+			z = y->leaves.back();
+			
+			//update y
+			--(y->nr_children);
+			(y->leaves).pop_back();
+
+			//update x
+			++(x->nr_children);
+			(x->leaves).insert( (x->leaves).begin(), z );
+
+			i = i + z->size(); //update the removal position to reflect x's new child z
+
+			uint64_t si = 0;
+			uint64_t ps = 0;
+			for (size_t j = 0; j < x->nr_children; ++j) {
+			   si += (x->leaves)[j]->size();
+			   ps += (x->leaves)[j]->psum();
+
+			   (x->subtree_sizes)[j] = si;
+			   (x->subtree_psums)[j] = ps;
+			}
+
+			//update x->parent subtree info
+			x->parent->subtree_sizes[ x->rank() - 1 ] -= z->size();
+			x->parent->subtree_psums[ x->rank() - 1 ] -= z->psum();
+			
+		     
+		     } else {
+			//y is the next sibling of x
+			z = y->leaves.front();
+		     
+			//update y
+			--(y->nr_children);
+			(y->leaves).erase( y->leaves.begin() );
+			uint64_t si = 0;
+			uint64_t ps = 0;
+			for (size_t j = 0; j < y->nr_children; ++j) {
+			   si += (y->leaves)[j]->size();
+			   ps += (y->leaves)[j]->psum();
+
+			   (y->subtree_sizes)[j] = si;
+			   (y->subtree_psums)[j] = ps;
+			}
+			
+			//update x
+			++(x->nr_children);
+			(x->leaves).insert( (x->leaves).end(), z );
+			x->subtree_sizes[ x->nr_children - 1 ] = x->subtree_sizes[ x->nr_children - 2 ] + z->size();
+			x->subtree_psums[ x->nr_children - 1 ] = x->subtree_psums[ x->nr_children - 2 ] + z->psum();
+		     
+			x->parent->subtree_sizes[ x->rank() ] += z->size();
+			x->parent->subtree_psums[ x->rank() ] += z->psum();
+		     }
+		  }
+	       } else {
+		  //y cannot lose a child
+		  //means: neither x nor y can lose a child
+		  //so: merge x,y into single node of size
+		  //2B + 2
+		  assert (x->nr_children == B + 1 );
+		  assert (y->nr_children == B + 1 );
+		  node* prev;
+		  node* next;
+		  if (y_is_prev) {
+		     prev = y;
+		     next = x;
+		  } else {
+		     prev = x;
+		     next = y;
+		  }
+		  node* xy;
+		  if (not x->has_leaves()) {
+		     vector< node* > cc ( prev->children.begin(), prev->children.end() );
+		     cc.insert( cc.end(), next->children.begin(), next->children.end() );
+
+		     assert( cc.size() == 2*B + 2 );
+		     xy = new node( cc, prev->parent, prev->rank() );
+		  } else {
+		     assert( prev->nr_children == prev->leaves.size() );
+		     assert( next->nr_children == next->leaves.size() );
+		     vector< leaf_type* > cc ( prev->leaves.begin(), prev->leaves.end() );
+		     cc.insert( cc.end(), next->leaves.begin(), next->leaves.end() );
+
+		     if ( cc.size() > 2*B + 2 ) {
+			cerr << endl;
+			cerr << prev->nr_children << ' ' << prev->leaves.size() << endl;
+			cerr << next->nr_children << ' ' << next->leaves.size() << endl;
+			cerr << cc.size() << ' ' << 2*B + 2 << endl;
+		     }
+		     
+		     assert( cc.size() == 2*B + 2 );
+		     xy = new node( cc, prev->parent, prev->rank() );
+		  }
+
+		  //update xy->parent
+		  if (xy->parent != NULL) {
+		     --(xy -> parent -> nr_children);
+		     xy->parent->children.erase( xy->parent->children.begin() + xy->rank() + 1 );
+		     xy->parent->children[ xy->rank() ] = x; //x will be overwritten by xy
+		     for (size_t j = xy->rank(); j < xy->parent->nr_children; ++j) {
+			xy->parent->subtree_sizes[ j ] = xy->parent->subtree_sizes[ j + 1];
+			xy->parent->subtree_psums[ j ] = xy->parent->subtree_psums[ j + 1];
+			xy->parent->children[ j ]->overwrite_rank( j );
+		     }
+		  }
+
+		  //update removal position to be wrt yx (if y is prev)
+		  if (y == prev) {
+		     i = i + y->size();
+		  }
+
+		  //overwrite x to have xy's data
+		  x->subtree_sizes = xy->subtree_sizes;
+		  x->subtree_psums = xy->subtree_psums;
+		  x->children = xy->children;
+		  x->leaves = xy->leaves;
+		  x->rank_ = xy->rank_;
+		  x->nr_children = xy->nr_children;
+		  x->has_leaves_ = xy->has_leaves_;
+
+		  uint32_t r = 0;
+		  if (not x->has_leaves()) {
+		     for ( auto cc : x->children ) {
+			cc->overwrite_parent( x );
+			cc->overwrite_rank( r++ );
+		     }
+		  }
+
+
+		  
+		  delete xy;
+		  //y has been merged into x, so needs to be de-allocated.
+		  delete y;
+
+
+	       }
+	    } //end if not x->can_lose()
+
+	    //At this point, x can afford to lose a child.
+	    //Find the child from which to remove
+	    assert(x->can_lose());
+	    assert(this->can_lose());
+	    assert( i < this->size());
+
+	    uint32_t j = 0;
+	    while(this->subtree_sizes[j] <= i){
+	       
+	       ++j;
+	       assert(j<this->subtree_sizes.size());
+
+	    }
+
+	    //size stored in previous counter
+	    uint64_t previous_size = (j==0?0:subtree_sizes[j-1]);
+	       
+	    i = i - previous_size;
+	    assert( i >= 0 );
+	    if (this->has_leaves()) {
+	       assert ( this -> leaves.size() == nr_children );
+	       assert ( this->can_lose() );
+	       
+	       //remove from the leaf directly, ensuring
+	       //it remains of size at least B_LEAF
+	       leaf_type* x = this->leaves[ j ];
+	       if (not (leaf_can_lose( x ) or (this->leaves.size() == 1) ) ) {
+		  //Need to ensure that x
+		  //can lose a child and still have
+		  //the min # of children
+
+		  leaf_type* y; //an adjacent sibling of x
+		  bool y_is_prev; //is y the previous sibling?
+		  assert( this->leaves.size() > 0 );
+		  if ( j > 0 ) {
+		     y = this->leaves[ j - 1 ];
+		     y_is_prev = true;
+		  } else {
+		     assert (j + 1 < this->leaves.size() );
+		     y = this->leaves[ j + 1 ];
+		     y_is_prev = false;
+		  }
+
+		  if ( leaf_can_lose( y ) ) {
+		     //steal a child of y,
+		     //and give it to x
+		     uint64_t z; //the child 
+		     if (y_is_prev) {
+			//y is the previous sibling of x
+			z = y->at( y->size() - 1 );
+			
+			//update y
+			y->remove( y->size() - 1 );
+
+			//update x
+			x->insert( 0, z );
+
+			i = i + 1; //update the removal position to reflect x's new child z
+
+			//update x->parent subtree info
+			this->subtree_sizes[ j - 1 ] -= 1;
+			this->subtree_psums[ j - 1 ] -= z;
+			
+			
+			assert( this-> subtree_sizes[ j ] == this-> subtree_sizes[ j - 1] + x->size() );
+			assert( this-> subtree_psums[ j ] == this-> subtree_psums[ j - 1] + x->psum() );
+		     
+		     } else {
+			//y is the next sibling of x
+			z = y->at( 0 );
+		     
+			//update y
+			y->remove( 0 ) ;
+					     
+			//update x
+			x->insert( x->size(), z );
+		     
+			//update x->parent subtree info
+			this->subtree_sizes[ j ] += 1;
+			this->subtree_psums[ j ] += z;
+
+			assert( this-> subtree_sizes[ j + 1 ] == this-> subtree_sizes[ j ] + y->size() );
+			assert( this-> subtree_psums[ j + 1 ] == this-> subtree_psums[ j ] + y->psum() );
+		     }
+		  } else {
+		     //y cannot lose a child
+		     //means: neither x nor y can lose a child
+		     //so: merge x,y into single node of size
+		     //2B_LEAF 
+
+		     if (y_is_prev) {
+			for (size_t ii = 0; ii < y->size(); ++ii) {
+			   x->insert( 0, y->at( y->size() - 1 - ii ) );
+			}
+
+			assert( x->size() == 2*B_LEAF );
+			
+			--j; //update the location of x in this's list of children
+			//update removal position to be wrt yx (if y is prev)
+			i = i + y->size();
+		     } else {
+			for (size_t ii = 0; ii < y->size(); ++ii) {
+			   x->insert( x->size() , y->at( ii ) );
+			}
+		     }
+		     //update parent (i.e. this)
+		     --(this -> nr_children);
+		     
+		     for (size_t i = j; i < this->nr_children; ++i) {
+			this->subtree_sizes[ i ] = this->subtree_sizes[ i + 1];
+			this->subtree_psums[ i ] = this->subtree_psums[ i + 1];
+		     }
+
+		     if (y_is_prev) {
+			assert (0 <= j);
+			assert( j < this->leaves.size() );
+			this->leaves.erase( this->leaves.begin() + j );
+		     }
+		     else  {
+			assert (0 <= j + 1);
+			assert( j + 1 < this->leaves.size() );
+			this->leaves.erase( this->leaves.begin() + j + 1 );
+		     }
+		     
+		  }
+	       } //end if not x->can_lose()
+
+	       //the leaf x is large enough for safe removal
+	       //i has been computed wrt x
+	       
+	       assert( i < x->size() );
+
+	       uint64_t z = x->at(i);
+	       x->remove( i );
+	       
+	       //update satellite data
+	       //requires traversal back up to root
+	       
+	       while (j < this->nr_children) {
+		  --subtree_sizes[j];
+		  subtree_psums[j] -= z;
+		  ++j;
+	       }
+	       
+	       node* tmp_parent = this->parent;
+	       node* tmp_child = this;
+	       while (tmp_parent != NULL) {
+		  uint32_t r = tmp_child->rank_;
+		  uint32_t nc = tmp_parent->nr_children;
+		  while (r < nc) {
+		     --(tmp_parent->subtree_sizes[ r ]);
+		     
+		     tmp_parent->subtree_psums[ r ] -= z;
+		     ++r;
+		  }
+
+		  tmp_child = tmp_parent;
+		  tmp_parent = tmp_child->parent;
+	       }
+	       
+	    } else {
+	       
+	       children[j]->remove( i );
+	       
+	    }
+
+	    node* new_root = NULL;
+	    
+	    //After removal, check if root needs to be updated
+	    if (is_root()) {
+	       if (not has_leaves()) {
+		  //if root has only one child, make that child the root
+		  if (nr_children == 1) {
+		     new_root = this->children[ 0 ];
+		     new_root -> parent = NULL;
+		  }
+	       }
+	    }
+
+	    return new_root;
 	 }
 
 
@@ -1264,7 +1744,6 @@ namespace dyn{
 	    assert(i >= previous_size);
 
 	    //i-th element is in the j-th children
-
 	    uint64_t insert_pos = i-previous_size;
 
 	    if(not has_leaves()){
@@ -1366,6 +1845,7 @@ namespace dyn{
 	       assert(k==right_children_l.size());
 
 	       right = new node(right_children_l, parent, rank()+1);
+	       leaves.erase( leaves.begin() + nr_children /2, leaves.end() );
 
 	    }else{
 
@@ -1380,11 +1860,13 @@ namespace dyn{
 
 	       right = new node(right_children_n, parent, rank()+1);
 
+	       children.erase( children.begin() + nr_children /2, children.end() );
+
 	    }
 
 	    //update new number of children of this node
 	    nr_children = nr_children/2;
-
+	    
 	    return right;
 
 	 }

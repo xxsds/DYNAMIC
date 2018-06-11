@@ -23,7 +23,6 @@ int main() {
    
    v.push_back(0);
    sp.insert( 0, 0 );
-   cout << v.bit_size() << endl;
 
    v.push_back(18);
    sp.insert(1, 18);
@@ -37,19 +36,19 @@ int main() {
    sp.insert(5,120);
    
    for (size_t i = 0; i < v.size(); ++i) {
-      cout << i << ' ' << v[i] << endl;
-      cout << i << ' ' << sp[i] << endl;
+      cout << i << ' ' << v[i] << ' ' << sp[i] << endl;
    }
 
-   cout << "bitsize: " << v.bit_size() << endl;
-
-   cout << "sum: " << v.psum() << endl;
-   cout << "sum: " << sp.psum() << endl;
-   cout << "psum(3): " << v.psum( 3 ) << endl;
-   cout << "contains( psum(3) ): " << v.contains(v.psum( 3 )) << endl;
-   cout << "contains( psum(3) + 1 ): " << v.contains(v.psum( 3 ) + 1) << endl;
-   cout << "search( psum(3) + 1 ): " << v.search(v.psum( 3 ) + 1) << endl;
-   cout << "search( psum(3) - 1 ): " << v.search(v.psum( 3 ) - 1) << endl;
+   cout << "bitsize (vec): " << v.bit_size() << endl;
+   cout << "bitsize (spsi): " << sp.bit_size() << endl;
+   
+   cout << "sum (vec): " << v.psum() << endl;
+   cout << "sum (spsi): " << sp.psum() << endl;
+   // cout << "psum(3): " << v.psum( 3 ) << endl;
+   // cout << "contains( psum(3) ): " << v.contains(v.psum( 3 )) << endl;
+   // cout << "contains( psum(3) + 1 ): " << v.contains(v.psum( 3 ) + 1) << endl;
+   // cout << "search( psum(3) + 1 ): " << v.search(v.psum( 3 ) + 1) << endl;
+   // cout << "search( psum(3) - 1 ): " << v.search(v.psum( 3 ) - 1) << endl;
    // cout << "insert( 2, 19 ) " << endl;
    // v.insert(2,19);
    
@@ -70,9 +69,8 @@ int main() {
 
    // cout << "sum: " << v.psum() << endl;
    
-   cout << "Hello, world!" << endl;
 
-   size_t n_ops = 10000;
+   size_t n_ops = 100000;
    srand( time( NULL ) );
    using std::chrono::high_resolution_clock;
    using std::chrono::duration_cast;
@@ -88,7 +86,7 @@ int main() {
       vals.push_back( rand() );
    }
 
-   cout << "insert ... " << flush;
+   cout << "insert (vec)... " << flush;
    auto t1 = high_resolution_clock::now();
    for (size_t i = 0; i < n_ops; ++i) {
       //random insertion
@@ -105,20 +103,26 @@ int main() {
    auto t6 = high_resolution_clock::now();
    cout << "done." << endl;
 
+   cout << "bitsize (vec): " << v.bit_size() << endl;
+   cout << "bitsize (spsi): " << sp.bit_size() << endl;
+   
    cout << "checking access..." << flush;
    //   auto t5 = high_resolution_clock::now();
    for (size_t i = 0; i < n_ops; ++i) {
       //random insertion
       size_t pos = rand() % (v.size());
       if ( sp[pos] != v[ pos ] ) {
-	 cout << "access failed" << endl;
-	 return 1;
+   	 cout << "access failed" << endl;
+   	 return 1;
       }
    }
    //auto t6 = high_resolution_clock::now();
    cout << "ok" << endl;
+
+   cout << "sum (vec): " << v.psum() << endl;
+   cout << "sum (spsi): " << sp.psum() << endl;
    
-   cout << "remove ... " << flush;
+   cout << "remove (vec) ... " << flush;
    auto t3 = high_resolution_clock::now();
    for (size_t i = 0; i < n_ops; ++i) {
       //random insertion
@@ -128,32 +132,45 @@ int main() {
    auto t4 = high_resolution_clock::now();
    cout << "done." << endl;
 
+   cout << "remove (spsi) ... " << flush;
+   auto t7 = high_resolution_clock::now();
+   for (size_t i = 0; i < n_ops; ++i) {
+      //random insertion
+      sp.remove( positions[ n_ops - i - 1 ] );
+   }
+
+   auto t8 = high_resolution_clock::now();
+   cout << "done." << endl;
+
    uint64_t sec_insert = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
    uint64_t sec_remove = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
    uint64_t sec_spsi_insert = std::chrono::duration_cast<std::chrono::microseconds>(t6 - t5).count();
+   uint64_t sec_spsi_remove = std::chrono::duration_cast<std::chrono::microseconds>(t8 - t7).count();
 
-   cout << (double)sec_insert / n_ops << " microseconds/insert" << endl;
+   cout << (double)sec_insert / n_ops << " microseconds/insert (vec)" << endl;
    cout << (double)sec_spsi_insert / n_ops << " microseconds/insert (spsi)" << endl;
-   cout << (double)sec_remove / n_ops << " microseconds/remove" << endl;
+   cout << (double)sec_remove / n_ops << " microseconds/remove (vec)" << endl;
+   cout << (double)sec_spsi_remove / n_ops << " microseconds/remove (spsi)" << endl;
 
    cout << "Size of vector: " << v.size() << endl;
+   cout << "Size of spsi: " << sp.size() << endl;
    cout << "Bitsize of vector: " << v.bit_size() << endl;
+   cout << "Bitsize of spsi: " << sp.bit_size() << endl;
 
    for (size_t i = 0; i < v.size(); ++i) {
-      cout << i << ' ' << v[i] << endl;
+      cout << i << ' ' << v[i] << ' ' << sp[ i] << endl;
    }
 
-   cout << "sum: " << v.psum() << endl;
+   cout << "sum (vec): " << v.psum() << endl;
+   cout << "sum (spsi): " << sp.psum() << endl;
 
    while (v.size() > 0) {
       v.remove( v.size() - 1 );
-      cout << v.bit_size() << endl;
-      cout << v.width() << endl;
+      sp.remove( sp.size() - 1);
    }
 
-   cout << "sum: " << v.psum() << endl;
-
-   
+   cout << "sum (vec): " << v.psum() << endl;
+   cout << "sum (spsi): " << sp.psum() << endl;
    
    return 0;
 }
