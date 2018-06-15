@@ -70,7 +70,7 @@ int main() {
    // cout << "sum: " << v.psum() << endl;
    
 
-   size_t n_ops = 1000000;
+   size_t n_ops = 10000000;
    srand( time( NULL ) );
    using std::chrono::high_resolution_clock;
    using std::chrono::duration_cast;

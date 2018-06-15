@@ -65,7 +65,8 @@ void benchmark_bv(uint64_t size, double p = 0.5){
 	cout << "access ... " << flush;
 	for(uint64_t i=0;i<size;++i){
 
-		bv[rand()%bv.size()];
+	   //bv[rand()%bv.size()];
+	   bv.at(rand()%bv.size());
 
 	}
 	cout << "done." << endl;
