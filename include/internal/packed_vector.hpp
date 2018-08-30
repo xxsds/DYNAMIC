@@ -416,34 +416,39 @@ namespace dyn{
       void remove(uint64_t i) {
 	 auto x = this->at(i);
 
-	 if (bitsize(x) == width_) {
+	 if (width_>1) { // otherwise, cannot rebuild
+	    if (bitsize(x) == width_) {
 
-	    uint8_t max_b = 0;
+	       uint8_t max_b = 0;
 
-	    for(ulint j = 0; j < size_ ;++j){
-	       if (j != i) {
-		  auto x = this->at(j);
+	       for(ulint j = 0; j < size_ ;++j){
+		  if (j != i) {
+		     auto x = this->at(j);
 
-		  uint8_t bs = bitsize(x);
+		     uint8_t bs = bitsize(x);
 
-		  if(bs>max_b) max_b=bs;
-	       }
+		     if(bs>max_b) max_b=bs;
+		  }
 	       
+	       }
+
+	       //rebuild entire vector
+	       rebuild_rem( i, max_b );
+
+	       return;
+
 	    }
-
-	    //rebuild entire vector
-	    rebuild_rem( i, max_b );
-
-	    return;
-
 	 }
 
 	 //shift ints left, from position i + 1 onwords
 	 shift_left( i );
 
+	 
 	 while ( (words.size() - extra_ - 1)*(int_per_word_) >= size_ - 1 ) {
 	    //more than extra_ extra words, delete 
 	    words.pop_back();
+	    if (words.size() == 0)
+	       break;
 	 }
 
 	 --size_;
@@ -758,6 +763,7 @@ namespace dyn{
 
 	 if (i == (size_ - 1)) {
 	    set_without_psum_update( i, 0 );
+
 	    return;
 	 }
 	 
@@ -770,7 +776,8 @@ namespace dyn{
 	    //nothing falls in
 	    falling_in = 0;
 	    falling_in_idx = size_ - 1;
-	 } 
+	 }
+
 	 
 	 for(uint64_t j = i; j <= falling_in_idx - 1;++j) {
 	    set_without_psum_update(j,at(j+1));

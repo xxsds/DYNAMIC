@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Nicola Prezza.  All rights reserved.
+// Copyright (c) 2017, Nicola Prezza, Alan Kuhnle  All rights reserved.
 // Use of this source code is governed
 // by a MIT license that can be found in the LICENSE file.
 
@@ -7,6 +7,9 @@
  *
  *  Created on: Oct 27, 2015
  *      Author: nico
+ *
+ *  Modified on: Aug 28, 2018 (Support for removal)
+ *      Author: csirac
  *
  *  succinct btvector
  *
@@ -19,231 +22,240 @@
 
 namespace dyn{
 
-template <class Container> class bv_reference{
+   template <class Container> class bv_reference{
 
-public:
+   public:
 
-	bv_reference(Container &c, uint64_t idx): _bv(c), _idx(idx) {}
+      bv_reference(Container &c, uint64_t idx): _bv(c), _idx(idx) {}
 
-    operator bool() {
-        return _bv.at(_idx);
-    }
+      operator bool() {
+	 return _bv.at(_idx);
+      }
 
-    bv_reference const&operator=(bool v) const {
+      bv_reference const&operator=(bool v) const {
 
-		_bv.set(_idx, v);
+	 _bv.set(_idx, v);
 
-        return *this;
-    }
+	 return *this;
+      }
 
-    bv_reference const&operator=(bv_reference& ref) const {
+      bv_reference const&operator=(bv_reference& ref) const {
 
-		_bv.set(_idx, bool(ref));
+	 _bv.set(_idx, bool(ref));
 
-        return *this;
-    }
+	 return *this;
+      }
 
-private:
+   private:
 
-	Container &_bv;
-	uint64_t _idx;
+      Container &_bv;
+      uint64_t _idx;
 
-};
+   };
 
-template<class spsi_type>
-class succinct_bitvector{
+   template<class spsi_type>
+   class succinct_bitvector{
 
-public:
+   public:
 
-    using bv_ref = bv_reference<succinct_bitvector>;
+      using bv_ref = bv_reference<succinct_bitvector>;
 
-	/*
-	 * create empty dynamic bitvector
-	 */
-	succinct_bitvector(){}
+      /*
+       * create empty dynamic bitvector
+       */
+      succinct_bitvector(){}
 
-	/*
-	 * number of bits in the bitvector
-	 */
-	uint64_t size(){
+      /*
+       * number of bits in the bitvector
+       */
+      uint64_t size(){
 
-		return spsi_.size();
+	 return spsi_.size();
 
-	}
+      }
 
-	/*
-	 * high-level access to the bitvector. Supports assign (operator=) and access
-	 */
-	bv_ref operator[](uint64_t i){
+      /*
+       * high-level access to the bitvector. Supports assign (operator=) and access
+       */
+      bv_ref operator[](uint64_t i){
 
-		assert(i<size());
-		return { *this, i };
+	 assert(i<size());
+	 return { *this, i };
 
-	}
+      }
 
-	/*
-	 * access
-	 */
-	bool at(uint64_t i){
+      /*
+       * access
+       */
+      bool at(uint64_t i){
 
-		assert(i<size());
-		return spsi_.at(i);
+	 assert(i<size());
+	 return spsi_.at(i);
 
-	}
+      }
 
-	uint64_t select(uint64_t i, bool b = true){
+      uint64_t select(uint64_t i, bool b = true){
 
-		return b ? select1(i) : select0(i);
+	 return b ? select1(i) : select0(i);
 
-	}
+      }
 
-	/*
-	 * position of i-th bit not set. 0 =< i < rank(size(),0)
-	 */
-	uint64_t select0(uint64_t i){
+      /*
+       * position of i-th bit not set. 0 =< i < rank(size(),0)
+       */
+      uint64_t select0(uint64_t i){
 
-		assert(i<rank0(size()));
-		return spsi_.search_0(i+1);
+	 assert(i<rank0(size()));
+	 return spsi_.search_0(i+1);
 
-	}
+      }
 
-	/*
-	 * position of i-th bit set. 0 =< i < rank(size(),1)
-	 */
-	uint64_t select1(uint64_t i){
+      /*
+       * position of i-th bit set. 0 =< i < rank(size(),1)
+       */
+      uint64_t select1(uint64_t i){
 
-		assert(i<rank1(size()));
-		return spsi_.search(i+1);
+	 assert(i<rank1(size()));
+	 return spsi_.search(i+1);
 
-	}
+      }
 
-	/*
-	 * number of bits equal to b before position i EXCLUDED
-	 */
-	uint64_t rank(uint64_t i, bool b = true){
+      /*
+       * number of bits equal to b before position i EXCLUDED
+       */
+      uint64_t rank(uint64_t i, bool b = true){
 
-		assert(i<=size());
+	 assert(i<=size());
 
-		auto r1 = i==0 ? 0 : spsi_.psum(i-1);
+	 auto r1 = i==0 ? 0 : spsi_.psum(i-1);
 
-		return  b ? r1 : i-r1 ;
+	 return  b ? r1 : i-r1 ;
 
-	}
+      }
 
-	/*
-	 * number of bits equal to 0 before position i EXCLUDED
-	 */
-	uint64_t rank0(uint64_t i){
+      /*
+       * number of bits equal to 0 before position i EXCLUDED
+       */
+      uint64_t rank0(uint64_t i){
 
-		assert(i<=size());
-		return (i==0?0:i-spsi_.psum(i-1));
+	 assert(i<=size());
+	 return (i==0?0:i-spsi_.psum(i-1));
 
-	}
+      }
 
-	/*
-	 * number of bits equal to 1 before position i EXCLUDED
-	 */
-	uint64_t rank1(uint64_t i){
+      /*
+       * number of bits equal to 1 before position i EXCLUDED
+       */
+      uint64_t rank1(uint64_t i){
 
-		assert(i<=size());
-		return (i==0?0:spsi_.psum(i-1));
+	 assert(i<=size());
+	 return (i==0?0:spsi_.psum(i-1));
 
-	}
+      }
 
-	/*
-	 * total number of bits not set
-	 */
-	uint64_t rank0(){
+      /*
+       * total number of bits not set
+       */
+      uint64_t rank0(){
 
-		return rank0(size());
+	 return rank0(size());
 
-	}
+      }
 
-	/*
-	 * total number of bits set
-	 */
-	uint64_t rank1(){
+      /*
+       * total number of bits set
+       */
+      uint64_t rank1(){
 
-		return rank1(size());
+	 return rank1(size());
 
 
-	}
+      }
 
-	/*
-	 * insert a bit b at position i
-	 */
-	void insert(uint64_t i, bool b){
+      /*
+       * insert a bit b at position i
+       */
+      void insert(uint64_t i, bool b){
 
-		spsi_.insert(i,b);
+	 spsi_.insert(i,b);
 
-	}
+      }
 
-	/* append b at the end of the bitvector */
-	void push_back(bool b){
-		insert(size(),b);
-	}
+      /*
+       * remove the bit at position i
+       */
+      void remove(uint64_t i){
 
-	/*
-	 * insert a bit not set at position i
-	 */
-	void insert0(uint64_t i){
+	 spsi_.remove(i);
 
-		insert(i,false);
+      }
 
-	}
+      /* append b at the end of the bitvector */
+      void push_back(bool b){
+	 insert(size(),b);
+      }
 
-	/*
-	 * insert a bit set at position i
-	 */
-	void insert1(uint64_t i){
+      /*
+       * insert a bit not set at position i
+       */
+      void insert0(uint64_t i){
 
-		insert(i,true);
+	 insert(i,false);
 
-	}
+      }
 
-	void push_front(bool b){
+      /*
+       * insert a bit set at position i
+       */
+      void insert1(uint64_t i){
 
-		insert(0,b);
+	 insert(i,true);
 
-	}
+      }
 
-	/*
-	 * sets i-th bit to value.
-	 */
-	void set(uint64_t i, bool value = true){
+      void push_front(bool b){
 
-		spsi_[i] = value;
+	 insert(0,b);
 
-	}
+      }
 
-	/*
-	 * Total number of bits allocated in RAM for this structure
-	 */
-	uint64_t bit_size() {
+      /*
+       * sets i-th bit to value.
+       */
+      void set(uint64_t i, bool value = true){
 
-		return sizeof(succinct_bitvector<spsi_type>)*8 + spsi_.bit_size();
+	 spsi_[i] = value;
 
-	}
+      }
 
-	ulint serialize(ostream &out){
+      /*
+       * Total number of bits allocated in RAM for this structure
+       */
+      uint64_t bit_size() {
 
-		return spsi_.serialize(out);
+	 return sizeof(succinct_bitvector<spsi_type>)*8 + spsi_.bit_size();
 
-	}
+      }
 
-	void load(istream &in){
+      ulint serialize(ostream &out){
 
-		spsi_.load(in);
+	 return spsi_.serialize(out);
 
-	}
+      }
 
-private:
+      void load(istream &in){
 
-	//underlying Searchable partial sum with inserts structure.
-	//the spsi contains only integers 0 and 1
-	spsi_type spsi_;
+	 spsi_.load(in);
 
-};
+      }
+
+   private:
+
+      //underlying Searchable partial sum with inserts structure.
+      //the spsi contains only integers 0 and 1
+      spsi_type spsi_;
+
+   };
 
 }
 
