@@ -1,7 +1,7 @@
 DYNAMIC: a succinct and compressed dynamic data structures library
 ===============
-Author: Nicola Prezza
-mail: nicola.prezza@gmail.com
+Author: Nicola Prezza, Alan Kuhnle
+mail: nicola.prezza@gmail.com, akuhnle418@gmail.com
 
 Please cite this library as: 
 
