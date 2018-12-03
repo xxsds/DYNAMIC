@@ -21,10 +21,10 @@
 #ifndef DYNAMICBWT_H_
 #define DYNAMICBWT_H_
 
-#include <includes.hpp>
+#include "includes.hpp"
 
-#include <gap_bitvector.hpp>
-#include <rle_string.hpp>
+#include "gap_bitvector.hpp"
+#include "rle_string.hpp"
 #include "wt_string.hpp"
 
 namespace dyn {

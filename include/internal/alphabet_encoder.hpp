@@ -210,7 +210,7 @@ public:
 
 	}
 
-	ulint serialize(ostream &out){
+	ulint serialize(ostream &out) {
 
 		ulint w_bytes=0;
 		ulint encode_size = encode_.size();
@@ -298,7 +298,7 @@ public:
 
 private:
 
-	ulint serialize_vec_bool(ostream &out, vector<bool>& vb){
+	ulint serialize_vec_bool(ostream &out, vector<bool>& vb) {
 
 		ulint size = vb.size();
 		ulint n_words = (size/64) + (size%64 != 0);

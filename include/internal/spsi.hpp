@@ -151,7 +151,6 @@ namespace dyn{
        */
       spsi(uint64_t max_len = 0, uint64_t width = 0){
 
-	 assert(root==NULL);
 	 root = new node();
 
       }
@@ -303,13 +302,12 @@ namespace dyn{
        * Total number of bits allocated in RAM for this structure
        */
       uint64_t bit_size(){
-
+	 
 	 assert(root != NULL);
 
 	 uint64_t bs = 8*sizeof(spsi<leaf_type,B_LEAF,B>);
 
 	 if(root != NULL) bs += root->bit_size();
-
 	 return bs;
 
       }
@@ -355,7 +353,7 @@ namespace dyn{
 
       }
 
-      ulint serialize(ostream &out){
+      ulint serialize(ostream &out) const {
 
 	 assert(root);
 	 return root->serialize(out);
@@ -513,7 +511,6 @@ namespace dyn{
 	  * return bit size of all structures rooted in this node
 	  */
 	 uint64_t bit_size(){
-
 	    uint64_t bs = 8*sizeof(node);
 
 	    bs += subtree_sizes.capacity()*sizeof(uint64_t)*8;
@@ -527,7 +524,6 @@ namespace dyn{
 	    if(has_leaves()){
 
 	       for(ulint i=0;i<nr_children;++i){
-
 		  assert(leaves[i] != NULL);
 		  bs += leaves[i]->bit_size();
 
@@ -1466,7 +1462,7 @@ namespace dyn{
 	    return nr_children;
 	 }
 
-	 ulint serialize(ostream &out){
+	 ulint serialize(ostream &out) const {
 
 	    ulint w_bytes=0;
 	    ulint subtree_sizes_len = subtree_sizes.size();
@@ -1693,7 +1689,6 @@ namespace dyn{
 	    uint32_t k=0;//index in leaves
 
 	    for(uint32_t j = 0;j < nr_children-1 ;++j){
-
 	       if(i==j){
 
 		  //insert left and right, ignore child i
@@ -1897,7 +1892,7 @@ namespace dyn{
 
       };
 
-      node* root = NULL;		//tree root
+      node* root;  //= NULL;		//tree root
 
    };
 

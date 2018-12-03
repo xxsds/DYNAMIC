@@ -44,7 +44,7 @@
 #define INCLUDE_INTERNAL_SPARSE_VECTOR_HPP_
 
 #include "includes.hpp"
-#include <gap_bitvector.hpp>
+#include "gap_bitvector.hpp"
 
 
 namespace dyn{

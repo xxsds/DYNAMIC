@@ -22,8 +22,8 @@
 #ifndef INCLUDE_INTERNAL_WT_STRING_HPP_
 #define INCLUDE_INTERNAL_WT_STRING_HPP_
 
-#include <includes.hpp>
-#include <alphabet_encoder.hpp>
+#include "includes.hpp"
+#include "alphabet_encoder.hpp"
 
 namespace dyn{
 
@@ -34,6 +34,7 @@ namespace dyn{
 
       //we allow any alphabet
       typedef uint64_t char_type;
+      typedef char_type value_type;
 
       /*
        * Constructor #1
@@ -71,10 +72,17 @@ namespace dyn{
 
       }
 
+      template <typename t_str> wt_string( uint64_t sigma, t_str str ) : wt_string( sigma ) {
+	 //this->wt_string( sigma ); //fixed alphabet size
+	 for (size_t i = 0; i < str.size(); ++i) {
+	    this->push_back( static_cast<char_type>(str[i]) );
+	 }
+      }
+      
       /*
        * number of bits in the bitvector
        */
-      uint64_t size(){
+      uint64_t size() const {
 
 	 return n;
 
@@ -102,7 +110,7 @@ namespace dyn{
       /*
        * position of i-th character equal to c. 0 =< i < rank(size(),c)
        */
-      uint64_t select(uint64_t i,char_type c){
+      uint64_t select(uint64_t i,char_type c) {
 
 	 assert(ae.char_exists(c));
 	 assert(i<rank(size(),c));
@@ -124,7 +132,7 @@ namespace dyn{
       /*
        * number of chars equal to c before position i EXCLUDED
        */
-      uint64_t rank(uint64_t i, char_type c){
+      uint64_t rank(uint64_t i, char_type c)  {
 
 	 assert(i<=size());
 
@@ -165,7 +173,7 @@ namespace dyn{
       }
 
       /*
-       * insert a bit set at position i
+       * insert a character at position i
        */
       void insert(uint64_t i, char_type c){
 
@@ -175,13 +183,28 @@ namespace dyn{
 
 	 root.insert(i,code,c);
 
-	 n++;
+	 ++n;
 
       }
 
-      uint64_t bit_size(){
+      /*
+       * remove character at position i
+       */
+      void remove( uint64_t i ) {
+	 char_type c = this->at(i);
+	 //get code of c
+	 auto code = ae.encode(c);
 
-	 return sizeof(wt_string<dynamic_bitvector_t>)*8 + ae.bit_size() + root.bit_size();
+	 root.remove( i, code, c );
+	 --n;
+      }
+
+      uint64_t bit_size(){
+	 uint64_t size = 0;
+	 size += sizeof(wt_string<dynamic_bitvector_t>)*8;
+	 size += ae.bit_size();
+	 size += root.bit_size();
+	 return  size;
 
       }
 
@@ -191,7 +214,7 @@ namespace dyn{
 
       }
 
-      ulint serialize(ostream &out){
+      ulint serialize(ostream &out)  {
 
 	 ulint w_bytes=0;
 
@@ -512,19 +535,19 @@ namespace dyn{
 	  * they can use heavy structures as RBT)
 	  */
 	 ulint bit_size(){
-
 	    ulint size = sizeof(node)*8;
 
 	    size += bv.bit_size();
-
-	    if(child0_ != NULL) size += child0_->bit_size();
-	    if(child1_ != NULL) size += child1_->bit_size();
+	    if(child0_ != NULL)
+	       size += child0_->bit_size();
+	    if(child1_ != NULL)
+	       size += child1_->bit_size();
 
 	    return size;
 
 	 }
 
-	 ulint serialize(ostream &out){
+	 ulint serialize(ostream &out) {
 
 	    ulint w_bytes=0;
 

@@ -26,9 +26,8 @@ namespace dyn{
 
    template<class spsi_type>
    class gap_bitvector{
-
    public:
-
+      typedef uint64_t size_type;
       /*
        * create empty bitvector. parameter max_n is not used (legacy option)
        */
@@ -37,6 +36,17 @@ namespace dyn{
 	 spsi_.insert(0,0);
 	 size_ = 0;
 
+      }
+
+      /*
+       * construct bitvector from another object of type t_bv that represents a bitvector 
+       * t_bv must support operator[] and size()
+       */
+      template <typename t_bv> gap_bitvector( t_bv v ) : gap_bitvector() {
+	 
+	 for (size_t i = 0; i < v.size(); ++i) {
+	    this->push_back( v[i] );
+	 }
       }
 
       /*
@@ -315,7 +325,7 @@ namespace dyn{
 
 	}*/
 
-      ulint serialize(ostream &out){
+      ulint serialize(ostream &out) const {
 
 	 ulint w_bytes=0;
 

@@ -10,19 +10,25 @@ using namespace std;
 using namespace dyn;
 
 int main() {
+   string b = "banana";
+   wt_str st( 26, b );
 
-   gap_bv bv;
-   size_t ops = 10;
-   for (size_t i = 0; i < ops; ++i){
-      bv.insert( rand() % bv.size() + 1, rand() % 2 );
+   for (size_t i = 0; i < st.size(); ++i) {
+      cout << static_cast<char>(st[i]);
    }
-
-   for (size_t i = 0; i < bv.size(); ++i) {
-      cout << bv[i];
+   cout << endl;
+   st.remove(0);
+   
+   for (size_t i = 0; i < st.size(); ++i) {
+      cout << static_cast<char>(st[i]);
    }
    cout << endl;
 
-   
-   
+   st.remove(2);
+
+   for (size_t i = 0; i < st.size(); ++i) {
+      cout << static_cast<char>(st[i]);
+   }
+   cout << endl;
    return 0;
 }
