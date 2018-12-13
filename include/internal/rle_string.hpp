@@ -69,21 +69,21 @@ public:
 
 	}
 
-	char_type at(ulint i){
+	char_type at(ulint i) const {
 
 		assert(i<runs.size());
 		assert(runs.rank1(i) < number_of_runs());
-		return run_heads_[ runs.rank1(i) ];
+		return run_heads_.at( runs.rank1(i) );
 
 	}
 
-	char_type operator[](ulint i){
+	char_type operator[](ulint i) {
 
 		return at(i);
 
 	}
 
-	bool char_exists(char_type c){
+	bool char_exists(char_type c) const {
 
 		return run_heads_.char_exists(c);
 
@@ -92,15 +92,15 @@ public:
 	/*
 	 * position of i-th character c. i starts from 0!
 	 */
-	ulint select(ulint i, char_type c){
+	ulint select(ulint i, char_type c) const {
 
 		assert(run_heads_.char_exists(c));
 		assert(i < rank(size(),c));
 
-		ulint this_c_run = runs_per_letter[c].rank1(i);
+		ulint this_c_run = runs_per_letter.at(c).rank1(i);
 
 		//position of i-th c inside its c-run
-		ulint sel = i - ( this_c_run == 0 ? 0 : runs_per_letter[c].select1(this_c_run-1)+1 );
+		ulint sel = i - ( this_c_run == 0 ? 0 : runs_per_letter.at(c).select1(this_c_run-1)+1 );
 
 		//run number among all runs
 		ulint this_run = run_heads_.select(this_c_run, c);
@@ -114,7 +114,7 @@ public:
 	/*
 	 * position of i-th bit not set. 0 =< i < rank(size(),0)
 	 */
-	uint64_t select0(uint64_t i){
+	uint64_t select0(uint64_t i) const {
 
 		assert(run_heads_.char_exists(false));
 		assert(i<rank0(size()));
@@ -126,7 +126,7 @@ public:
 	/*
 	 * position of i-th bit set. 0 =< i < rank(size(),1)
 	 */
-	uint64_t select1(uint64_t i){
+	uint64_t select1(uint64_t i) const {
 
 		assert(run_heads_.char_exists(true));
 		assert(i<rank1(size()));
@@ -138,7 +138,7 @@ public:
 	/*
 	 * number of c before position i excluded
 	 */
-	ulint rank(ulint i, char_type c){
+	ulint rank(ulint i, char_type c) const {
 
 		assert(i<=size());
 
@@ -153,15 +153,15 @@ public:
 		ulint this_c_run = run_heads_.rank(this_run,c);
 
 		//number of cs before position i (excluded) in THIS c-run
-		ulint rk = (this_run == run_heads_.size() || run_heads_[this_run] != c) ?
+		ulint rk = (this_run == run_heads_.size() || run_heads_.at(this_run) != c) ?
 					0 :
 					i - (this_run == 0 ? 0 : runs.select1(this_run-1)+1 );
 
-		assert(runs_per_letter[c].size()>0);
-		assert(this_c_run == 0 || this_c_run-1 < runs_per_letter[c].rank1(runs_per_letter[c].size()));
+		assert(runs_per_letter.at(c).size()>0);
+		assert(this_c_run == 0 || this_c_run-1 < runs_per_letter.at(c).rank1(runs_per_letter.at(c).size()));
 
 		//add also number of cs before this run (excluded)
-		rk += (this_c_run == 0 ? 0 : runs_per_letter[c].select1(this_c_run-1)+1 );
+		rk += (this_c_run == 0 ? 0 : runs_per_letter.at(c).select1(this_c_run-1)+1 );
 
 		return rk;
 
@@ -170,7 +170,7 @@ public:
 	/*
 	 * number of 0s before position i (only for bitvectors!)
 	 */
-	ulint rank0(ulint i){
+	ulint rank0(ulint i) const {
 
 		assert(run_heads_.char_exists(false));
 		return rank(i, false);
@@ -180,7 +180,7 @@ public:
 	/*
 	 * number of 1s before position i (only for bitvectors!)
 	 */
-	ulint rank1(ulint i){
+	ulint rank1(ulint i) const {
 
 		assert(run_heads_.char_exists(true));
 		return rank(i, true);
@@ -471,14 +471,14 @@ public:
 
 	}*/
 
-	ulint size(){return runs.size();}
+	ulint size() const {return runs.size();}
 
 	/*
 	 * number of runs intersecting the interval range = [left,right).
 	 * Note: right bound is excluded!
 	 *
 	 */
-	ulint number_of_runs(pair<ulint,ulint> range){
+	ulint number_of_runs(pair<ulint,ulint> range) const {
 
 		ulint l = range.first;
 		ulint r = range.second;
@@ -496,10 +496,10 @@ public:
 	}
 
 	//total number of runs
-	ulint number_of_runs(){return run_heads_.size();}
+	ulint number_of_runs() const {return run_heads_.size();}
 
 	//length of i-th run
-	ulint run_at(ulint i){
+	ulint run_at(ulint i) const {
 
 		assert(i<number_of_runs());
 		return (i==0) + runs.select1(i) - (i==0?0:runs.select1(i-1));
@@ -507,10 +507,10 @@ public:
 	}
 
 	//length of i-th c-run
-	ulint run_at(ulint i, char_type c){
+	ulint run_at(ulint i, char_type c) const {
 
-		assert(i<runs_per_letter[c].rank1(runs_per_letter[c].size()));
-		return (i==0) + runs_per_letter[c].select1(i) - (i==0?0:runs_per_letter[c].select1(i-1));
+		assert(i<runs_per_letter.at(c).rank1(runs_per_letter.at(c).size()));
+		return (i==0) + runs_per_letter.at(c).select1(i) - (i==0?0:runs_per_letter.at(c).select1(i-1));
 
 	}
 
@@ -519,7 +519,7 @@ public:
 	 * output: number of c-runs before position i, excluded
 	 * the run containing i (if it is a c-run)
 	 */
-	ulint run_rank(ulint i, char_type c){
+	ulint run_rank(ulint i, char_type c) const {
 
 		return run_heads_.rank(runs.rank1(i),c);
 
@@ -529,7 +529,7 @@ public:
 	 * given a position i inside the string, return the interval [l,r) of the run containing i,
 	 * i.e. i \in [l,r) (right position always exclusive)
 	 */
-	pair<ulint,ulint> locate_run(ulint i){
+	pair<ulint,ulint> locate_run(ulint i) const {
 
 		assert(i<runs.size());
 
@@ -553,7 +553,7 @@ public:
 	 * to the alphabet size (but the constants involved are high since internally
 	 * they can use heavy structures as RBT)
 	 */
-	ulint bit_size(){
+	ulint bit_size() const {
 
 		ulint size = sizeof(rle_string<sparse_bitvector_t,string_t>)*8;
 
@@ -572,7 +572,7 @@ public:
 
 	}
 
-	ulint serialize(ostream &out){
+	ulint serialize(ostream &out) const {
 
 		ulint w_bytes=0;
 

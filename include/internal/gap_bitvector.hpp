@@ -52,21 +52,21 @@ namespace dyn{
       /*
        * number of bits in the bitvector
        */
-      uint64_t size(){
+      uint64_t size() const {
 	 return size_;
       }
 
       /*
        * access
        */
-      bool operator[](uint64_t i){
+      bool operator[](uint64_t i) const {
 	 return at(i);
       }
 
       /*
        * access
        */
-      bool at(uint64_t i){
+      bool at(uint64_t i) const {
 
 	 assert(i<size());
 
@@ -79,7 +79,7 @@ namespace dyn{
       /*
        * access
        */
-      bool access(uint64_t i){
+      bool access(uint64_t i) const {
 
 	 return at(i);
 
@@ -88,7 +88,7 @@ namespace dyn{
       /*
        * position of i-th bit not set. 0 =< i < rank(size(),0)
        */
-      uint64_t select0(uint64_t i){
+      uint64_t select0(uint64_t i) const {
 
 	 assert(i<rank0());
 
@@ -102,7 +102,7 @@ namespace dyn{
       /*
        * position of i-th bit set. 0 =< i < rank(size(),1)
        */
-      uint64_t select1(uint64_t i){
+      uint64_t select1(uint64_t i) const {
 
 	 assert(i<rank1());
 	 return spsi_.psum(i)+i;
@@ -112,7 +112,7 @@ namespace dyn{
       /*
        * position of i-th bit equal to b. 0 =< i < rank(size(),0)
        */
-      uint64_t select(uint64_t i, bool b= true){
+      uint64_t select(uint64_t i, bool b= true) const {
 
 	 return b ? select1(i) : select0(i);
 
@@ -121,7 +121,7 @@ namespace dyn{
       /*
        * total number of bits set
        */
-      uint64_t rank1(){
+      uint64_t rank1() const {
 	 assert(bits_set_ == rank1(size()));
 	 return bits_set_;
       }
@@ -129,7 +129,7 @@ namespace dyn{
       /*
        * total number of bits not set
        */
-      uint64_t rank0(){
+      uint64_t rank0() const {
 	 assert(size_ - bits_set_ == rank0(size()));
 	 return size_ - bits_set_;
       }
@@ -137,7 +137,7 @@ namespace dyn{
       /*
        * number of bits equal to b before position i EXCLUDED
        */
-      uint64_t rank(uint64_t i, bool b = true){
+      uint64_t rank(uint64_t i, bool b = true) const {
 
 	 assert(i<=size());
 
@@ -149,7 +149,7 @@ namespace dyn{
       /*
        * number of bits equal to 0 before position i EXCLUDED
        */
-      uint64_t rank0(uint64_t i){
+      uint64_t rank0(uint64_t i) const {
 
 	 assert(i<=size());
 	 assert(i>=spsi_.search_r(i+1));
@@ -161,7 +161,7 @@ namespace dyn{
       /*
        * number of bits equal to 1 before position i EXCLUDED
        */
-      uint64_t rank1(uint64_t i){
+      uint64_t rank1(uint64_t i) const {
 
 	 assert(i<=size());
 	 return spsi_.search_r(i+1);
@@ -306,7 +306,7 @@ namespace dyn{
       /*
        * Total number of bits allocated in RAM for this structure
        */
-      uint64_t bit_size() {
+      uint64_t bit_size() const {
 
 	 return sizeof(gap_bitvector<spsi_type>)*8 + spsi_.bit_size();
 

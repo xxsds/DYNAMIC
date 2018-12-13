@@ -170,16 +170,16 @@ namespace dyn{
        * high-level access to the SPSI. Supports assign, access,
        * increment (++, +=), decrement (--, -=)
        */
-      spsi_ref operator[](uint64_t i){
+      spsi_ref operator[](uint64_t i) {
 
-	 return { *this, i };
+          return { *this, i };
 
       }
 
       /*
        * returns I_0 + ... + I_i = sum up to i-th integer included
        */
-      uint64_t psum(uint64_t i){
+      uint64_t psum(uint64_t i) const {
 
 	 //empty sum
 	 if(size()==0) return 0;
@@ -193,7 +193,7 @@ namespace dyn{
       /*
        * returns smallest i such that I_0 + ... + I_i >= x
        */
-      uint64_t search(uint64_t x){
+      uint64_t search(uint64_t x) const {
 
 	 assert(x<=psum());
 
@@ -209,7 +209,7 @@ namespace dyn{
        * returns i such that number of zeros before position i (included)
        * is == x
        */
-      uint64_t search_0(uint64_t x){
+      uint64_t search_0(uint64_t x) const {
 
 	 assert(x <= size() - psum());
 
@@ -220,7 +220,7 @@ namespace dyn{
       /*
        * returns smallest i such that (i+1) + I_0 + ... + I_i >= x
        */
-      uint64_t search_r(uint64_t x){
+      uint64_t search_r(uint64_t x) const {
 
 	 assert(x<=psum()+size());
 
@@ -231,7 +231,7 @@ namespace dyn{
       /*
        * true iif x is one of the partial sums  0, I_0, I_0+I_1, ...
        */
-      bool contains(uint64_t x){
+      bool contains(uint64_t x) const {
 
 	 assert(x<=psum());
 
@@ -250,14 +250,14 @@ namespace dyn{
 
 	}*/
 
-      void push_back(uint64_t x){
+      void push_back(uint64_t x) {
 	 insert(size(),x);
       }
 
       /*
        * insert a new integer x at position i
        */
-      void insert(uint64_t i, uint64_t x){
+      void insert(uint64_t i, uint64_t x) {
 
 	 assert(i<=root->size());
 
@@ -285,7 +285,7 @@ namespace dyn{
       /*
        * return number of integers stored in the structure
        */
-      uint64_t size(){
+      uint64_t size() const {
 
 	 assert(root != NULL);
 	 return root->size();
@@ -294,14 +294,14 @@ namespace dyn{
       /*
        * return sum of all integers
        */
-      uint64_t psum(){
+      uint64_t psum() const {
 	 return root->psum();
       }
 
       /*
        * Total number of bits allocated in RAM for this structure
        */
-      uint64_t bit_size(){
+      uint64_t bit_size() const {
 	 
 	 assert(root != NULL);
 
@@ -315,7 +315,7 @@ namespace dyn{
       /*
        * return i-th integer
        */
-      uint64_t at(uint64_t i){
+      uint64_t at(uint64_t i) const {
 
 	 assert(size()>0);
 	 assert(i<size());
@@ -510,7 +510,7 @@ namespace dyn{
 	 /*
 	  * return bit size of all structures rooted in this node
 	  */
-	 uint64_t bit_size(){
+	 uint64_t bit_size() const {
 	    uint64_t bs = 8*sizeof(node);
 
 	    bs += subtree_sizes.capacity()*sizeof(uint64_t)*8;
@@ -544,7 +544,7 @@ namespace dyn{
 
 	 }
 
-	 bool has_leaves(){
+	 bool has_leaves() const {
 
 	    return has_leaves_;
 
@@ -1442,7 +1442,7 @@ namespace dyn{
 
 	 void overwrite_rank(uint32_t r){rank_=r;}
 
-	 uint64_t size(){
+	 uint64_t size() const {
 
 	    assert(nr_children>0);
 	    assert(nr_children-1 < subtree_sizes.size());
@@ -1450,7 +1450,7 @@ namespace dyn{
 
 	 }
 
-	 uint64_t psum(){
+	 uint64_t psum() const {
 	    return subtree_psums[nr_children-1];
 	 }
 
