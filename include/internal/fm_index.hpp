@@ -88,7 +88,7 @@ public:
 	 * text positions are enumerated from the end, with
 	 * the BWT terminator (last character) having position 0.
 	 */
-	ulint locate(ulint i){
+	ulint locate(ulint i) const {
 
 		return locate(i,0);
 
@@ -100,7 +100,7 @@ public:
 	 * text positions are enumerated from the end, with
 	 * the BWT terminator (last character) having position 0.
 	 */
-	vector<ulint> locate(pair<ulint,ulint> range){
+	vector<ulint> locate(pair<ulint,ulint> range) const {
 
 		auto res = vector<ulint>();
 
@@ -114,7 +114,7 @@ public:
 	 * input: pattern P
 	 * output: occurrences of P in the text
 	 */
-	vector<ulint> locate(vector<char_type> P){
+	vector<ulint> locate(vector<char_type> P) const {
 
 		return locate(dyn_bwt::count(P));
 
@@ -155,7 +155,7 @@ public:
 	 * to the alphabet size (but the constants involved are high since internally
 	 * they can use heavy structures as RBT)
 	 */
-	ulint bit_size(){
+	ulint bit_size() const {
 
 		ulint size = sizeof(fm_index<dyn_bwt,dyn_bv,dyn_vec>)*8;
 
@@ -167,7 +167,7 @@ public:
 
 	}
 
-	ulint serialize(ostream &out){
+	ulint serialize(ostream &out) const {
 
 		ulint w_bytes=0;
 
@@ -199,11 +199,11 @@ private:
 	/*
 	 * locate and add j
 	 */
-	ulint locate(ulint i, ulint j){
+	ulint locate(ulint i, ulint j) const{
 
-		return 	marked[i] ?
-				SA[marked.rank1(i)] + j :
-				locate( this->FL(i), j+1 );
+		return 	marked.at(i) ?
+            SA.at(marked.rank1(i)) + j :
+            locate( this->FL(i), j+1 );
 
 	}
 

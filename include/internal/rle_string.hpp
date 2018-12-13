@@ -77,7 +77,7 @@ public:
 
 	}
 
-	char_type operator[](ulint i) {
+	char_type operator[](ulint i) const {
 
 		return at(i);
 

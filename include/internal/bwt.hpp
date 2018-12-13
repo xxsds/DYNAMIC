@@ -89,22 +89,22 @@ public:
 	/*
 	 * i-th BWT character
 	 */
-	char_type at(ulint i){
+	char_type at(ulint i) const {
 
 		assert(i<bwt_length());
 
 		return 	i < terminator_position ?
-				L[i] :
-					i == terminator_position ?
+                    L.at(i) :
+            i == terminator_position ?
 					TERMINATOR :
-					L[i-1];
+            L.at(i-1);
 
 	}
 
 	/*
 	 * i-th BWT character
 	 */
-	char_type operator[](ulint i){
+	char_type operator[](ulint i) const {
 
 		return at(i);
 
@@ -163,7 +163,7 @@ public:
 	 * Note that intervals are [left,right) : right bound is excluded
 	 *
 	 */
-	pair<ulint, ulint> LF(pair <ulint,ulint> interval, char_type c){
+	pair<ulint, ulint> LF(pair <ulint,ulint> interval, char_type c) const {
 
 		assert(c!=TERMINATOR);
 
@@ -203,11 +203,11 @@ public:
 	 * count number of occurrences of pattern P
 	 * returns range [l,r) (right-exclusive) on BWT of P
 	 */
-	pair<ulint,ulint> count(vector<char_type> P){
+	pair<ulint,ulint> count(vector<char_type> P) const {
 
 		pair<ulint,ulint> rn = {0,size()};
 
-		for(ulint i=0;i<P.size();++i) rn = LF(rn, P[P.size()-i-1]);
+		for(ulint i=0;i<P.size();++i) rn = LF(rn, P.at(P.size()-i-1));
 
 		return rn;
 
@@ -216,7 +216,7 @@ public:
 	/*
 	 * LF function
 	 */
-	ulint LF(ulint i){
+	ulint LF(ulint i) const {
 
 		assert(i<bwt_length());
 
@@ -232,7 +232,7 @@ public:
 	/*
 	 * FL function
 	 */
-	ulint FL(ulint i){
+	ulint FL(ulint i) const {
 
 		assert(i<bwt_length());
 
@@ -250,7 +250,7 @@ public:
 
 	}
 
-	pair<ulint, ulint> get_full_interval(){
+	pair<ulint, ulint> get_full_interval() const {
 
 		return {0,bwt_length()};
 
@@ -259,13 +259,13 @@ public:
 	/*
 	 * text length = BWT length-1
 	 */
-	ulint text_length(){
+	ulint text_length() const {
 
 		return L.size();
 
 	}
 
-	ulint bwt_length(){
+	ulint bwt_length() const {
 
 		//take into account terminator
 		return L.size()+1;
@@ -275,19 +275,19 @@ public:
 	/*
 	 * length of the bwt
 	 */
-	ulint size(){
+	ulint size() const {
 		return bwt_length();
 	}
 
 	//alphabet of the text
-	ulint text_alphabet_size(){
+	ulint text_alphabet_size() const {
 
 		return alphabet.size();
 
 	}
 
 	//alphabet of the text + terminator character
-	ulint bwt_alphabet_size(){
+	ulint bwt_alphabet_size() const {
 
 		return alphabet.size()+1;
 
@@ -296,7 +296,7 @@ public:
 	/*
 	 * get BWT terminator character
 	 */
-	char_type get_terminator(){
+	char_type get_terminator() const {
 
 		return TERMINATOR;
 
@@ -305,7 +305,7 @@ public:
 	/*
 	 * get position of terminator in the BWT
 	 */
-	ulint get_terminator_position(){
+	ulint get_terminator_position() const {
 
 		return terminator_position;
 
@@ -324,7 +324,7 @@ public:
 	 *
 	 * defined only for rle_bwt (see dynamic.hpp)
 	 */
-	ulint number_of_runs(pair<ulint,ulint> range);
+	ulint number_of_runs(pair<ulint,ulint> range) const;
 
 	/*
 	 * given a position i inside the BWT, return the interval [l,r) of the run containing i,
@@ -332,12 +332,12 @@ public:
 	 *
 	 * defined only for rle_bwt (see dynamic.hpp)
 	 */
-	pair<ulint,ulint> locate_run(ulint i);
+	pair<ulint,ulint> locate_run(ulint i) const;
 
 	/*
 	 * return alphabet, INCLUDED BWT terminator
 	 */
-	set<char_type> get_alphabet(){
+	set<char_type> get_alphabet() const {
 
 		set<char_type> A(alphabet);
 
@@ -356,7 +356,7 @@ public:
 	 * to the alphabet size (but the constants involved are high since internally
 	 * they can use heavy structures as RBT)
 	 */
-	ulint bit_size(){
+	ulint bit_size() const {
 
 		ulint size = sizeof(bwt<dynamic_string_type,rle_string_type>)*8;
 
@@ -368,7 +368,7 @@ public:
 
 	}
 
-	ulint serialize(ostream &out){
+	ulint serialize(ostream &out) const {
 
 		ulint w_bytes=0;
 
