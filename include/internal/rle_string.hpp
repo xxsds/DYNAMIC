@@ -1,8 +1,15 @@
+// Copyright (c) 2017, Nicola Prezza.  All rights reserved.
+// Use of this source code is governed
+// by a MIT license that can be found in the LICENSE file.
+
 /*
  * rle_string.hpp
  *
  *  Created on: Dec 1, 2015
  *      Author: nico
+ *
+ *  in the bitvectors, runs are encoded as 0^k1, k being the run length
+ *
  */
 
 #ifndef INCLUDE_INTERNAL_RLE_STRING_HPP_
@@ -181,11 +188,12 @@ public:
 	}
 
 	/*
-	 * insert character c at position i
+	 * insert k copies of character c at position i
 	 */
-	void insert(ulint i, char_type c){
+	void insert(ulint i, char_type c, ulint k = 1){
 
 		assert(i<=size());
+		assert(k>0);
 
 		//CASE #1: empty string
 
@@ -196,8 +204,12 @@ public:
 			assert(number_of_runs()==0);
 
 			runs.insert1(0);
+			runs.insert0(0,k-1);
+
 			run_heads_.insert(0,c);
+
 			runs_per_letter[c].insert1(0);
+			runs_per_letter[c].insert0(0,k-1);
 
 			//increase length and number of runs
 			//n++;
@@ -235,12 +247,12 @@ public:
 			//c-run that is extended with a new c
 			ulint extended_run = ( prev_equals_c ? runs.rank1(i-1) : runs.rank1(i) );
 
-			//extend run: insert a 0 in runs
-			//if at(i-1) == c and at(i) != c, then insert 0 at position i-1
+			//extend run: insert k zeros in runs
+			//if at(i-1) == c and at(i) != c, then insert 0s at position i-1
 			//because position i-1 contains a 1
 
 			assert( not (prev_equals_c and not next_equals_c) || runs[i-1] );
-			runs.insert0( prev_equals_c and not next_equals_c ? i-1 : i );
+			runs.insert0( prev_equals_c and not next_equals_c ? i-1 : i, k );
 
 			//here c must be present inside run_heads_ since
 			//the new c touches a c-run
@@ -250,7 +262,7 @@ public:
 			ulint extended_c_run = run_heads_.rank(extended_run,c);
 
 			assert(extended_c_run < runs_per_letter[c].rank1());
-			runs_per_letter[c].insert0(runs_per_letter[c].select1(extended_c_run) );
+			runs_per_letter[c].insert0(runs_per_letter[c].select1(extended_c_run), k);
 
 			//n++;
 			//R does not increase because c touches a c-run
@@ -271,8 +283,11 @@ public:
 			assert(next != c);
 
 			runs.insert1(0);
+			runs.insert0(0,k-1);
+
 			run_heads_.insert(0,c);
 			runs_per_letter[c].insert1(0);
+			runs_per_letter[c].insert0(0,k-1);
 
 			//n++;
 			//R++;
@@ -292,8 +307,12 @@ public:
 			//previous character exists and is different than c
 			assert(prev != c);
 
+			runs.insert0(runs.size(),k-1);
 			runs.insert1(runs.size());
+
 			run_heads_.insert(number_of_runs(),c);
+
+			runs_per_letter[c].insert0(runs_per_letter[c].size(), k-1);
 			runs_per_letter[c].insert1(runs_per_letter[c].size());
 
 			//n++;
@@ -321,16 +340,18 @@ public:
 			assert(rk<=number_of_runs()-1);
 
 			runs.insert1(i);
+			runs.insert0(i,k-1);
+
 			run_heads_.insert(rk,c);
 
 			assert(run_heads_[rk-1]!=c and run_heads_[rk+1]!=c);
 
 			ulint this_c_run = run_heads_.rank(rk,c);
 
-			runs_per_letter[c].insert1( this_c_run == 0 ?
-										0 :
-										runs_per_letter[c].select1(this_c_run-1)+1
-									);
+			auto ins_pos = this_c_run == 0 ? 0 : runs_per_letter[c].select1(this_c_run-1)+1;
+
+			runs_per_letter[c].insert1( ins_pos );
+			runs_per_letter[c].insert0( ins_pos, k-1 );
 
 			//n++;
 			//R++;
@@ -366,17 +387,17 @@ public:
 		//runs[i-1] = true
 		runs.set(i-1);
 
-		//insert a bit set
+		//insert new c-run
 		runs.insert1(i);
+		runs.insert0(i,k-1);
 
 		//split run
 		run_heads_split(this_run,c);
 
-		//insert a 1 in c-runs
-		runs_per_letter[c].insert1( this_c_run == 0 ?
-									0 :
-									runs_per_letter[c].select1(this_c_run-1)+1
-								);
+		//insert a 0^k1 in c-runs
+		auto ins_pos = this_c_run == 0 ? 0 : runs_per_letter[c].select1(this_c_run-1)+1;
+		runs_per_letter[c].insert1( ins_pos	);
+		runs_per_letter[c].insert0( ins_pos, k-1	);
 
 		//insert a 1 in a-runs
 		assert(a_rank>0);

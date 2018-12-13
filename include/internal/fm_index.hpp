@@ -1,3 +1,7 @@
+// Copyright (c) 2017, Nicola Prezza.  All rights reserved.
+// Use of this source code is governed
+// by a MIT license that can be found in the LICENSE file.
+
 /*
  * fm_index.hpp
  *
@@ -16,7 +20,7 @@
 #ifndef INCLUDE_INTERNAL_FM_INDEX_HPP_
 #define INCLUDE_INTERNAL_FM_INDEX_HPP_
 
-#include <includes.hpp>
+#include "includes.hpp"
 
 template <	class dyn_bwt,	//dynamic BWT
 			class dyn_bv,	//dynamic bitvector

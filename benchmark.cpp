@@ -1,3 +1,7 @@
+// Copyright (c) 2017, Nicola Prezza.  All rights reserved.
+// Use of this source code is governed
+// by a MIT license that can be found in the LICENSE file.
+
 /*
  * benchmark.cpp
  *
@@ -14,6 +18,7 @@
 #include "include/algorithms/rle_lz77_v2.hpp"
 
 #include "include/internal/packed_vector.hpp"
+
 #include "include/internal/wt_string.hpp"
 
 using namespace std;
@@ -57,10 +62,13 @@ void benchmark_bv(uint64_t size, double p = 0.5){
 
 	auto t2 = high_resolution_clock::now();
 
+	auto max_size = bv.bit_size();
+	
 	cout << "access ... " << flush;
 	for(uint64_t i=0;i<size;++i){
 
-		bv[rand()%bv.size()];
+	   //bv[rand()%bv.size()];
+	   bv.at(rand()%bv.size());
 
 	}
 	cout << "done." << endl;
@@ -109,21 +117,37 @@ void benchmark_bv(uint64_t size, double p = 0.5){
 	cout << "done." << endl;
 	auto t7 = high_resolution_clock::now();
 
+	cout << "remove ... " << flush;
+	
+	for(uint64_t i=0;i<size;++i){
+	   //bv[rand()%bv.size()];
+	   bv.remove(rand()%bv.size());
+	   //rand()%bv.size();
+
+	}
+
+	cout << "done." << endl;
+	auto t8 = high_resolution_clock::now();
+
 	uint64_t sec_insert = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
 	uint64_t sec_access = std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2).count();
 	uint64_t sec_rank0 = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
 	uint64_t sec_rank1 = std::chrono::duration_cast<std::chrono::microseconds>(t5 - t4).count();
 	uint64_t sec_sel0 = std::chrono::duration_cast<std::chrono::microseconds>(t6 - t5).count();
 	uint64_t sec_sel1 = std::chrono::duration_cast<std::chrono::microseconds>(t7 - t6).count();
+	uint64_t sec_rem = std::chrono::duration_cast<std::chrono::microseconds>(t8 - t7).count();
 
-	cout << (double)sec_insert/bv.size() << " microseconds/insert" << endl;
-	cout << (double)sec_access/bv.size() << " microseconds/access" << endl;
-	cout << (double)sec_rank0/bv.size() << " microseconds/rank0" << endl;
-	cout << (double)sec_rank1/bv.size() << " microseconds/rank1" << endl;
+	cout << (double)sec_insert/size << " microseconds/insert" << endl;
+	cout << (double)sec_access/size << " microseconds/access" << endl;
+	cout << (double)sec_rank0/size << " microseconds/rank0" << endl;
+	cout << (double)sec_rank1/size << " microseconds/rank1" << endl;
 	cout << (double)sec_sel0/size << " microseconds/select0" << endl;
 	cout << (double)sec_sel1/size << " microseconds/select1" << endl;
 
-	cout << "Bit size of the structure (allocated memory, bits): " << bv.bit_size() << endl;
+	cout << (double)sec_rem/size << " microseconds/remove" << endl;
+
+	cout << "Max bit size of the structure (allocated memory, bits): " << max_size << endl;
+	cout << "Final bit size of the structure (allocated memory, bits): " << bv.bit_size() << endl;
 
 }
 

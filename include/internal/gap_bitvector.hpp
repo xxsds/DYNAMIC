@@ -1,8 +1,15 @@
+// Copyright (c) 2017, Nicola Prezza.  All rights reserved.
+// Use of this source code is governed
+// by a MIT license that can be found in the LICENSE file.
+
 /*
  * gap_bitvector.hpp
  *
  *  Created on: Oct 23, 2015
  *      Author: nico
+ *
+ *  Modified on: Aug 28, 2018 (Support for deletion of 1's)
+ *      Author: csirac
  *
  *  dynamic gap-encoded bitvector. It is based on a searchable partial sum with inserts data structure.
  *
@@ -17,304 +24,349 @@
 
 namespace dyn{
 
-template<class spsi_type>
-class gap_bitvector{
+   template<class spsi_type>
+   class gap_bitvector{
+   public:
+      typedef uint64_t size_type;
+      /*
+       * create empty bitvector. parameter max_n is not used (legacy option)
+       */
+      gap_bitvector(uint64_t max_n = 0){
+
+	 spsi_.insert(0,0);
+	 size_ = 0;
+
+      }
+
+      /*
+       * construct bitvector from another object of type t_bv that represents a bitvector 
+       * t_bv must support operator[] and size()
+       */
+      template <typename t_bv> gap_bitvector( t_bv v ) : gap_bitvector() {
+	 
+	 for (size_t i = 0; i < v.size(); ++i) {
+	    this->push_back( v[i] );
+	 }
+      }
+
+      /*
+       * number of bits in the bitvector
+       */
+      uint64_t size(){
+	 return size_;
+      }
+
+      /*
+       * access
+       */
+      bool operator[](uint64_t i){
+	 return at(i);
+      }
+
+      /*
+       * access
+       */
+      bool at(uint64_t i){
 
-public:
+	 assert(i<size());
 
-	/*
-	 * create empty bitvector. parameter max_n is not used (legacy option)
-	 */
-	gap_bitvector(uint64_t max_n = 0){
+	 return i==0 ? rank1(1) : rank1(i+1)-rank1(i);
 
-		spsi_.insert(0,0);
-		size_ = 0;
+	 //return spsi_.contains_r(i+1);
 
-	}
+      }
 
-	/*
-	 * number of bits in the bitvector
-	 */
-	uint64_t size(){
-		return size_;
-	}
+      /*
+       * access
+       */
+      bool access(uint64_t i){
 
-	/*
-	 * access
-	 */
-	bool operator[](uint64_t i){
-		return at(i);
-	}
+	 return at(i);
 
-	/*
-	 * access
-	 */
-	bool at(uint64_t i){
+      }
 
-		assert(i<size());
+      /*
+       * position of i-th bit not set. 0 =< i < rank(size(),0)
+       */
+      uint64_t select0(uint64_t i){
 
-		return i==0 ? rank1(1) : rank1(i+1)-rank1(i);
+	 assert(i<rank0());
 
-		//return spsi_.contains_r(i+1);
+	 //i = number of zeros before position of interest
+	 //spsi_.psum(i+1) 	= block of zeros to which the i-th zero belongs
+	 //					= number of 1s before position of interest
+	 return i + spsi_.search(i+1);
 
-	}
+      }
 
-	/*
-	 * access
-	 */
-	bool access(uint64_t i){
+      /*
+       * position of i-th bit set. 0 =< i < rank(size(),1)
+       */
+      uint64_t select1(uint64_t i){
 
-		return at(i);
+	 assert(i<rank1());
+	 return spsi_.psum(i)+i;
 
-	}
+      }
 
-	/*
-	 * position of i-th bit not set. 0 =< i < rank(size(),0)
-	 */
-	uint64_t select0(uint64_t i){
+      /*
+       * position of i-th bit equal to b. 0 =< i < rank(size(),0)
+       */
+      uint64_t select(uint64_t i, bool b= true){
 
-		assert(i<rank0());
+	 return b ? select1(i) : select0(i);
 
-		//i = number of zeros before position of interest
-		//spsi_.psum(i+1) 	= block of zeros to which the i-th zero belongs
-		//					= number of 1s before position of interest
-		return i + spsi_.search(i+1);
+      }
 
-	}
+      /*
+       * total number of bits set
+       */
+      uint64_t rank1(){
+	 assert(bits_set_ == rank1(size()));
+	 return bits_set_;
+      }
 
-	/*
-	 * position of i-th bit set. 0 =< i < rank(size(),1)
-	 */
-	uint64_t select1(uint64_t i){
+      /*
+       * total number of bits not set
+       */
+      uint64_t rank0(){
+	 assert(size_ - bits_set_ == rank0(size()));
+	 return size_ - bits_set_;
+      }
 
-		assert(i<rank1());
-		return spsi_.psum(i)+i;
+      /*
+       * number of bits equal to b before position i EXCLUDED
+       */
+      uint64_t rank(uint64_t i, bool b = true){
 
-	}
+	 assert(i<=size());
 
-	/*
-	 * position of i-th bit equal to b. 0 =< i < rank(size(),0)
-	 */
-	uint64_t select(uint64_t i, bool b= true){
+	 auto r1 = spsi_.search_r(i+1);
+	 return b ? r1 : i-r1;
 
-		return b ? select1(i) : select0(i);
+      }
 
-	}
+      /*
+       * number of bits equal to 0 before position i EXCLUDED
+       */
+      uint64_t rank0(uint64_t i){
 
-	/*
-	 * total number of bits set
-	 */
-	uint64_t rank1(){
-		assert(bits_set_ == rank1(size()));
-		return bits_set_;
-	}
+	 assert(i<=size());
+	 assert(i>=spsi_.search_r(i+1));
 
-	/*
-	 * total number of bits not set
-	 */
-	uint64_t rank0(){
-		assert(size_ - bits_set_ == rank0(size()));
-		return size_ - bits_set_;
-	}
+	 return i-spsi_.search_r(i+1);
 
-	/*
-	 * number of bits equal to b before position i EXCLUDED
-	 */
-	uint64_t rank(uint64_t i, bool b = true){
+      }
 
-		return b ? rank1(i) : rank0(i);
+      /*
+       * number of bits equal to 1 before position i EXCLUDED
+       */
+      uint64_t rank1(uint64_t i){
 
-	}
+	 assert(i<=size());
+	 return spsi_.search_r(i+1);
 
-	/*
-	 * number of bits equal to 0 before position i EXCLUDED
-	 */
-	uint64_t rank0(uint64_t i){
+      }
 
-		assert(i<=size());
-		assert(i>=spsi_.search_r(i+1));
+      void push_back(bool b){
 
-		return i-spsi_.search_r(i+1);
+	 insert(size(),b);
 
-	}
+      }
 
-	/*
-	 * number of bits equal to 1 before position i EXCLUDED
-	 */
-	uint64_t rank1(uint64_t i){
+      void push_front(bool b){
 
-		assert(i<=size());
-		return spsi_.search_r(i+1);
+	 insert(0,b);
 
-	}
+      }
 
-	void push_back(bool b){
+      /*
+       * insert bit b at position i
+       */
+      void insert(uint64_t i, bool b){
 
-		insert(size(),b);
+	 if(b) insert1(i);
+	 else insert0(i);
 
-	}
+      }
 
-	void push_front(bool b){
+      /*
+       * remove the bit at position i
+       */
+      void remove(uint64_t i) {
+	 const bool& b=at(i);
+	 if(b) delete1(i);
+	 else delete0(i);
+      }
 
-		insert(0,b);
+      /*
+       * insert nr bits equal to 0 starting from position i
+       */
+      void insert0(uint64_t i, uint64_t nr = 1){
 
-	}
+	 if(nr==0) return;
 
-	/*
-	 * insert bit b at position i
-	 */
-	void insert(uint64_t i, bool b){
+	 uint64_t j = spsi_.search_r(i+1);
+	 spsi_[j] += nr;
 
-		if(b) insert1(i);
-		else insert0(i);
+	 size_ += nr;
 
-	}
+      }
 
-	/*
-	 * insert nr bits equal to 0 starting from position i
-	 */
-	void insert0(uint64_t i, uint64_t nr = 1){
+      /*
+       * insert a bit set at position i
+       */
+      void insert1(uint64_t i){
 
-		uint64_t j = spsi_.search_r(i+1);
-		spsi_[j] += nr;
+	 //number of 1s before position i = integer to decrement in spsi
+	 uint64_t j = rank1(i);
 
-		size_ += nr;
+	 //number of zeros in the 0-block containing position i
+	 uint64_t cnt = spsi_[j];
 
-	}
+	 //new size of j-th counter
+	 uint64_t newsize =  i - ( j==0?0:select1(j-1)+1 );
 
-	/*
-	 * insert a bit set at position i
-	 */
-	void insert1(uint64_t i){
+	 uint64_t delta = cnt-newsize;
 
-		//number of 1s before position i = integer to decrement in spsi
-		uint64_t j = rank1(i);
+	 spsi_[j] -= delta;
 
-		//number of zeros in the 0-block containing position i
-		uint64_t cnt = spsi_[j];
+	 spsi_.insert(j+1,delta);
 
-		//new size of j-th counter
-		uint64_t newsize =  i - ( j==0?0:select1(j-1)+1 );
+	 size_++;
+	 bits_set_++;
 
-		uint64_t delta = cnt-newsize;
+      }
 
-		spsi_[j] -= delta;
+      /*
+       * remove a 1 at position i from the sequence
+       * 
+       */
+      void delete1(uint64_t i){
+	 //number of 1s before position i = pos in spsi
+	 uint64_t j = rank1(i);
+	 
+	 
+	 //the number of zeroes
+	 //in the block of the one to be removed.
+	 uint64_t cnt = spsi_[j+1]; 
+	 
+	 spsi_.remove(j+1);
 
-		spsi_.insert(j+1,delta);
+	 spsi_[j] += cnt;
 
-		size_++;
-		bits_set_++;
+	 --size_;
+	 --bits_set_;
+      }
 
-	}
+      /*
+       * delete nr zeroes starting from position i
+       * causes a failed assertion if range [i,i+nr-1] contains bits set!
+       */
+      void delete0(uint64_t i, uint64_t nr = 1){
 
-	/*
-	 * delete nr zeroes starting from position i
-	 * causes a failed assertion if range [i,i+nr-1] contains bits set!
-	 */
-	void delete0(uint64_t i, uint64_t nr = 1){
+	 assert(i+nr<=size_);
+	 assert(rank1(i+nr)-rank1(i)==0);
 
-		assert(i+nr<=size_);
-		assert(rank1(i+nr)-rank1(i)==0);
+	 uint64_t j = spsi_.search_r(i+1);
+	 spsi_[j] -= nr;
 
-		uint64_t j = spsi_.search_r(i+1);
-		spsi_[j] -= nr;
+	 size_ -= nr;
 
-		size_ -= nr;
+      }
 
-	}
+      /*
+       * sets i-th bit to 1. (does nothing if i-th bit is already set)
+       */
+      void set(uint64_t i){
 
-	/*
-	 * sets i-th bit to 1. (does nothing if i-th bit is already set)
-	 */
-	void set(uint64_t i){
+	 if(at(i)) return;
 
-		if(at(i)) return;
+	 //number of 1s before position i = integer to decrement in spsi
+	 uint64_t j = rank1(i);
 
-		//number of 1s before position i = integer to decrement in spsi
-		uint64_t j = rank1(i);
+	 //number of zeros in the 0-block containing position i
+	 uint64_t cnt = spsi_[j];
 
-		//number of zeros in the 0-block containing position i
-		uint64_t cnt = spsi_[j];
+	 //new size of j-th counter
+	 uint64_t newsize =  i - ( j==0?0:select1(j-1)+1 );
 
-		//new size of j-th counter
-		uint64_t newsize =  i - ( j==0?0:select1(j-1)+1 );
+	 uint64_t delta = cnt-newsize;
 
-		uint64_t delta = cnt-newsize;
+	 spsi_[j] -= delta;
 
-		spsi_[j] -= delta;
+	 assert(delta>0);
 
-		assert(delta>0);
+	 spsi_.insert(j+1,delta-1);
 
-		spsi_.insert(j+1,delta-1);
+	 bits_set_++;
 
-		bits_set_++;
+      }
 
-	}
+      /*
+       * Total number of bits allocated in RAM for this structure
+       */
+      uint64_t bit_size() {
 
-	/*
-	 * Total number of bits allocated in RAM for this structure
-	 */
-	uint64_t bit_size() {
+	 return sizeof(gap_bitvector<spsi_type>)*8 + spsi_.bit_size();
 
-		return sizeof(gap_bitvector<spsi_type>)*8 + spsi_.bit_size();
+      }
 
-	}
+      /*
+       * returns the length of i-th run of zeros plus 1 (i.e.
+       * the leading 1 is taken into account). i.e. if
+       * i-th run is 10^n, this function returns n+1
+       */
+      /*uint64_t gapAt(uint64_t i){
 
-	/*
-	 * returns the length of i-th run of zeros plus 1 (i.e.
-	 * the leading 1 is taken into account). i.e. if
-	 * i-th run is 10^n, this function returns n+1
-	 */
-	/*uint64_t gapAt(uint64_t i){
+	assert(i+1<spsi_.size());
 
-		assert(i+1<spsi_.size());
-
-		return spsi_[i+1]+1;
+	return spsi_[i+1]+1;
 
 	}*/
 
-	ulint serialize(ostream &out){
+      ulint serialize(ostream &out) const {
 
-		ulint w_bytes=0;
+	 ulint w_bytes=0;
 
-		out.write((char*)&size_,sizeof(size_));
-		w_bytes += sizeof(size_);
+	 out.write((char*)&size_,sizeof(size_));
+	 w_bytes += sizeof(size_);
 
-		out.write((char*)&bits_set_,sizeof(bits_set_));
-		w_bytes += sizeof(bits_set_);
+	 out.write((char*)&bits_set_,sizeof(bits_set_));
+	 w_bytes += sizeof(bits_set_);
 
-		w_bytes += spsi_.serialize(out);
+	 w_bytes += spsi_.serialize(out);
 
-		return w_bytes;
+	 return w_bytes;
 
-	}
+      }
 
-	void load(istream &in){
+      void load(istream &in){
 
-		in.read((char*)&size_,sizeof(size_));
-		in.read((char*)&bits_set_,sizeof(bits_set_));
+	 in.read((char*)&size_,sizeof(size_));
+	 in.read((char*)&bits_set_,sizeof(bits_set_));
 
-		spsi_.load(in);
+	 spsi_.load(in);
 
-	}
+      }
 
 
-private:
+   private:
 
-	/*
-	 * underlying SPSI
-	 *
-	 * internally, we encode a run 10^n with the number n
-	 * we moreover add a '1' at the beginning in order to
-	 * represent bitvectors that start with 0.
-	 *
-	 */
-	spsi_type spsi_;
+      /*
+       * underlying SPSI
+       *
+       * internally, we encode a run 10^n with the number n
+       * we moreover add a '1' at the beginning in order to
+       * represent bitvectors that start with 0.
+       *
+       */
+      spsi_type spsi_;
 
-	uint64_t size_=0;		//total number of bits
-	uint64_t bits_set_=0;	//total number of bits set
+      uint64_t size_=0;		//total number of bits
+      uint64_t bits_set_=0;	//total number of bits set
 
-};
+   };
 
 
 }

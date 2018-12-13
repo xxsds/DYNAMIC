@@ -1,3 +1,7 @@
+// Copyright (c) 2017, Nicola Prezza.  All rights reserved.
+// Use of this source code is governed
+// by a MIT license that can be found in the LICENSE file.
+
 //============================================================================
 // Name        : bwt.hpp
 // Author      : Nicola Prezza
@@ -17,10 +21,10 @@
 #ifndef DYNAMICBWT_H_
 #define DYNAMICBWT_H_
 
-#include <includes.hpp>
+#include "includes.hpp"
 
-#include <gap_bitvector.hpp>
-#include <rle_string.hpp>
+#include "gap_bitvector.hpp"
+#include "rle_string.hpp"
 #include "wt_string.hpp"
 
 namespace dyn {
@@ -105,6 +109,12 @@ public:
 		return at(i);
 
 	}
+
+	/*
+	 * build structure given as input the BWT in string format
+	 * and the terminator character
+	 */
+	void build_from_string(string& bwt, char_type terminator, bool verbose=false);
 
 	/*
 	 * build BWT(cW) from BWT(W)
@@ -402,8 +412,36 @@ public:
 	}
 
 
-
 private:
+
+	void insert_in_F(char_type c, ulint k=1){
+
+		//position in F where c has to be inserted
+		ulint pos_in_F;
+
+		//are we inserting a new character?
+		if(alphabet.find(c)==alphabet.end()){
+
+			//iterator to character immediately after c (in lex order)
+			//or alphabet.end() if c is bigger than all a in alphabet
+			auto upit = alphabet.upper_bound(c);
+
+			pos_in_F = 	upit==alphabet.end() ?
+								F.size() :
+								F.select(0,*upit);
+
+			alphabet.insert(c);
+
+		}else{
+
+			//number of cs before terminator in L
+			pos_in_F = 	F.select(0,c);
+
+		}
+
+		F.insert(pos_in_F,c,k);
+
+	}
 
 	/*
 	 * First and last BWT matrix columns (L=BWT). Note that these strings

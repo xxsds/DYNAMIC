@@ -1,3 +1,7 @@
+// Copyright (c) 2017, Nicola Prezza.  All rights reserved.
+// Use of this source code is governed
+// by a MIT license that can be found in the LICENSE file.
+
 /*
  * h0_lz77.cpp
  *
@@ -74,7 +78,7 @@ int main(int argc,char** argv) {
 	std::ifstream ifs(in);
 	std::ofstream os(out);
 
-	lz77.parse(ifs,os,1,true);
+	lz77.parse(ifs,os,15,true);
 
 	ifs.close();
 	os.close();

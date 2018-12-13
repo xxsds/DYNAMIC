@@ -1,3 +1,7 @@
+// Copyright (c) 2017, Nicola Prezza.  All rights reserved.
+// Use of this source code is governed
+// by a MIT license that can be found in the LICENSE file.
+
 /*
  * sparse_vector.hpp
  *
@@ -40,7 +44,7 @@
 #define INCLUDE_INTERNAL_SPARSE_VECTOR_HPP_
 
 #include "includes.hpp"
-#include <gap_bitvector.hpp>
+#include "gap_bitvector.hpp"
 
 
 namespace dyn{

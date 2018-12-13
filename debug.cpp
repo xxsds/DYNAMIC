@@ -1,3 +1,7 @@
+// Copyright (c) 2017, Nicola Prezza.  All rights reserved.
+// Use of this source code is governed
+// by a MIT license that can be found in the LICENSE file.
+
 /*
  * debug.cpp
  *
@@ -734,9 +738,9 @@ int test_fmi(ulint n, ulint sigma, ulint n_str = 100, ulint str_len = 5) {
 
 	ofstream ofs(filename);
 
-	cout << "serializing ... " << flush;
+	cout << "serializing ... " << endl;
 
-	sp.serialize(ofs);
+	cout << "Written " << sp.serialize(ofs) << " Bytes." << endl;
 
 	cout << "done" << endl;
 
@@ -794,8 +798,30 @@ int test_fmi(ulint n, ulint sigma, ulint n_str = 100, ulint str_len = 5) {
 
 int main(int argc,char** argv) {
 
-	test_fmi<wt_fmi>(100000, 5, 100, 4);
+	//test_fmi<wt_fmi>(203010, 17, 15, 3);
 
+	rle_bwt bwt;
+
+	string s = "AAACCCCCC$CCCDDDDDDD";
+
+	bwt.build_from_string(s,'$');
+
+	cout << "BWT built." << endl;
+
+	for(ulint i=0;i<bwt.size();++i){
+
+		ulint b = bwt[i];
+		ulint t =  bwt.get_terminator();
+
+		auto c = b==t ? '$' : (char)bwt[i];
+
+		cout << c;
+
+	}
+
+	cout << endl;
+
+	test_spsi( 100000 );
 }
 
 
