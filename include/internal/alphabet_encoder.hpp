@@ -121,7 +121,7 @@ public:
 	 * new coming characters
 	 *
 	 */
-	vector<bool> encode(char_type c){
+	vector<bool> encode(char_type c) {
 
 		auto code = encode_[c];
 
@@ -153,31 +153,35 @@ public:
 
 	}
 
-	char_type decode(vector<bool>& code){
+    vector<bool> encode_existing(char_type c) const {
+        return encode_.at(c);
+    }
+
+	char_type decode(vector<bool>& code) const {
 
 		//code must be present in dictionary!
-		assert(decode_[code]!=0);
+		assert(decode_.at(code)!=0);
 
-		return decode_[code]-1;
-
-	}
-
-	bool code_exists(vector<bool>& code){
-
-		return decode_[code]!=0;
+		return decode_.at(code)-1;
 
 	}
 
-	bool char_exists(char_type c){
+	bool code_exists(vector<bool>& code) const {
 
-		return encode_[c].size()>0;
+		return decode_.at(code)!=0;
+
+	}
+
+	bool char_exists(char_type c) const {
+
+		return encode_.at(c).size()>0;
 
 	}
 
 	/*
 	 * alphabet size
 	 */
-	uint64_t size(){
+	uint64_t size() const {
 		return sigma;
 	}
 
@@ -190,7 +194,7 @@ public:
 	 * to the alphabet size (but the constants involved are high since internally
 	 * they can use heavy structures as RBT)
 	 */
-	ulint bit_size(){
+	ulint bit_size() const {
 
 		ulint size = 0;
 

@@ -172,7 +172,7 @@ namespace dyn{
 
       }
 
-      uint64_t at(uint64_t i){
+      uint64_t at(uint64_t i) const {
 
 	 //assert(i<size_);
 
@@ -180,7 +180,7 @@ namespace dyn{
 
       }
 
-      uint64_t psum(){
+      uint64_t psum() const {
 
 	 return psum_;
 
@@ -189,7 +189,7 @@ namespace dyn{
       /*
        * inclusive partial sum (i.e. up to element i included)
        */
-      uint64_t psum(uint64_t i){
+      uint64_t psum(uint64_t i) const {
 
 	 assert(i<size_);
 
@@ -226,7 +226,7 @@ namespace dyn{
       /*
        * smallest index j such that psum(j)>=x
        */
-      uint64_t search(uint64_t x){
+      uint64_t search(uint64_t x) const {
 
 	 assert(size_>0);
 	 assert(x<=psum_);
@@ -268,7 +268,7 @@ namespace dyn{
        * position i such that the number of zeros before
        * i (included) is == x
        */
-      uint64_t search_0(uint64_t x){
+      uint64_t search_0(uint64_t x) const {
 
 	 assert(size_>0);
 	 assert(width_==1);
@@ -308,7 +308,7 @@ namespace dyn{
       /*
        * smallest index j such that psum(j)+j>=x
        */
-      uint64_t search_r(uint64_t x){
+      uint64_t search_r(uint64_t x) const {
 
 	 assert(size_>0);
 	 assert(x<=psum_+size_);
@@ -347,7 +347,7 @@ namespace dyn{
       /*
        * true iif x is one of the partial sums  0, I_0, I_0+I_1, ...
        */
-      bool contains(uint64_t x){
+      bool contains(uint64_t x) const {
 
 	 assert(size_>0);
 	 assert(x<=psum_);
@@ -367,7 +367,7 @@ namespace dyn{
       /*
        * true iif x is one of  0, I_0+1, I_0+I_1+2, ...
        */
-      bool contains_r(uint64_t x){
+      bool contains_r(uint64_t x) const {
 
 	 assert(size_>0);
 	 assert(x<=psum_+size_);
@@ -510,7 +510,7 @@ namespace dyn{
 
       }
 
-      uint64_t size(){
+      uint64_t size() const {
 
 	 return size_;
 
@@ -589,7 +589,7 @@ namespace dyn{
       /*
        * return total number of bits occupied in memory by this object instance
        */
-      ulint bit_size(){
+      ulint bit_size() const {
 
 	 return ( sizeof(packed_vector) + word_capacity_*sizeof(ulint) )*8;
 
@@ -682,7 +682,7 @@ namespace dyn{
 	 //vector<uint64_t> vec(size_+1);
 
 	 uint64_t i = 0;
-	 for(uint64_t k=0;k<size_;++k){
+	 for(uint64_t k=0;k<size_n;++k){
 
 	    if(k==j) vec[i++] = y;
 	    vec[i++] = at(k);
@@ -763,7 +763,7 @@ namespace dyn{
 
       }
 
-      uint8_t max_bitsize(packed_vector &vec){
+      uint8_t max_bitsize(packed_vector &vec) const {
 
 	 uint8_t max_b=bitsize(vec[0]);
 
@@ -781,14 +781,14 @@ namespace dyn{
 
       }
 
-      uint64_t sum(packed_vector &vec){
+      uint64_t sum(packed_vector &vec) const {
 
 	 uint64_t res = 0;
 
 	 for(ulint i=0;i<vec.size();++i){
 
-	    auto x = vec[i];
-	    res += x;
+         auto x = vec.at(i);
+         res += x;
 
 	 }
 
@@ -796,7 +796,7 @@ namespace dyn{
 
       }
 
-      uint8_t bitsize(uint64_t x){
+      uint8_t bitsize(uint64_t x) const {
 
 	 if(x==0) return 1;
 

@@ -158,7 +158,7 @@ namespace dyn{
 
       }
 
-      uint64_t at(uint64_t i){
+      uint64_t at(uint64_t i) const {
 
 	 //assert(i<size_);
 
@@ -166,7 +166,7 @@ namespace dyn{
 
       }
 
-      uint64_t psum(){
+      uint64_t psum() const {
 
 	 return psum_;
 
@@ -175,7 +175,7 @@ namespace dyn{
       /*
        * inclusive partial sum (i.e. up to element i included)
        */
-      uint64_t psum(uint64_t i){
+      uint64_t psum(uint64_t i) const {
 
 	 assert(i<size_);
 
@@ -212,7 +212,7 @@ namespace dyn{
       /*
        * smallest index j such that psum(j)>=x
        */
-      uint64_t search(uint64_t x){
+      uint64_t search(uint64_t x) const {
 
 	 assert(size_>0);
 	 assert(x<=psum_);
@@ -254,7 +254,7 @@ namespace dyn{
        * position i such that the number of zeros before
        * i (included) is == x
        */
-      uint64_t search_0(uint64_t x){
+      uint64_t search_0(uint64_t x) const {
 
 	 assert(size_>0);
 	 assert(width_==1);
@@ -294,7 +294,7 @@ namespace dyn{
       /*
        * smallest index j such that psum(j)+j>=x
        */
-      uint64_t search_r(uint64_t x){
+      uint64_t search_r(uint64_t x) const {
 
 	 assert(size_>0);
 	 assert(x<=psum_+size_);
@@ -333,7 +333,7 @@ namespace dyn{
       /*
        * true iif x is one of the partial sums  0, I_0, I_0+I_1, ...
        */
-      bool contains(uint64_t x){
+      bool contains(uint64_t x) const {
 
 	 assert(size_>0);
 	 assert(x<=psum_);
@@ -353,7 +353,7 @@ namespace dyn{
       /*
        * true iif x is one of  0, I_0+1, I_0+I_1+2, ...
        */
-      bool contains_r(uint64_t x){
+      bool contains_r(uint64_t x) const {
 
 	 assert(size_>0);
 	 assert(x<=psum_+size_);
@@ -524,7 +524,7 @@ namespace dyn{
 
       }
 
-      uint64_t size(){
+      uint64_t size() const {
 
 	 return size_;
 
@@ -590,13 +590,13 @@ namespace dyn{
       /*
        * return total number of bits occupied in memory by this object instance
        */
-      ulint bit_size(){
+      ulint bit_size() const {
 
 	 return ( sizeof(packed_vector) + words.capacity()*sizeof(ulint) )*8;
 
       }
 
-      ulint serialize(ostream &out){
+      ulint serialize(ostream &out) const {
 
 	 ulint w_bytes = 0;
 
@@ -656,7 +656,7 @@ namespace dyn{
 
       }
 
-      uint64_t width() {
+      uint64_t width() const {
 	 return width_;
       }
       

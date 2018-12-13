@@ -219,7 +219,7 @@ ulint rle_bwt::number_of_runs(){
 
 template<>
 inline
-ulint rle_bwt::number_of_runs(pair<ulint,ulint> interval){
+ulint rle_bwt::number_of_runs(pair<ulint,ulint> interval) const {
 
 	//coordinates on BWT with terminator
 	auto l1 = interval.first;
@@ -240,7 +240,7 @@ ulint rle_bwt::number_of_runs(pair<ulint,ulint> interval){
 			L.number_of_runs({l2,r2}) :
 				terminator_position == l1 or terminator_position == r1-1 ?
 				L.number_of_runs({l2,r2})+1 :
-					L[terminator_position-1] == L[terminator_position] ?
+                L.at(terminator_position-1) == L.at(terminator_position) ?
 					L.number_of_runs({l2,r2})+2 :
 					L.number_of_runs({l2,r2})+1;
 
@@ -252,7 +252,7 @@ ulint rle_bwt::number_of_runs(pair<ulint,ulint> interval){
  */
 template<>
 inline
-pair<ulint,ulint> rle_bwt::locate_run(ulint i){
+pair<ulint,ulint> rle_bwt::locate_run(ulint i) const {
 
 	assert(i<bwt_length());
 

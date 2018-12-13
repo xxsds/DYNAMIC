@@ -100,7 +100,7 @@ namespace dyn{
       /*
        * access
        */
-      char_type at(uint64_t i){
+      char_type at(uint64_t i) const {
 
 	 assert(i<size());
 	 return root.at(i);
@@ -110,12 +110,12 @@ namespace dyn{
       /*
        * position of i-th character equal to c. 0 =< i < rank(size(),c)
        */
-      uint64_t select(uint64_t i,char_type c) {
+      uint64_t select(uint64_t i,char_type c) const {
 
 	 assert(ae.char_exists(c));
 	 assert(i<rank(size(),c));
 
-	 auto code = ae.encode(c);
+	 auto code = ae.encode_existing(c);
 
 	 //if this fails, it means that c is not present
 	 //in the string or that it is not present
@@ -132,13 +132,13 @@ namespace dyn{
       /*
        * number of chars equal to c before position i EXCLUDED
        */
-      uint64_t rank(uint64_t i, char_type c)  {
+      uint64_t rank(uint64_t i, char_type c) const {
 
 	 assert(i<=size());
 
 	 if(not ae.char_exists(c)) return 0;
 
-	 auto code = ae.encode(c);
+	 auto code = ae.encode_existing(c);
 
 	 //if this fails, it means that c is not present
 	 //in the string or that it is not present
@@ -154,7 +154,7 @@ namespace dyn{
 
       }
 
-      bool char_exists(char_type c){
+      bool char_exists(char_type c) const {
 
 	 return ae.char_exists(c);
 
@@ -199,7 +199,7 @@ namespace dyn{
 	 --n;
       }
 
-      uint64_t bit_size(){
+      uint64_t bit_size() const {
 	 uint64_t size = 0;
 	 size += sizeof(wt_string<dynamic_bitvector_t>)*8;
 	 size += ae.bit_size();
@@ -286,13 +286,13 @@ namespace dyn{
 	 }
 
 	 //descend tree and return character at this position
-	 char_type at(ulint i){
+	 char_type at(ulint i) const {
 
 	    if(is_leaf()) return label();
 
 	    assert(i<bv.size());
 
-	    bool b = bv[i];
+	    bool b = bv.at(i);
 
 	    assert((b or has_child0()) and (not b or has_child1()));
 
@@ -309,7 +309,7 @@ namespace dyn{
 	 /*
 	  * true iif code B has already been inserted
 	  */
-	 bool exists(vector<bool>& B, ulint j=0){
+	 bool exists(vector<bool>& B, ulint j=0) const {
 
 	    assert(j <= B.size());
 
@@ -447,7 +447,7 @@ namespace dyn{
 	    bv.remove(i);
 	 }
 
-	 ulint rank(ulint i, vector<bool>& B, ulint j=0){
+	 ulint rank(ulint i, vector<bool>& B, ulint j=0) const {
 
 	    assert(j <= B.size());
 
@@ -471,10 +471,10 @@ namespace dyn{
 	 }
 
 
-	 ulint select(ulint i, vector<bool>& B){
+	 ulint select(ulint i, vector<bool>& B) const {
 
 	    //top-down: find leaf associated with B
-	    node* L = get_leaf(B);
+        const node* L = get_leaf(B);
 
 	    auto p = L->parent_;
 
@@ -494,7 +494,7 @@ namespace dyn{
 	 }
 
 	 //get leaf associated to code B
-	 node* get_leaf(vector<bool>& B, ulint j=0){
+     const node* get_leaf(vector<bool>& B, ulint j=0) const {
 
 	    assert(j<=B.size());
 
@@ -508,17 +508,17 @@ namespace dyn{
 
 	 }
 
-	 bool is_root(){ return not parent_; }
-	 bool is_leaf(){ return is_leaf_; }
-	 bool has_child0(){ return child0_; }
-	 bool has_child1(){ return child1_; }
+	 bool is_root() const { return not parent_; }
+	 bool is_leaf() const { return is_leaf_; }
+	 bool has_child0() const { return child0_; }
+	 bool has_child1() const { return child1_; }
 
 	 /*
 	  * to have left label, this node must not have a left (0)
 	  * child AND must have at least one bit equal to 0 in
 	  * its bitvector
 	  */
-	 char_type label(){
+	 char_type label() const {
 
 	    assert(is_leaf());
 	    return l_;
@@ -534,7 +534,7 @@ namespace dyn{
 	  * to the alphabet size (but the constants involved are high since internally
 	  * they can use heavy structures as RBT)
 	  */
-	 ulint bit_size(){
+	 ulint bit_size() const {
 	    ulint size = sizeof(node)*8;
 
 	    size += bv.bit_size();

@@ -35,15 +35,15 @@ public:
 		return vec.at(i);
 	}
 
-	uint64_t at(uint64_t i){
+	uint64_t at(uint64_t i) const {
 		return vec[i];
 	}
 
-	uint64_t psum(){
+	uint64_t psum() const {
 		return psum(size_-1);
 	}
 
-	uint64_t psum(uint64_t i){
+	uint64_t psum(uint64_t i) const {
 
 		uint64_t s = 0;
 		for(uint64_t j=0;j<=i;++j){
@@ -54,7 +54,7 @@ public:
 
 	}
 
-	uint64_t search(uint64_t x){
+	uint64_t search(uint64_t x) const {
 
 		assert(size_>0);
 		assert(x<=psum());
@@ -67,7 +67,7 @@ public:
 		return i;
 	}
 
-	uint64_t search_0(uint64_t x){
+	uint64_t search_0(uint64_t x) const {
 
 		assert(size_>0);
 		assert(x<=size()-psum());
@@ -80,7 +80,7 @@ public:
 		return i;
 	}
 
-	uint64_t search_r(uint64_t x){
+	uint64_t search_r(uint64_t x) const {
 
 		assert(size_>0);
 		assert(x<=psum()+size());
@@ -93,7 +93,7 @@ public:
 		return i;
 	}
 
-	bool contains(uint64_t x ){
+	bool contains(uint64_t x ) const {
 
 		if(x==0) return true;
 
@@ -113,7 +113,7 @@ public:
 
 	}
 
-	bool contains_r(uint64_t x ){
+	bool contains_r(uint64_t x ) const {
 
 		if(x==0) return true;
 
@@ -157,11 +157,11 @@ public:
 
 	}
 
-	uint64_t size(){
+	uint64_t size() const {
 		return size_;
 	}
 
-	ulint bit_size(){return 0;}
+	ulint bit_size() const {return 0;}
 
 private:
 
