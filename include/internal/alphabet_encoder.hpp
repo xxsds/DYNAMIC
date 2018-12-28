@@ -174,7 +174,7 @@ public:
 
 	bool char_exists(char_type c) const {
 
-		return encode_.find(c) != encode_end.() && encode_.at(c).size()>0;
+		return encode_.find(c) != encode_.end() && encode_.at(c).size()>0;
 
 	}
 
