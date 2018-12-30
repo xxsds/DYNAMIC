@@ -22,7 +22,6 @@
 #define INCLUDE_INTERNAL_ALPHABET_ENCODER_HPP_
 
 #include "includes.hpp"
-#include <map>
 
 namespace dyn {
 
@@ -227,7 +226,7 @@ public:
 		out.write((char*)&decode_size,sizeof(decode_size));
 		w_bytes += sizeof(decode_size);
 
-		for(map<char_type,vector<bool> >::value_type e : encode_){
+		for(spp::sparse_hash_map<char_type,vector<bool> >::value_type e : encode_){
 
 			out.write((char*)&e.first,sizeof(e.first));
 			w_bytes += sizeof(e.first);
@@ -237,7 +236,7 @@ public:
 
 		}
 
-		for(map<vector<bool>, char_type>::value_type d : decode_){
+		for(spp::sparse_hash_map<vector<bool>, char_type>::value_type d : decode_){
 
 			auto B = d.first;
 			w_bytes += serialize_vec_bool(out, B);
@@ -490,10 +489,10 @@ private:
 
 
 
-	map<char_type,vector<bool> > encode_;
+    spp::sparse_hash_map<char_type,vector<bool> > encode_;
 
 	//char_type value 0 is reserved
-	map<vector<bool>, char_type> decode_;
+    spp::sparse_hash_map<vector<bool>, char_type> decode_;
 
 	uint64_t sigma;
 
