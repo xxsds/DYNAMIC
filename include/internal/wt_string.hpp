@@ -93,7 +93,7 @@ namespace dyn{
        */
       char_type operator[](uint64_t i){
 
-	 return at(i);
+          return at(i);
 
       }
 

@@ -10,10 +10,27 @@ endif()
 
 project (dynamic)
 
+include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
+
+# sparsepp
+ExternalProject_Add(sparsepp
+  GIT_REPOSITORY "https://github.com/edawson/sparsepp.git"
+  GIT_TAG "1c5a285e87b2244383efe0398f9992acd61234e9"
+  BUILD_IN_SOURCE TRUE
+  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} # TODO ADD static build flag
+  UPDATE_COMMAND ""
+  INSTALL_COMMAND ""
+  BUILD_COMMAND ""
+  CONFIGURE_COMMAND "")
+ExternalProject_Get_property(sparsepp INSTALL_DIR)
+set(sparsepp_INCLUDE "${INSTALL_DIR}/src/sparsepp/sparsepp/")
+set(sparsepp_LIB "${INSTALL_DIR}/src/sparsepp/sparsepp/")
+
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/include/internal)
 include_directories(${PROJECT_SOURCE_DIR}/include/algorithms)
 include_directories(${PROJECT_SOURCE_DIR}/include/algorithms/cw-bwt)
+include_directories(${INSTALL_DIR}/src/sparsepp/sparsepp)
 
 message("Building in ${CMAKE_BUILD_TYPE} mode")
 
@@ -31,3 +48,13 @@ add_executable(h0_lz77 h0_lz77.cpp)
 add_executable(rle_bwt rle_bwt.cpp)
 add_executable(cw-bwt cw-bwt.cpp)
 add_executable(benchmark benchmark.cpp)
+
+add_dependencies(debug sparsepp)
+add_dependencies(debug-alan sparsepp)
+add_dependencies(rle_lz77_v1 sparsepp)
+add_dependencies(rle_lz77_v2 sparsepp)
+add_dependencies(h0_lz77 sparsepp)
+add_dependencies(rle_bwt sparsepp)
+add_dependencies(cw-bwt sparsepp)
+add_dependencies(benchmark sparsepp)
+

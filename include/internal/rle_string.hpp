@@ -641,7 +641,7 @@ private:
 	sparse_bitvector_t runs;
 
 	//for each letter, its runs stored contiguously
-	map<char_type,sparse_bitvector_t> runs_per_letter;
+    spp::sparse_hash_map<char_type,sparse_bitvector_t> runs_per_letter;
 
 	//store run heads in a compressed string supporting access/rank/select/insert
 	string_t run_heads_;
