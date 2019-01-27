@@ -178,69 +178,6 @@ public:
     }
 
     /*
-     * returns I_0 + ... + I_i = sum up to i-th integer included
-     */
-    uint64_t psum(uint64_t i) const {
-
-        //empty sum
-        if(size()==0) return 0;
-
-        assert(i<size());
-
-        return root->psum(i);
-
-    }
-
-    /*
-     * returns smallest i such that I_0 + ... + I_i >= x
-     */
-    uint64_t search(uint64_t x) const {
-
-        assert(x<=psum());
-
-        return root->search(x);
-
-    }
-
-    /*
-     * Works only on bitvectors! (failed assertion otherwise).
-     *
-     * This function corresponds to select_0:
-     *
-     * returns i such that number of zeros before position i (included)
-     * is == x
-     */
-    uint64_t search_0(uint64_t x) const {
-
-        assert(x <= size() - psum());
-
-        return root->search_0(x);
-
-    }
-
-    /*
-     * returns smallest i such that (i+1) + I_0 + ... + I_i >= x
-     */
-    uint64_t search_r(uint64_t x) const {
-
-        assert(x<=psum()+size());
-
-        return root->search_r(x);
-
-    }
-
-    /*
-     * true iif x is one of the partial sums  0, I_0, I_0+I_1, ...
-     */
-    bool contains(uint64_t x) const {
-
-        assert(x<=psum());
-
-        return root->contains(x);
-
-    }
-
-    /*
      * true iif x is one of  0, I_0+1, I_0+I_1+2, ...
      */
     /*bool contains_r(uint64_t x){
@@ -797,13 +734,10 @@ private:
                             i = i + z->size(); //update the removal position to reflect x's new child z
 
                             uint64_t si = 0;
-                            uint64_t ps = 0;
                             for (size_t j = 0; j < x->nr_children; ++j) {
                                 si += (x->children)[j]->size();
-                                ps += (x->children)[j]->psum();
 
                                 (x->subtree_sizes)[j] = si;
-                                (x->subtree_psums)[j] = ps;
                             }
 
                             //update ranks of x's children
@@ -816,7 +750,6 @@ private:
                             //update x->parent subtree info
 			
                             x->parent->subtree_sizes[ x->rank() - 1 ] -= z->size();
-                            x->parent->subtree_psums[ x->rank() - 1 ] -= z->psum();
 			
 		     
                         } else {
@@ -832,13 +765,10 @@ private:
                             --(y->nr_children);
                             (y->children).erase( y->children.begin() );
                             uint64_t si = 0;
-                            uint64_t ps = 0;
                             for (size_t j = 0; j < y->nr_children; ++j) {
                                 si += (y->children)[j]->size();
-                                ps += (y->children)[j]->psum();
 
                                 (y->subtree_sizes)[j] = si;
-                                (y->subtree_psums)[j] = ps;
                             }
                             //update ranks of y's children
                             uint32_t r = 0;
@@ -851,12 +781,10 @@ private:
                             ++(x->nr_children);
                             (x->children).insert( (x->children).end(), z );
                             x->subtree_sizes[ x->nr_children - 1 ] = x->subtree_sizes[ x->nr_children - 2 ] + z->size();
-                            x->subtree_psums[ x->nr_children - 1 ] = x->subtree_psums[ x->nr_children - 2 ] + z->psum();
 		     
 
                             //update x->parent subtree info
                             x->parent->subtree_sizes[ x->rank() ] += z->size();
-                            x->parent->subtree_psums[ x->rank() ] += z->psum();
                         }
                     } else {     //x has leaves
                         //steal a child of y,
@@ -877,18 +805,14 @@ private:
                             i = i + z->size(); //update the removal position to reflect x's new child z
 
                             uint64_t si = 0;
-                            uint64_t ps = 0;
                             for (size_t j = 0; j < x->nr_children; ++j) {
                                 si += (x->leaves)[j]->size();
-                                ps += (x->leaves)[j]->psum();
 
                                 (x->subtree_sizes)[j] = si;
-                                (x->subtree_psums)[j] = ps;
                             }
 
                             //update x->parent subtree info
                             x->parent->subtree_sizes[ x->rank() - 1 ] -= z->size();
-                            x->parent->subtree_psums[ x->rank() - 1 ] -= z->psum();
 			
 		     
                         } else {
@@ -899,23 +823,18 @@ private:
                             --(y->nr_children);
                             (y->leaves).erase( y->leaves.begin() );
                             uint64_t si = 0;
-                            uint64_t ps = 0;
                             for (size_t j = 0; j < y->nr_children; ++j) {
                                 si += (y->leaves)[j]->size();
-                                ps += (y->leaves)[j]->psum();
 
                                 (y->subtree_sizes)[j] = si;
-                                (y->subtree_psums)[j] = ps;
                             }
 			
                             //update x
                             ++(x->nr_children);
                             (x->leaves).insert( (x->leaves).end(), z );
                             x->subtree_sizes[ x->nr_children - 1 ] = x->subtree_sizes[ x->nr_children - 2 ] + z->size();
-                            x->subtree_psums[ x->nr_children - 1 ] = x->subtree_psums[ x->nr_children - 2 ] + z->psum();
 		     
                             x->parent->subtree_sizes[ x->rank() ] += z->size();
-                            x->parent->subtree_psums[ x->rank() ] += z->psum();
                         }
                     }
                 } else {
@@ -965,7 +884,6 @@ private:
                         xy->parent->children[ xy->rank() ] = x; //x will be overwritten by xy
                         for (size_t j = xy->rank(); j < xy->parent->nr_children; ++j) {
                             xy->parent->subtree_sizes[ j ] = xy->parent->subtree_sizes[ j + 1];
-                            xy->parent->subtree_psums[ j ] = xy->parent->subtree_psums[ j + 1];
                             xy->parent->children[ j ]->overwrite_rank( j );
                         }
                     }
@@ -977,7 +895,6 @@ private:
 
                     //overwrite x to have xy's data
                     x->subtree_sizes = xy->subtree_sizes;
-                    x->subtree_psums = xy->subtree_psums;
                     x->children = xy->children;
                     x->leaves = xy->leaves;
                     x->rank_ = xy->rank_;
@@ -1063,11 +980,9 @@ private:
 
                             //update x->parent subtree info
                             this->subtree_sizes[ j - 1 ] -= 1;
-                            this->subtree_psums[ j - 1 ] -= z;
 			
 			
                             assert( this-> subtree_sizes[ j ] == this-> subtree_sizes[ j - 1] + x->size() );
-                            assert( this-> subtree_psums[ j ] == this-> subtree_psums[ j - 1] + x->psum() );
 		     
                         } else {
                             //y is the next sibling of x
@@ -1081,10 +996,8 @@ private:
 		     
                             //update x->parent subtree info
                             this->subtree_sizes[ j ] += 1;
-                            this->subtree_psums[ j ] += z;
 
                             assert( this-> subtree_sizes[ j + 1 ] == this-> subtree_sizes[ j ] + y->size() );
-                            assert( this-> subtree_psums[ j + 1 ] == this-> subtree_psums[ j ] + y->psum() );
                         }
                     } else {
                         //y cannot lose a child
@@ -1112,7 +1025,6 @@ private:
 		     
                         for (size_t i = j; i < this->nr_children; ++i) {
                             this->subtree_sizes[ i ] = this->subtree_sizes[ i + 1];
-                            this->subtree_psums[ i ] = this->subtree_psums[ i + 1];
                         }
 
                         if (y_is_prev) {
@@ -1152,8 +1064,6 @@ private:
                     uint32_t nc = tmp_parent->nr_children;
                     while (r < nc) {
                         --(tmp_parent->subtree_sizes[ r ]);
-		     
-                        tmp_parent->subtree_psums[ r ] -= z;
                         ++r;
                     }
 
@@ -1249,20 +1159,16 @@ private:
         void load(istream &in){
 
             ulint subtree_sizes_len;
-            ulint subtree_psums_len;
             ulint children_len;
             ulint leaves_len;
 
             in.read((char*)&subtree_sizes_len,sizeof(subtree_sizes_len));
-
-            in.read((char*)&subtree_psums_len,sizeof(subtree_psums_len));
 
             in.read((char*)&children_len,sizeof(children_len));
 
             in.read((char*)&leaves_len,sizeof(leaves_len));
 
             assert(subtree_sizes_len>0);
-            assert(subtree_psums_len>0);
 
             subtree_sizes.load(in);
 
