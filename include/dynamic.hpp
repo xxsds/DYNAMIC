@@ -21,6 +21,7 @@
 #include <internal/sparse_vector.hpp>
 #include <internal/packed_vector.hpp>
 //#include <internal/packed_array.hpp>
+#include <internal/lciv.hpp>
 #include <internal/wt_string.hpp>
 #include <internal/fm_index.hpp>
 
@@ -31,13 +32,14 @@ namespace dyn{
  * B trees. Logarithmic-sized leaves
  */
 typedef spsi<packed_vector,256,16> packed_spsi;
+typedef lciv<packed_vector,256,16> packed_lciv;
 
 /*
  * a succinct searchable partial sum with inserts implemented with cache-efficient
  * B trees. Quadratic-log sized leaves
  */
 typedef spsi<packed_vector,8192,16> succinct_spsi;
-
+typedef lciv<packed_vector,8192,16> succinct_lciv;
 
 /*
  * dynamic gap-encoded bitvector

@@ -337,6 +337,199 @@ void benchmark_spsi(uint64_t size){
 
 }
 
+void test_lciv(uint64_t n){
+
+	uint32_t sigma = 300;
+
+	using std::chrono::high_resolution_clock;
+	using std::chrono::duration_cast;
+	using std::chrono::duration;
+
+	auto t1 = high_resolution_clock::now();
+
+	packed_lciv sp;
+	spsi_check<> spc;
+
+	srand(time(NULL));
+
+	for(uint32_t i=0;i<n;++i){
+
+		uint64_t x = rand()%sigma;
+		uint64_t j = rand()%(spc.size()+1);
+
+		spc.insert(j,x);
+		sp.insert(j,x);
+
+		if(spc.size()!=sp.size()){
+			cout << spc.size() << "/" << sp.size()<<endl;
+		}
+
+		assert(sp.size()==i+1);
+		assert(spc.size()==sp.size());
+
+	}
+
+	cout << "testing access ..." << flush;
+	for(uint32_t i = 0;i<sp.size();++i){
+
+		assert(sp[i]==spc.at(i));
+
+	}
+
+	cout << " ok." << endl;
+
+	cout << "testing increment ..." << flush;
+	for(uint32_t i = 0;i<sp.size();++i){
+
+		uint64_t d = rand()%5;
+		uint64_t j = rand()%spc.size();
+
+		sp[j] += d;
+		spc.increment(j,d);
+
+	}
+	cout << " ok." << endl;
+	cout << "testing ++ ..." << flush;
+	for(uint32_t i = 0;i<sp.size();++i){
+
+		uint64_t j = rand()%spc.size();
+
+		sp[j] ++;
+		spc.increment(j,1);
+
+	}
+	cout << " ok." << endl;
+	cout << "testing access after increment ..." << flush;
+	for(uint32_t i = 0;i<sp.size();++i){
+
+		assert(sp[i]==spc.at(i));
+
+	}
+	cout << " ok." << endl;
+
+	cout << "testing decrement ..." << flush;
+	for(uint32_t i = 0;i<sp.size();++i){
+
+		assert(spc.size()==sp.size());
+
+		uint64_t j = rand()%spc.size();
+
+		auto val = sp.at(j);
+
+		if(val>1){
+
+			uint64_t d = (rand()%(val-1))+1;
+
+			sp[j] -= d;
+			spc.increment(j,d,true);
+
+			assert(sp[j]==spc.at(j));
+
+		}
+
+	}
+	cout << " ok." << endl;
+	cout << "testing access after decrement ..." << flush;
+	for(uint32_t i = 0;i<sp.size();++i){
+
+		assert(sp[i]==spc.at(i));
+
+	}
+	cout << " ok." << endl;
+
+	cout << endl << "ALLRIGHT!" << endl;
+	cout << "bitsize = " << sp.bit_size() << endl;
+	cout << "bits per integer = " << (double)sp.bit_size()/sp.size() << endl;
+
+	auto t2 = high_resolution_clock::now();
+	uint64_t total = duration_cast<duration<double, std::ratio<1>>>(t2 - t1).count();
+
+	cout << total << " seconds." << endl;
+
+	cout << "Memory freed successfully." << endl;
+
+}
+
+
+void benchmark_lciv(uint64_t size){
+
+	uint32_t sigma = 256;
+
+	using std::chrono::high_resolution_clock;
+	using std::chrono::duration_cast;
+	using std::chrono::duration;
+
+	packed_lciv sp;
+
+	srand(time(NULL));
+
+	auto t1 = high_resolution_clock::now();
+
+	cout << "benchmarking insert ..." << flush;
+	for(uint32_t i=0;i<size;++i){
+
+		uint64_t x = rand()%sigma;
+		uint64_t j = rand()%(sp.size()+1);
+		sp.insert(j,x);
+
+		assert(sp.size()==i+1);
+
+	}
+	cout << " done." << endl;
+
+	auto t2 = high_resolution_clock::now();
+
+	cout << "benchmarking access ..." << flush;
+	for(uint32_t i = 0;i<sp.size();++i){
+
+		sp.at(rand()%size);
+
+	}
+	cout << " done." << endl;
+
+	auto t3 = high_resolution_clock::now();
+
+	cout << "benchmarking increment ..." << flush;
+	for(uint32_t i = 0;i<sp.size();++i){
+
+		sp.increment(rand()%size,1);
+
+	}
+	cout << " done." << endl;
+
+	auto t4 = high_resolution_clock::now();
+
+	cout << "benchmarking set ..." << flush;
+	for(uint32_t i=0;i<size;++i){
+
+		uint64_t x = rand()%sigma;
+		uint64_t j = rand()%sp.size();
+		sp.set(j,x);
+
+	}
+	cout << " done." << endl;
+
+	auto t5 = high_resolution_clock::now();
+
+
+	uint64_t sec_insert = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+	uint64_t sec_access = std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2).count();
+	uint64_t sec_incr = std::chrono::duration_cast<std::chrono::microseconds>(t4 - t3).count();
+	uint64_t sec_set = std::chrono::duration_cast<std::chrono::microseconds>(t5 - t4).count();
+
+	cout << endl << "ALLRIGHT! statistics: " << endl << endl;
+	cout << "total bitsize = " << sp.bit_size() << endl;
+	cout << "bits per integer = " << (double)sp.bit_size()/sp.size() << endl<<endl;
+
+	cout << (double)sec_insert/sp.size() << " microseconds/insert" << endl;
+	cout << (double)sec_access/sp.size() << " microseconds/access" << endl;
+	cout << (double)sec_incr/sp.size() << " microseconds/increment" << endl;
+	cout << (double)sec_set/sp.size() << " microseconds/set" << endl;
+
+}
+
+//typedef lciv<packed_vector,256,16> packed_;
+
 void compare_bitvectors(uint64_t size){
 
 	suc_bv dbv;
@@ -822,6 +1015,10 @@ int main(int argc,char** argv) {
 	cout << endl;
 
 	test_spsi( 100000 );
+
+    //test_lciv( 10000 );
+    //benchmark_spsi( 10000 );
+    //benchmark_lciv( 10000 );
 }
 
 
