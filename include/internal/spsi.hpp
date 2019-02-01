@@ -21,7 +21,6 @@
 #define INTERNAL_SPSI_HPP_
 
 #include "includes.hpp"
-#include "packed_vector.hpp"
 
 namespace dyn{
 
@@ -380,8 +379,8 @@ namespace dyn{
 	  */
 	 node(const node & n){
 
-         subtree_sizes = {n.subtree_sizes};
-         subtree_psums = {n.subtree_psums};
+	    subtree_sizes = {n.subtree_sizes};
+	    subtree_psums = {n.subtree_psums};
 
 	    if(n.has_leaves_){
 
@@ -421,8 +420,8 @@ namespace dyn{
 	  */
 	 node(){
 
-         subtree_sizes = packed_vector(2*B+2,1);
-         subtree_psums = packed_vector(2*B+2,1);
+	    subtree_sizes = vector<uint64_t>(2*B+2);
+	    subtree_psums = vector<uint64_t>(2*B+2);
 
 	    nr_children = 1;
 	    has_leaves_ = true;
@@ -441,8 +440,8 @@ namespace dyn{
 	    this->rank_ = rank;
 	    this->parent = P;
 
-	    subtree_sizes = packed_vector(2*B+2,1);
-	    subtree_psums = packed_vector(2*B+2,1);
+	    subtree_sizes = vector<uint64_t>(2*B+2);
+	    subtree_psums = vector<uint64_t>(2*B+2);
 
 	    uint64_t si = 0;
 	    uint64_t ps = 0;
@@ -483,8 +482,8 @@ namespace dyn{
 	    this->rank_ = rank;
 	    this->parent = P;
 
-	    subtree_sizes = packed_vector(2*B+2,1);
-	    subtree_psums = packed_vector(2*B+2,1);
+	    subtree_sizes = vector<uint64_t>(2*B+2);
+	    subtree_psums = vector<uint64_t>(2*B+2);
 
 	    assert(c.size()<=2*B+2);
 
@@ -514,9 +513,9 @@ namespace dyn{
 	 uint64_t bit_size() const {
 	    uint64_t bs = 8*sizeof(node);
 
-	    bs += subtree_sizes.bit_size();
+	    bs += subtree_sizes.capacity()*sizeof(uint64_t)*8;
 
-	    bs += subtree_psums.bit_size();
+	    bs += subtree_psums.capacity()*sizeof(uint64_t)*8;
 
 	    bs += children.capacity()*sizeof(node*)*8;
 
@@ -1447,12 +1446,12 @@ namespace dyn{
 
 	    assert(nr_children>0);
 	    assert(nr_children-1 < subtree_sizes.size());
-	    return subtree_sizes.at(nr_children-1);
+	    return subtree_sizes[nr_children-1];
 
 	 }
 
 	 uint64_t psum() const {
-         return subtree_psums.at(nr_children-1);
+	    return subtree_psums[nr_children-1];
 	 }
 
 	 void overwrite_parent(node *P){
@@ -1484,9 +1483,12 @@ namespace dyn{
 	    out.write((char*)&leaves_len,sizeof(leaves_len));
 	    w_bytes += sizeof(leaves_len);
 
-        w_bytes += subtree_sizes.serialize(out);
 
-        w_bytes += subtree_psums.serialize(out);
+	    out.write((char*)subtree_sizes.data(),sizeof(uint64_t)*subtree_sizes_len);
+	    w_bytes += sizeof(uint64_t)*subtree_sizes_len;
+
+	    out.write((char*)subtree_psums.data(),sizeof(uint64_t)*subtree_psums_len);
+	    w_bytes += sizeof(uint64_t)*subtree_psums_len;
 
 	    out.write((char*)&has_leaves_,sizeof(has_leaves_));
 	    w_bytes += sizeof(has_leaves_);
@@ -1529,9 +1531,11 @@ namespace dyn{
 	    assert(subtree_sizes_len>0);
 	    assert(subtree_psums_len>0);
 
-        subtree_sizes.load(in);
+	    subtree_sizes = vector<uint64_t>(subtree_sizes_len);
+	    in.read((char*)subtree_sizes.data(),sizeof(uint64_t)*subtree_sizes_len);
 
-        subtree_psums.load(in);
+	    subtree_psums = vector<uint64_t>(subtree_psums_len);
+	    in.read((char*)subtree_psums.data(),sizeof(uint64_t)*subtree_psums_len);
 
 
 	    in.read((char*)&has_leaves_,sizeof(has_leaves_));
@@ -1873,8 +1877,8 @@ namespace dyn{
 	  * in the following 2 vectors, the first nr_subtrees+1 elements refer to the
 	  * nr_subtrees subtrees
 	  */
-	 packed_vector subtree_sizes;
-	 packed_vector subtree_psums;
+	 vector<uint64_t> subtree_sizes;
+	 vector<uint64_t> subtree_psums;
 
 	 vector<node*> children;
 	 vector<leaf_type*> leaves;
