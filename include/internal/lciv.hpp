@@ -21,7 +21,6 @@
 #define INTERNAL_LCIV_HPP_
 
 #include "includes.hpp"
-#include "packed_vector.hpp"
 
 namespace dyn{
 
@@ -350,7 +349,7 @@ private:
          */
         node(){
 
-            subtree_sizes = packed_vector(2*B+2,1);
+            subtree_sizes = vector<uint64_t>(2*B+2,1);
 
             nr_children = 1;
             has_leaves_ = true;
@@ -369,7 +368,7 @@ private:
             this->rank_ = rank;
             this->parent = P;
 
-            subtree_sizes = packed_vector(2*B+2,1);
+            subtree_sizes = vector<uint64_t>(2*B+2,1);
 
             uint64_t si = 0;
 
@@ -407,7 +406,7 @@ private:
             this->rank_ = rank;
             this->parent = P;
 
-            subtree_sizes = packed_vector(2*B+2,1);
+            subtree_sizes = vector<uint64_t>(2*B+2,1);
 
             assert(c.size()<=2*B+2);
 
@@ -434,7 +433,7 @@ private:
         uint64_t bit_size() const {
             uint64_t bs = 8*sizeof(node);
 
-            bs += subtree_sizes.bit_size();
+            bs += subtree_sizes.capacity()*sizeof(uint64_t)*8;
 
             bs += children.capacity()*sizeof(node*)*8;
 
@@ -1131,7 +1130,8 @@ private:
             out.write((char*)&leaves_len,sizeof(leaves_len));
             w_bytes += sizeof(leaves_len);
 
-            w_bytes += subtree_sizes.serialize(out);
+            out.write((char*)subtree_sizes.data(),sizeof(uint64_t)*subtree_sizes_len);
+            w_bytes += sizeof(uint64_t)*subtree_sizes_len;
 
             out.write((char*)&has_leaves_,sizeof(has_leaves_));
             w_bytes += sizeof(has_leaves_);
@@ -1170,8 +1170,8 @@ private:
 
             assert(subtree_sizes_len>0);
 
-            subtree_sizes.load(in);
-
+            subtree_sizes = vector<uint64_t>(subtree_sizes_len);
+            in.read((char*)subtree_sizes.data(),sizeof(uint64_t)*subtree_sizes_len);
 
             in.read((char*)&has_leaves_,sizeof(has_leaves_));
 
@@ -1498,7 +1498,7 @@ private:
          * in the following 2 vectors, the first nr_subtrees+1 elements refer to the
          * nr_subtrees subtrees
          */
-        packed_vector subtree_sizes;
+        vector<uint64_t> subtree_sizes;
 
         vector<node*> children;
         vector<leaf_type*> leaves;
