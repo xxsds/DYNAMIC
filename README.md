@@ -32,7 +32,7 @@ This library offers space- and time-efficient implementations of some basic succ
 ### Algorithms
 
 - Two algorithms to build LZ77 in repetition-aware RAM working space. Both algorithms use a run-length encoded BWT with sparse Suffix array sampling. The first algorithm stores 2 SA samples per BWT run. The second algorithm (much more space efficient) stores 1 SA sample per LZ factor. From the papers "Computing LZ77 in Run-Compressed Space", Alberto Policriti and Nicola Prezza, DCC2016 and "
-LZ77 Computation Based on the Run-Length Encoded BWT", Alberto Policriti and Nicola Prezza (accepted for publication in Algorithmica)
+LZ77 Computation Based on the Run-Length Encoded BWT", Alberto Policriti and Nicola Prezza (Algorithmica)
 - An algorithm to build the BWT in run-compressed space
 - An algorithm to build LZ77 in nH0(2+o(1)) space and n * log n * H0 time. From the paper "Fast Online Lempel-Ziv Factorization in Compressed Space", Alberto Policriti and Nicola Prezza, SPIRE2015
 - An algorithm to build the BWT in high-order compressed space. The algorithm runs in O(n * H_k * log log n) average-case time (e.g. good for DNA) and O(n * H_k * log n) worst-case time. From the paper "Average linear time and compressed space construction of the Burrows-Wheeler transform"
