@@ -16,7 +16,7 @@ Please cite this library as:
 
 ### Data structures
 
-#####NEW: Delete (Remove) operations are now available on most structures! (indel = insertions + deletions)
+**NEW: Delete (Remove) operations are now available on most structures! (indel = insertions + deletions)**
 
 This library offers space- and time-efficient implementations of some basic succinct/compressed dynamic data structures. DYNAMIC features:
 
