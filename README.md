@@ -1,5 +1,6 @@
-DYNAMIC: a succinct and compressed dynamic data structures library
+DYNAMIC: a succinct and compressed fully-dynamic data structures library
 ===============
+
 Author: Nicola Prezza, Alan Kuhnle
 mail: nicola.prezza@gmail.com, akuhnle418@gmail.com
 
@@ -15,14 +16,16 @@ Please cite this library as:
 
 ### Data structures
 
-This library offers space- and time-efficient implementations of some basic succinct/compressed dynamic data structures. Note that at the moment the library does not feature delete operations (only inserts). DYNAMIC features:
+#####NEW: Delete (Remove) operations are now available on most structures! (indel = insertions + deletions)
 
-- A succinct Searchable Partial Sums with Inserts (SPSI) structure representing a list of integers s_1, s_2, ..., s_m. Space: about 1.2 * m * ( log(M/m) + log log m ) bits, where M = m + s_1 + s_2 + ... + s_m. The structure supports also update operations (i.e. s_i = s_i + delta).
-- A Succinct dynamic bitvector supporting rank/select/access/insert (RSAI) operations. Space: about 1.2 * n bits.
-- A gap-compressed dynamic bitvector supporting RSAI operations. Space: about 1.2 * b * ( log(n/b) + log log b ) bits,  b being the number of bits set and n being the bitvector length. All operations take log(b) time.
-- A dynamic sparse vector (of integers).
-- A dynamic string supporting RSAI operations. The user can choose at construction time between fixed-length/gamma/Huffman encoding of the alphabet. All operations take log(n) * log(sigma) time (or log(n) * H0 with Huffman encoding).
-- A run-length encoded dynamic string supporting RSAI operations. Space: approximately R*(1.2 * log(sigma) + 2.4 * (log(n/R)+log log R) ) bits, where R is the number of runs in the string. All operations take log(R) time.
+This library offers space- and time-efficient implementations of some basic succinct/compressed dynamic data structures. DYNAMIC features:
+
+- A succinct Searchable Partial Sums with **Indels** (SPSI) structure representing a list of integers s_1, s_2, ..., s_m. Space: about 1.2 * m * ( log(M/m) + log log m ) bits, where M = m + s_1 + s_2 + ... + s_m. The structure supports also update operations (i.e. s_i = s_i + delta).
+- A Succinct dynamic bitvector supporting rank/select/access/**Indel** (RSAI) operations. Space: about 1.2 * n bits.
+- A gap-compressed dynamic bitvector supporting rank/select/access/**Indel** operations. Space: about 1.2 * b * ( log(n/b) + log log b ) bits,  b being the number of bits set and n being the bitvector length. All operations take log(b) time.
+- A dynamic sparse vector (of integers) with access/**Indel** operations.
+- A dynamic string supporting rank/select/access/**Indel** operations. The user can choose at construction time between fixed-length/gamma/Huffman encoding of the alphabet. All operations take log(n) * log(sigma) time (or log(n) * H0 with Huffman encoding).
+- A run-length encoded dynamic string supporting rank/select/access/insert operations (removes are not yet implemented). Space: approximately R*(1.2 * log(sigma) + 2.4 * (log(n/R)+log log R) ) bits, where R is the number of runs in the string. All operations take log(R) time.
 - A dynamic (left-extend only) entropy/run-length compressed BWT
 - A dynamic (left-extend only) entropy/run-length compressed FM-index. This structure consists in the above BWT + a dynamic suffix array sampling
 
@@ -39,7 +42,8 @@ The SPSI structure is the building block on which all other structures are based
 
 ### TODO: 
 
-- Implement delete operations
+- Implement remove operations on rle_string, bwt, and fm_index
+- Dynamic wavelet matrices
 - Implement a good memory allocator. At the moment the default allocator is used, which results in about 25% of memory being wasted due to fragmentation
 - Geometric data structures (predecessor/2D range search)
 - Batch inserts
