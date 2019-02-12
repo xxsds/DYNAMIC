@@ -214,7 +214,7 @@ namespace dyn{
 
       }
 
-      ulint serialize(ostream &out)  {
+      ulint serialize(ostream &out) const {
 
 	 ulint w_bytes=0;
 
@@ -547,7 +547,7 @@ namespace dyn{
 
 	 }
 
-	 ulint serialize(ostream &out) {
+	 ulint serialize(ostream &out) const {
 
 	    ulint w_bytes=0;
 

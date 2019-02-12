@@ -569,9 +569,7 @@ namespace dyn{
       /* set i-th element to x. updates psum */
       void set(uint64_t i, uint64_t x){
 
-          if (bitsize(x) > width_) {
-              return rebuild_set(i, x);
-          }
+	 assert(bitsize(x) <= width_);
 
 	 auto y = at(i);
 
