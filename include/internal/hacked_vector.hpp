@@ -472,6 +472,14 @@ public:
 
     }
 
+    void clear(void) {
+        words.clear();
+        MASK=0;
+        size_=0;
+        width_=0;
+        int_per_word_=0;
+    }
+
 private:
     
     //shift right of 1 position elements starting

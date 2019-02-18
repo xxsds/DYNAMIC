@@ -152,7 +152,7 @@ namespace dyn{
        * high-level access to the vector. Supports assign, access,
        * increment (++, +=), decrement (--, -=)
        */
-      pv_ref operator[](uint64_t i){
+       pv_ref operator[](uint64_t i){
 
 	 return { *this, i };
 
