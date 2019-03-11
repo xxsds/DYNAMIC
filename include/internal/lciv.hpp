@@ -1512,7 +1512,7 @@ private:
 
     };
 
-    node* root;  //= NULL;		//tree root
+    node* root = NULL;		//tree root
 
 };
 
