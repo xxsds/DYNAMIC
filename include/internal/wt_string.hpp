@@ -208,7 +208,7 @@ namespace dyn{
 
       }
 
-      ulint alphabet_size(){
+      ulint alphabet_size() const {
 
 	 return ae.size();
 
