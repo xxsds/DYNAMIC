@@ -10,25 +10,25 @@ using namespace std;
 using namespace dyn;
 
 int main() {
-   string b = "banana";
-   wt_str st( 26, b );
+   dyn::succinct_spsi spsi;
+   spsi.insert(0,0);
+   spsi.remove(0);
+   spsi.insert(0,0);
+   spsi.insert(0,0);
+   spsi.insert(2,1);
+   spsi.insert(1,1);
+   spsi.remove(3);
 
-   for (size_t i = 0; i < st.size(); ++i) {
-      cout << static_cast<char>(st[i]);
-   }
-   cout << endl;
-   st.remove(0);
+   for(size_t i = 0; i < spsi.size(); ++i)
+      std::cout << spsi[i] << ",";
+   std::cout << std::endl;
+
+   spsi.insert(3,1);
+
+   for(size_t i = 0; i < spsi.size(); ++i)
+      std::cout << spsi[i] << ",";
+   std::cout << std::endl;
    
-   for (size_t i = 0; i < st.size(); ++i) {
-      cout << static_cast<char>(st[i]);
-   }
-   cout << endl;
 
-   st.remove(2);
-
-   for (size_t i = 0; i < st.size(); ++i) {
-      cout << static_cast<char>(st[i]);
-   }
-   cout << endl;
    return 0;
 }
