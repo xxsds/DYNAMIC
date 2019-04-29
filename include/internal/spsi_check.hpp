@@ -157,6 +157,25 @@ public:
 
 	}
 
+        void remove(uint64_t i){
+		size_--;
+		for(uint64_t j=i;j<size_;j++){
+
+			vec[j] = vec[j+1];
+
+		}
+
+        }
+
+	ulint serialize(std::ostream &out) const {
+	    throw std::domain_error("not implemented");
+	    return 0;
+	}
+
+	void load(std::istream &in){
+	    throw std::domain_error("not implemented");
+	}
+
 	uint64_t size() const {
 		return size_;
 	}

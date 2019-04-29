@@ -89,7 +89,7 @@ namespace dyn{
       }
 
       /*
-       * high-level access to the string. Supports assign (operator=) and access
+       * high-level access to the string.
        */
       char_type operator[](uint64_t i){
 
