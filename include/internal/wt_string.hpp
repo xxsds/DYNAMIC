@@ -91,7 +91,7 @@ namespace dyn{
       /*
        * high-level access to the string. Supports assign (operator=) and access
        */
-      char_type operator[](uint64_t i){
+      char_type operator[](uint64_t i) const {
 
           return at(i);
 
