@@ -91,7 +91,7 @@ namespace dyn{
       /*
        * high-level access to the string.
        */
-      char_type operator[](uint64_t i){
+      char_type operator[](uint64_t i) const {
 
           return at(i);
 
@@ -208,7 +208,7 @@ namespace dyn{
 
       }
 
-      ulint alphabet_size(){
+      ulint alphabet_size() const {
 
 	 return ae.size();
 
