@@ -41,7 +41,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "-ggdb -Ofast -fstrict-aliasing -DNDEBUG -march=nati
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -ggdb -Ofast -fstrict-aliasing -march=native")
 
 add_executable(debug debug.cpp)
-add_executable(debug-alan debug-alan.cpp)
 add_executable(rle_lz77_v1 rle_lz77_v1.cpp)
 add_executable(rle_lz77_v2 rle_lz77_v2.cpp)
 add_executable(h0_lz77 h0_lz77.cpp)
@@ -50,7 +49,6 @@ add_executable(cw-bwt cw-bwt.cpp)
 add_executable(benchmark benchmark.cpp)
 
 add_dependencies(debug sparsepp)
-add_dependencies(debug-alan sparsepp)
 add_dependencies(rle_lz77_v1 sparsepp)
 add_dependencies(rle_lz77_v2 sparsepp)
 add_dependencies(h0_lz77 sparsepp)
