@@ -181,7 +181,7 @@ public:
 	 * alphabet size
 	 */
 	uint64_t size() const {
-		return sigma;
+        return enc_type==fixed ? 1ull<<log_sigma : sigma;
 	}
 
 	/*

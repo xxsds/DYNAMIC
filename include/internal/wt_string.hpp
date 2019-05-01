@@ -89,7 +89,7 @@ namespace dyn{
       }
 
       /*
-       * high-level access to the string. Supports assign (operator=) and access
+       * high-level access to the string.
        */
       char_type operator[](uint64_t i) const {
 
@@ -270,6 +270,56 @@ namespace dyn{
 	    }
 
 	 }
+
+         node(const node& other)
+            : child0_(nullptr)
+            , child1_(nullptr)
+            , parent_(nullptr)
+            , l_(0)
+            , is_leaf_(false)
+         {
+            *this = other;
+         }
+
+         node& operator=(const node& other) {
+            *child0_ = *other.child0_;
+	    child0_->parent_ = this;
+            *child1_ = *other.child1_;
+	    child1_->parent_ = this;
+            bv = other.bv;
+            l_ = other.l_;
+            is_leaf_ = other.is_leaf_;
+            return *this;
+         }
+
+         node(node&& other)
+            : child0_(nullptr)
+            , child1_(nullptr)
+            , parent_(nullptr)
+            , l_(0)
+            , is_leaf_(false)
+         {
+            *this = std::move(other);
+         }
+
+         node& operator=(node&& other){
+	    if (this != &other){
+               if(has_child0())
+                  delete child0_;
+               if(has_child1())
+                  delete child1_;
+               child0_ = other.child0_;
+               child1_ = other.child1_;
+               parent_ = other.parent_;
+               bv = std::move(other.bv);
+               l_ = other.l_;
+               is_leaf_ = other.is_leaf_;
+               other.child0_ = nullptr;
+               other.child1_ = nullptr;
+               other.parent_ = nullptr;
+            }
+            return *this;
+         }
 
 	 //turn this node into a leaf
 	 void make_leaf(char_type c){
