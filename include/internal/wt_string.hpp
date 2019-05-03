@@ -24,8 +24,7 @@
 
 #include "includes.hpp"
 #include "alphabet_encoder.hpp"
-#include <future>
-#include <mutex>
+#include <thread>
 
 namespace dyn{
 
@@ -168,9 +167,9 @@ namespace dyn{
 
       }
 
-      void push_many(vector<char_type>& values) {
-         map<char_type, vector<bool>>&& Bs{};
-         set<char_type>&& partition{};
+      void push_many(const vector<char_type>& values) {
+         map<char_type, vector<bool>> Bs{};
+         set<char_type> partition{};
 
          for (ulint i = 0; i < values.size(); ++i) {
             auto c = values.at(i);
@@ -183,7 +182,7 @@ namespace dyn{
             Bs[c] = ae.encode(c);
          }
 
-         root.push_many(Bs, values, partition);
+         root.push_many(std::move(Bs), values, std::move(partition));
          n += values.size();
       }
 
@@ -462,7 +461,7 @@ namespace dyn{
 
 	 }
 
-	 void push_many(map<char_type, vector<bool>>& Bs,
+	 void push_many(map<char_type, vector<bool>>&& Bs,
                         const vector<char_type>& values,
                         set<char_type> partition,
                         ulint j=0,
@@ -490,10 +489,9 @@ namespace dyn{
 	    //assert(i<=bv.size());
 	    assert(not is_leaf());
 
-            std::future<void> f0, f1;
+            std::thread t0, t1;
 
             for(ulint idx = offset; idx < values.size(); ++idx) {
-                std::cout << "e" << j << std::endl;
                auto c = values.at(idx);
                if (partition.find(c) != partition.end()) {
                   auto B = Bs[values.at(idx)];
@@ -510,7 +508,8 @@ namespace dyn{
                            if (Bs[c][j])
                               new_partition.insert(c);
                         });
-                        f1 = std::move(std::async(std::launch::async, [&]{ child1_->push_many(Bs, values, new_partition, j+1, idx); }));
+                        //[&, new_partition]{ child1_->push_many(std::move(Bs), values, new_partition, j+1, idx); }();
+                        t1 = std::thread([&, new_partition]{ child1_->push_many(std::move(Bs), values, new_partition, j+1, idx); });
                      }
                   }else{
                      if(not has_child0()){
@@ -521,22 +520,18 @@ namespace dyn{
                            if (!Bs[c][j])
                               new_partition.insert(c);
                         });
-                        f0 = std::move(std::async(std::launch::async, [&]{ child0_->push_many(Bs, values, new_partition, j+1, idx); }));
+                        //[&, new_partition]{ child0_->push_many(std::move(Bs), values, new_partition, j+1, idx); }();
+                        t0 = std::thread([&, new_partition]{ child0_->push_many(std::move(Bs), values, new_partition, j+1, idx); });
                      }
                   }
                }
             }
-            std::cout << "f" << j << std::endl;
 
-            try {
-               if (f0.valid()) {
-                  f0.wait();
-               }
-               if (f1.valid()) {
-                  f1.wait();
-               }
-            } catch (std::runtime_error& e) {
-               std::cout << "Async task threw exception: " << e.what() << std::endl;
+            if (t0.joinable()) {
+               t0.join();
+            }
+            if (t1.joinable()) {
+               t1.join();
             }
 	 }
 
