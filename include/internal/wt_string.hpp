@@ -24,6 +24,8 @@
 
 #include "includes.hpp"
 #include "alphabet_encoder.hpp"
+#include <future>
+#include <mutex>
 
 namespace dyn{
 
@@ -164,6 +166,25 @@ namespace dyn{
 
 	 insert(size(),c);
 
+      }
+
+      void push_many(vector<char_type>& values) {
+         map<char_type, vector<bool>>&& Bs{};
+         set<char_type>&& partition{};
+
+         for (ulint i = 0; i < values.size(); ++i) {
+            auto c = values.at(i);
+            if(!ae.char_exists(c))
+               ae.encode(c);
+         }
+         partition = ae.keys();
+
+         for(auto c : partition) {
+            Bs[c] = ae.encode(c);
+         }
+
+         root.push_many(Bs, values, partition);
+         n += values.size();
       }
 
       void push_front(char_type c){
@@ -439,6 +460,84 @@ namespace dyn{
 
 	    }
 
+	 }
+
+	 void push_many(map<char_type, vector<bool>>& Bs,
+                        const vector<char_type>& values,
+                        set<char_type> partition,
+                        ulint j=0,
+                        ulint offset=0) {
+
+	    if(partition.size()==1){
+	       //this node must be a leaf
+	       assert(bv.size()==0);
+
+               auto c = *partition.begin();
+               assert(j==Bs[c].size());
+
+	       if(is_leaf()){
+		  //if it's already marked as leaf, check
+		  //that the label is correct
+		  assert(c==label());
+                  //TODO assert all `values` are `c`
+	       }else{
+		  //else, mark node as leaf
+		  make_leaf(c);
+	       }
+	       return;
+	    }
+
+	    //assert(i<=bv.size());
+	    assert(not is_leaf());
+
+            std::future<void> f0, f1;
+
+            for(ulint idx = offset; idx < values.size(); ++idx) {
+                std::cout << "e" << j << std::endl;
+               auto c = values.at(idx);
+               if (partition.find(c) != partition.end()) {
+                  auto B = Bs[values.at(idx)];
+
+                  bool b = B[j];
+                  bv.push_back(b);
+
+                  if(b){
+                     if(not has_child1()){
+                        child1_ = new node(this);
+
+                        set<char_type> new_partition;
+                        for_each(partition.begin(), partition.end(), [&](char_type c) {
+                           if (Bs[c][j])
+                              new_partition.insert(c);
+                        });
+                        f1 = std::move(std::async(std::launch::async, [&]{ child1_->push_many(Bs, values, new_partition, j+1, idx); }));
+                     }
+                  }else{
+                     if(not has_child0()){
+                        child0_ = new node(this);
+
+                        set<char_type> new_partition;
+                        for_each(partition.begin(), partition.end(), [&](char_type c) {
+                           if (!Bs[c][j])
+                              new_partition.insert(c);
+                        });
+                        f0 = std::move(std::async(std::launch::async, [&]{ child0_->push_many(Bs, values, new_partition, j+1, idx); }));
+                     }
+                  }
+               }
+            }
+            std::cout << "f" << j << std::endl;
+
+            try {
+               if (f0.valid()) {
+                  f0.wait();
+               }
+               if (f1.valid()) {
+                  f1.wait();
+               }
+            } catch (std::runtime_error& e) {
+               std::cout << "Async task threw exception: " << e.what() << std::endl;
+            }
 	 }
 
 	 /*
