@@ -508,8 +508,9 @@ namespace dyn{
                            if (Bs[c][j])
                               new_partition.insert(c);
                         });
-                        //[&, new_partition]{ child1_->push_many(std::move(Bs), values, new_partition, j+1, idx); }();
-                        t1 = std::thread([&, new_partition]{ child1_->push_many(std::move(Bs), values, new_partition, j+1, idx); });
+                        t1 = std::thread([&, new_partition, idx]{
+                           child1_->push_many(std::move(Bs), values, new_partition, j+1, idx);
+                        });
                      }
                   }else{
                      if(not has_child0()){
@@ -520,8 +521,9 @@ namespace dyn{
                            if (!Bs[c][j])
                               new_partition.insert(c);
                         });
-                        //[&, new_partition]{ child0_->push_many(std::move(Bs), values, new_partition, j+1, idx); }();
-                        t0 = std::thread([&, new_partition]{ child0_->push_many(std::move(Bs), values, new_partition, j+1, idx); });
+                        t0 = std::thread([&, new_partition, idx]{
+                           child0_->push_many(std::move(Bs), values, new_partition, j+1, idx);
+                        });
                      }
                   }
                }
