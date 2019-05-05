@@ -167,12 +167,14 @@ namespace dyn{
 
       }
 
-      void push_many(const vector<char_type>& values) {
+      template<class Vector>
+      void push_many(const Vector& values) {
          map<char_type, vector<bool>> Bs{};
          set<char_type> partition{};
 
+
          for (ulint i = 0; i < values.size(); ++i) {
-            auto c = values.at(i);
+            auto c = values[i];
             if(!ae.char_exists(c))
                ae.encode(c);
          }
@@ -461,8 +463,9 @@ namespace dyn{
 
 	 }
 
+         template<class Vector>
 	 void push_many(map<char_type, vector<bool>>&& Bs,
-                        const vector<char_type>& values,
+                        const Vector& values,
                         set<char_type> partition,
                         ulint j=0,
                         ulint offset=0) {
@@ -492,16 +495,17 @@ namespace dyn{
             std::thread t0, t1;
 
             for(ulint idx = offset; idx < values.size(); ++idx) {
-               auto c = values.at(idx);
+               auto c = values[idx];
                if (partition.find(c) != partition.end()) {
-                  auto B = Bs[values.at(idx)];
+                  auto B = Bs[c];
 
                   bool b = B[j];
                   bv.push_back(b);
 
                   if(b){
-                     if(not has_child1()){
-                        child1_ = new node(this);
+                     if(not t1.joinable()){
+                        if(not has_child1())
+                           child1_ = new node(this);
 
                         set<char_type> new_partition;
                         for_each(partition.begin(), partition.end(), [&](char_type c) {
@@ -513,8 +517,9 @@ namespace dyn{
                         });
                      }
                   }else{
-                     if(not has_child0()){
-                        child0_ = new node(this);
+                     if(not t0.joinable()){
+                        if(not has_child0())
+                           child0_ = new node(this);
 
                         set<char_type> new_partition;
                         for_each(partition.begin(), partition.end(), [&](char_type c) {
