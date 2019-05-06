@@ -184,6 +184,8 @@ namespace dyn{
             Bs[c] = ae.encode(c);
          }
 
+         #pragma omp parallel
+         #pragma omp master
          root.push_many(std::move(Bs), values, std::move(partition));
          n += values.size();
       }
@@ -481,7 +483,6 @@ namespace dyn{
 		  //if it's already marked as leaf, check
 		  //that the label is correct
 		  assert(c==label());
-                  //TODO assert all `values` are `c`
 	       }else{
 		  //else, mark node as leaf
 		  make_leaf(c);
@@ -489,10 +490,9 @@ namespace dyn{
 	       return;
 	    }
 
-	    //assert(i<=bv.size());
 	    assert(not is_leaf());
 
-            std::thread t0, t1;
+            bool t0 = false, t1 = false;
 
             for(ulint idx = offset; idx < values.size(); ++idx) {
                auto c = values[idx];
@@ -503,7 +503,9 @@ namespace dyn{
                   bv.push_back(b);
 
                   if(b){
-                     if(not t1.joinable()){
+                     if(not t1){
+                        t1 = true;
+
                         if(not has_child1())
                            child1_ = new node(this);
 
@@ -512,12 +514,13 @@ namespace dyn{
                            if (Bs[c][j])
                               new_partition.insert(c);
                         });
-                        t1 = std::thread([&, new_partition, idx]{
-                           child1_->push_many(std::move(Bs), values, new_partition, j+1, idx);
-                        });
+                        #pragma omp task
+                        child1_->push_many(std::move(Bs), values, new_partition, j+1, idx);
                      }
                   }else{
-                     if(not t0.joinable()){
+                     if(not t0){
+                        t0 = true;
+
                         if(not has_child0())
                            child0_ = new node(this);
 
@@ -526,20 +529,14 @@ namespace dyn{
                            if (!Bs[c][j])
                               new_partition.insert(c);
                         });
-                        t0 = std::thread([&, new_partition, idx]{
-                           child0_->push_many(std::move(Bs), values, new_partition, j+1, idx);
-                        });
+                        #pragma omp task
+                        child0_->push_many(std::move(Bs), values, new_partition, j+1, idx);
                      }
                   }
                }
             }
 
-            if (t0.joinable()) {
-               t0.join();
-            }
-            if (t1.joinable()) {
-               t1.join();
-            }
+            #pragma omp taskwait
 	 }
 
 	 /*
