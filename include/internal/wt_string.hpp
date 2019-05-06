@@ -467,7 +467,7 @@ namespace dyn{
                    ulint j=0,
                    ulint offset=0) {
 
-	    if(Bs.size()==1){
+        if(Bs.size()==1){
             //this node must be a leaf
             assert(bv.size()==0);
 
@@ -483,53 +483,51 @@ namespace dyn{
                 make_leaf(c);
             }
             return;
-	    }
+        }
 
-	    assert(not is_leaf());
+        assert(not is_leaf());
 
-        bool t0 = false;
-        bool t1 = false;
+        bool task_started_0 = false;
+        bool task_started_1 = false;
 
         for(ulint idx = offset; idx < values.size(); ++idx) {
-            auto c = values[idx];
-            if (!Bs.count(c))
+            char_type c = values[idx];
+            auto it = Bs.find(c);
+            if (it == Bs.end())
                 continue;
 
-            auto B = Bs[c];
+            bool b = it->second[j];
 
-            bool b = B[j];
             bv.push_back(b);
 
-            if(b){
-                if(not t1){
-                    t1 = true;
+            if(b && !task_started_1){
+                task_started_1 = true;
 
-                    if(not has_child1())
+                if(not has_child1())
                     child1_ = new node(this);
 
-                    map<char_type, vector<bool>> new_Bs;
-                    for_each(Bs.begin(), Bs.end(), [&new_Bs, &j](const auto &pair) {
-                        if (pair.second[j])
-                            new_Bs.insert(pair);
-                    });
-                    #pragma omp task
-                    child1_->push_many(std::move(new_Bs), values, j+1, idx);
-                }
-            }else{
-                if(not t0){
-                    t0 = true;
+                map<char_type, vector<bool>> new_Bs;
+                for_each(Bs.begin(), Bs.end(), [&new_Bs,j](const auto &pair) {
+                    if (pair.second[j])
+                        new_Bs.insert(pair);
+                });
+                #pragma omp task
+                child1_->push_many(std::move(new_Bs), values, j+1, idx);
+            }
 
-                    if(not has_child0())
+            if (!b && !task_started_0){
+                task_started_0 = true;
+
+                if(not has_child0())
                     child0_ = new node(this);
 
-                    map<char_type, vector<bool>> new_Bs;
-                    for_each(Bs.begin(), Bs.end(), [&new_Bs, &j](const auto &pair) {
-                        if (!pair.second[j])
-                            new_Bs.insert(pair);
-                    });
-                    #pragma omp task
-                    child0_->push_many(std::move(new_Bs), values, j+1, idx);
-                }
+                map<char_type, vector<bool>> new_Bs;
+                for_each(Bs.begin(), Bs.end(), [&new_Bs,j](const auto &pair) {
+                    if (!pair.second[j])
+                        new_Bs.insert(pair);
+                });
+                #pragma omp task
+                child0_->push_many(std::move(new_Bs), values, j+1, idx);
             }
         }
 
