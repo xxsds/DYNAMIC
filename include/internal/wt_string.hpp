@@ -508,7 +508,7 @@ namespace dyn{
                     child1_ = new node(this);
 
                     map<char_type, vector<bool>> new_Bs;
-                    for_each(Bs.begin(), Bs.end(), [&new_Bs](const auto &pair) {
+                    for_each(Bs.begin(), Bs.end(), [&new_Bs, &j](const auto &pair) {
                         if (pair.second[j])
                             new_Bs.insert(pair);
                     });
@@ -523,7 +523,7 @@ namespace dyn{
                     child0_ = new node(this);
 
                     map<char_type, vector<bool>> new_Bs;
-                    for_each(partition.begin(), partition.end(), [&](const auto &pair) {
+                    for_each(Bs.begin(), Bs.end(), [&new_Bs, &j](const auto &pair) {
                         if (!pair.second[j])
                             new_Bs.insert(pair);
                     });
