@@ -459,6 +459,11 @@ namespace dyn{
       
       void insert(uint64_t i, uint64_t x){
 
+         if(i==size()){
+            push_back(x);
+            return;
+         }
+
 	 if(bitsize(x)>width_){
 
 	    //auto vec = to_vector(i,x);
