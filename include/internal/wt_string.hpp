@@ -169,24 +169,20 @@ namespace dyn{
 
       template<class Vector>
       void push_many(const Vector& values) {
-         map<char_type, vector<bool>> Bs{};
-         set<char_type> partition{};
-
-
          for (ulint i = 0; i < values.size(); ++i) {
             auto c = values[i];
             if(!ae.char_exists(c))
                ae.encode(c);
          }
-         partition = ae.keys();
 
-         for(auto c : partition) {
-            Bs[c] = ae.encode(c);
+         map<char_type, vector<bool>> path_to_leaf;
+         for(char_type c : ae.keys()) {
+            path_to_leaf[c] = ae.encode(c);
          }
 
          #pragma omp parallel
          #pragma omp master
-         root.push_many(std::move(Bs), values, std::move(partition));
+         root.push_many(std::move(path_to_leaf), values);
          n += values.size();
       }
 
@@ -465,79 +461,80 @@ namespace dyn{
 
 	 }
 
-         template<class Vector>
-	 void push_many(map<char_type, vector<bool>>&& Bs,
-                        const Vector& values,
-                        set<char_type> partition,
-                        ulint j=0,
-                        ulint offset=0) {
+    template<class Vector>
+    void push_many(map<char_type, vector<bool>>&& Bs,
+                   const Vector& values,
+                   ulint j=0,
+                   ulint offset=0) {
 
-	    if(partition.size()==1){
-	       //this node must be a leaf
-	       assert(bv.size()==0);
+	    if(Bs.size()==1){
+            //this node must be a leaf
+            assert(bv.size()==0);
 
-               auto c = *partition.begin();
-               assert(j==Bs[c].size());
+            auto c = Bs.begin()->first;
+            assert(j==Bs[c].size());
 
-	       if(is_leaf()){
-		  //if it's already marked as leaf, check
-		  //that the label is correct
-		  assert(c==label());
-	       }else{
-		  //else, mark node as leaf
-		  make_leaf(c);
-	       }
-	       return;
+            if(is_leaf()){
+                //if it's already marked as leaf, check
+                //that the label is correct
+                assert(c==label());
+            }else{
+                //else, mark node as leaf
+                make_leaf(c);
+            }
+            return;
 	    }
 
 	    assert(not is_leaf());
 
-            bool t0 = false, t1 = false;
+        bool t0 = false;
+        bool t1 = false;
 
-            for(ulint idx = offset; idx < values.size(); ++idx) {
-               auto c = values[idx];
-               if (partition.find(c) != partition.end()) {
-                  auto B = Bs[c];
+        for(ulint idx = offset; idx < values.size(); ++idx) {
+            auto c = values[idx];
+            if (!Bs.count(c))
+                continue;
 
-                  bool b = B[j];
-                  bv.push_back(b);
+            auto B = Bs[c];
 
-                  if(b){
-                     if(not t1){
-                        t1 = true;
+            bool b = B[j];
+            bv.push_back(b);
 
-                        if(not has_child1())
-                           child1_ = new node(this);
+            if(b){
+                if(not t1){
+                    t1 = true;
 
-                        set<char_type> new_partition;
-                        for_each(partition.begin(), partition.end(), [&](char_type c) {
-                           if (Bs[c][j])
-                              new_partition.insert(c);
-                        });
-                        #pragma omp task
-                        child1_->push_many(std::move(Bs), values, new_partition, j+1, idx);
-                     }
-                  }else{
-                     if(not t0){
-                        t0 = true;
+                    if(not has_child1())
+                    child1_ = new node(this);
 
-                        if(not has_child0())
-                           child0_ = new node(this);
+                    map<char_type, vector<bool>> new_Bs;
+                    for_each(Bs.begin(), Bs.end(), [&new_Bs](const auto &pair) {
+                        if (pair.second[j])
+                            new_Bs.insert(pair);
+                    });
+                    #pragma omp task
+                    child1_->push_many(std::move(new_Bs), values, j+1, idx);
+                }
+            }else{
+                if(not t0){
+                    t0 = true;
 
-                        set<char_type> new_partition;
-                        for_each(partition.begin(), partition.end(), [&](char_type c) {
-                           if (!Bs[c][j])
-                              new_partition.insert(c);
-                        });
-                        #pragma omp task
-                        child0_->push_many(std::move(Bs), values, new_partition, j+1, idx);
-                     }
-                  }
-               }
+                    if(not has_child0())
+                    child0_ = new node(this);
+
+                    map<char_type, vector<bool>> new_Bs;
+                    for_each(partition.begin(), partition.end(), [&](const auto &pair) {
+                        if (!pair.second[j])
+                            new_Bs.insert(pair);
+                    });
+                    #pragma omp task
+                    child0_->push_many(std::move(new_Bs), values, j+1, idx);
+                }
             }
+        }
 
-            #pragma omp taskwait
-	 }
+        #pragma omp taskwait
+    }
 
 	 /*
 	  * remove code B[j,...,B.size()-1] from position i. This code is associated
