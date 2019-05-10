@@ -110,13 +110,29 @@ class spsi {
   spsi(const spsi& sp) { root = new node(*sp.root); }
 
   /*
-   * copy operator
+   * move constructor
+   */
+  spsi(spsi&& sp) { root = sp.root; sp.root = NULL; }
+
+  /*
+   * copy assignment
    */
   void operator=(const spsi& sp) {
     root->free_mem();
     delete root;
 
     root = new node(*sp.root);
+  }
+
+  /*
+   * move assignment
+   */
+  void operator=(spsi&& sp) {
+    root->free_mem();
+    delete root;
+
+    root = sp.root;
+    sp.root = NULL;
   }
 
   using spsi_ref = spsi_reference<spsi>;
@@ -128,12 +144,10 @@ class spsi {
   spsi(uint64_t max_len = 0, uint64_t width = 0) { root = new node(); }
 
   ~spsi() {
-    root->free_mem();
-
-    assert(root != NULL);
-
-    delete root;
-    root = NULL;
+    if (root) {
+      root->free_mem();
+      delete root;
+    }
   }
 
   /*
