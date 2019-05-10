@@ -22,6 +22,8 @@
 #ifndef INTERNAL_SPSI_HPP_
 #define INTERNAL_SPSI_HPP_
 
+#include <array>
+
 #include "includes.hpp"
 
 namespace dyn {
@@ -335,8 +337,8 @@ class spsi<leaf_type, B_LEAF, B>::node {
    * copy constructor
    */
   node(const node& n) {
-    subtree_sizes = {n.subtree_sizes};
-    subtree_psums = {n.subtree_psums};
+    subtree_sizes = n.subtree_sizes;
+    subtree_psums = n.subtree_psums;
 
     if (n.has_leaves_) {
       leaves = vector<leaf_type*>(n.nr_children, NULL);
@@ -368,10 +370,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
    * create new root node. This node has only 1 (empty) child, which is a
    * leaf.
    */
-  node() {
-    subtree_sizes = vector<uint64_t>(2 * B + 2);
-    subtree_psums = vector<uint64_t>(2 * B + 2);
-
+  node() : subtree_sizes{}, subtree_psums{} {
     nr_children = 1;
     has_leaves_ = true;
 
@@ -386,9 +385,6 @@ class spsi<leaf_type, B_LEAF, B>::node {
   node(vector<node*>&& c, node* P = NULL, uint32_t rank = 0) {
     this->rank_ = rank;
     this->parent = P;
-
-    subtree_sizes = vector<uint64_t>(2 * B + 2);
-    subtree_psums = vector<uint64_t>(2 * B + 2);
 
     uint64_t si = 0;
     uint64_t ps = 0;
@@ -423,9 +419,6 @@ class spsi<leaf_type, B_LEAF, B>::node {
     this->rank_ = rank;
     this->parent = P;
 
-    subtree_sizes = vector<uint64_t>(2 * B + 2);
-    subtree_psums = vector<uint64_t>(2 * B + 2);
-
     assert(c.size() <= 2 * B + 2);
 
     uint64_t si = 0;
@@ -451,9 +444,9 @@ class spsi<leaf_type, B_LEAF, B>::node {
   uint64_t bit_size() const {
     uint64_t bs = 8 * sizeof(node);
 
-    bs += subtree_sizes.capacity() * sizeof(uint64_t) * 8;
+    bs += subtree_sizes.size() * sizeof(uint64_t) * 8;
 
-    bs += subtree_psums.capacity() * sizeof(uint64_t) * 8;
+    bs += subtree_psums.size() * sizeof(uint64_t) * 8;
 
     bs += children.capacity() * sizeof(node*) * 8;
 
@@ -1365,13 +1358,12 @@ class spsi<leaf_type, B_LEAF, B>::node {
     assert(subtree_sizes_len > 0);
     assert(subtree_psums_len > 0);
 
-    subtree_sizes = vector<uint64_t>(subtree_sizes_len);
-    in.read((char*)subtree_sizes.data(),
-            sizeof(uint64_t) * subtree_sizes_len);
+    if (subtree_sizes_len != subtree_sizes.size()
+          || subtree_psums_len != subtree_psums.size())
+      throw std::ifstream::failure("incompatible parameter B");
 
-    subtree_psums = vector<uint64_t>(subtree_psums_len);
-    in.read((char*)subtree_psums.data(),
-            sizeof(uint64_t) * subtree_psums_len);
+    in.read((char*)subtree_sizes.data(), sizeof(uint64_t) * subtree_sizes.size());
+    in.read((char*)subtree_psums.data(), sizeof(uint64_t) * subtree_psums.size());
 
     in.read((char*)&has_leaves_, sizeof(has_leaves_));
 
@@ -1659,8 +1651,8 @@ class spsi<leaf_type, B_LEAF, B>::node {
    * in the following 2 vectors, the first nr_subtrees+1 elements refer to the
    * nr_subtrees subtrees
    */
-  vector<uint64_t> subtree_sizes;
-  vector<uint64_t> subtree_psums;
+  array<uint64_t, 2 * B + 2> subtree_sizes;
+  array<uint64_t, 2 * B + 2> subtree_psums;
 
   vector<node*> children;
   vector<leaf_type*> leaves;
