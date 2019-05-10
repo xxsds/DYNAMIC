@@ -383,7 +383,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
    * create new node given some children (other internal nodes),the parent,
    * and the rank of this node among its siblings
    */
-  node(vector<node*>& c, node* P = NULL, uint32_t rank = 0) {
+  node(vector<node*>&& c, node* P = NULL, uint32_t rank = 0) {
     this->rank_ = rank;
     this->parent = P;
 
@@ -406,7 +406,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     nr_children = c.size();
     has_leaves_ = false;
 
-    children = vector<node*>(c);
+    children = std::move(c);
 
     uint32_t r = 0;
     for (auto cc : children) {
@@ -419,7 +419,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
    * create new node given some children (leaves),the parent, and the rank of
    * this node among its siblings
    */
-  node(vector<leaf_type*>& c, node* P = NULL, uint32_t rank = 0) {
+  node(vector<leaf_type*>&& c, node* P = NULL, uint32_t rank = 0) {
     this->rank_ = rank;
     this->parent = P;
 
@@ -442,7 +442,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     nr_children = c.size();
     has_leaves_ = true;
 
-    leaves = vector<leaf_type*>(c);
+    leaves = std::move(c);
   }
 
   /*
@@ -814,9 +814,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
       // if this is the root, create new root
       if (is_root()) {
-        vector<node*> vn{this, right};
-
-        new_root = new node(vn);
+        new_root = new node(vector<node*>{this, right});
         assert(not new_root->is_full());
 
         this->overwrite_parent(new_root);
@@ -1048,7 +1046,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
           cc.insert(cc.end(), next->children.begin(), next->children.end());
 
           assert(cc.size() == 2 * B + 2);
-          xy = new node(cc, prev->parent, prev->rank());
+          xy = new node(std::move(cc), prev->parent, prev->rank());
         } else {
           assert(prev->nr_children == prev->leaves.size());
           assert(next->nr_children == next->leaves.size());
@@ -1063,7 +1061,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
           }
 
           assert(cc.size() == 2 * B + 2);
-          xy = new node(cc, prev->parent, prev->rank());
+          xy = new node(std::move(cc), prev->parent, prev->rank());
         }
 
         // update xy->parent
@@ -1628,7 +1626,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
       assert(k == right_children_l.size());
 
-      right = new node(right_children_l, parent, rank() + 1);
+      right = new node(std::move(right_children_l), parent, rank() + 1);
       leaves.erase(leaves.begin() + nr_children / 2, leaves.end());
 
     } else {
@@ -1641,7 +1639,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
       assert(k == right_children_n.size());
 
-      right = new node(right_children_n, parent, rank() + 1);
+      right = new node(std::move(right_children_n), parent, rank() + 1);
 
       children.erase(children.begin() + nr_children / 2, children.end());
     }
@@ -1672,8 +1670,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
   uint32_t nr_children = 0;  // number of subtrees
 
-  bool has_leaves_ =
-      false;  // if true, leaves array is nonempty and children is empty
+  bool has_leaves_ = false;  // if true, leaves array is nonempty and children is empty
 };
 
 }  // namespace dyn
