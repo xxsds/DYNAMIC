@@ -409,7 +409,7 @@ namespace dyn{
 
       void append(uint64_t x){
 
-	 insert(size(),x);
+	 push_back(x);
 
       }
 
@@ -477,15 +477,9 @@ namespace dyn{
 	 //not enough space for the new element:
 	 //alloc extra_ new words
 	 if(size_+1>(words.size()*(int_per_word_))){
-
-	    //resize words
-	    auto temp = vector<uint64_t>(words.size()+extra_,0);
-
-	    uint64_t j = 0;
-	    for(auto x:words) temp[j++] = x;
-
-	    words = vector<uint64_t>(temp);
-
+        //resize words
+        words.reserve(words.size() + extra_);
+        words.resize(words.size() + extra_, 0);
 	 }
 
 	 //shift right elements starting from number i
@@ -520,7 +514,8 @@ namespace dyn{
 
 	 //not enough space for the new element:
 	 //push back a new word
-	 if(size_+1>(words.size()*(int_per_word_))) words.push_back(0);
+	 if(size_+1>(words.size()*(int_per_word_)))
+        words.push_back(0);
 
 	 //insert x
 	 set_without_psum_update(size(),x);
@@ -582,7 +577,7 @@ namespace dyn{
 	 psum_ = x<y ? psum_ - (y-x) : psum_ + (x-y);
 
 	 uint64_t word_nr = i/int_per_word_;
-	 uint8_t pos = i%int_per_word_;
+	 uint8_t pos = i - int_per_word_ * word_nr;
 
 	 //set to 0 i-th entry
 	 uint64_t MASK1 = ~(MASK<<(width_*pos));
@@ -673,7 +668,7 @@ namespace dyn{
 	 assert(bitsize(x)<=width_);
 
 	 uint64_t word_nr = i/int_per_word_;
-	 uint8_t pos = i%int_per_word_;
+	 uint8_t pos = i - int_per_word_ * word_nr;
 
 	 //set to 0 i-th entry
 	 uint64_t MASK1 = ~(MASK<<(width_*pos));
@@ -689,7 +684,7 @@ namespace dyn{
 	 assert(bitsize(x)<=new_width_);
 
 	 uint64_t word_nr = i/new_int_per_word_;
-	 uint8_t pos = i%new_int_per_word_;
+	 uint8_t pos = i - new_int_per_word_ * word_nr;
 
 	 //set to 0 i-th entry
 	 uint64_t MASK1 = ~(new_MASK<<(new_width_*pos));
@@ -736,7 +731,7 @@ namespace dyn{
 	 uint64_t falling_out_idx = current_word*int_per_word_+(int_per_word_-1);
 
 	 //integer that falls out from the right of current word
-	 uint64_t falling_out = at(falling_out_idx);
+	 uint64_t falling_out = (words[current_word] >> (int_per_word_-1)*width_);
 
 	 for(uint64_t j = falling_out_idx;j>i;--j) set_without_psum_update(j,at(j-1));
 
@@ -746,7 +741,7 @@ namespace dyn{
 
 	 for(uint64_t j = current_word+1;j<words.size();++j){
 
-	    falling_out_temp = at( j*int_per_word_+(int_per_word_-1) );
+	    falling_out_temp = (words[j] >> (int_per_word_-1)*width_);
 
 	    words[j] = words[j] << width_;
 
