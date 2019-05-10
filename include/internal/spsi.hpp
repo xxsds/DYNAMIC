@@ -1542,35 +1542,41 @@ class spsi<leaf_type, B_LEAF, B>::node {
       assert(not is_full());
       assert(insert_pos <= children[j]->size());
       assert(children[j]->get_parent() == this);
+
       children[j]->insert(insert_pos, x);
 
+    } else if (!leaf_is_full(leaves[j])) {
+
+      leaves[j]->insert(insert_pos, x);
+
+      for (uint32_t k = j; k < nr_children; ++k) {
+        assert(leaves[k] != NULL);
+        subtree_psums[k] += x;
+        subtree_sizes[k] += 1;
+      }
+      return;
+
     } else {
-      if (leaf_is_full(leaves[j])) {
-        // if leaf full, split it
+      // the leaf is full, split it
 
-        leaf_type* right = leaves[j]->split();
-        leaf_type* left = leaves[j];
+      leaf_type* right = leaves[j]->split();
+      leaf_type* left = leaves[j];
 
-        assert(not leaf_is_full(leaves[j]));
+      assert(not leaf_is_full(leaves[j]));
 
-        // insert new children in this node
-        this->new_children(j, left, right);
+      // insert new children in this node
+      this->new_children(j, left, right);
 
-        // insert in the correct leaf half
-        if (insert_pos < left->size()) {
-          left->insert(insert_pos, x);
-
-        } else {
-          right->insert(insert_pos - left->size(), x);
-        }
-
+      // insert in the correct leaf half
+      if (insert_pos < left->size()) {
+        left->insert(insert_pos, x);
       } else {
-        leaves[j]->insert(insert_pos, x);
+        right->insert(insert_pos - left->size(), x);
       }
     }
 
-    uint64_t ps = 0;
-    uint64_t si = 0;
+    uint64_t ps = (j == 0 ? 0 : subtree_psums[j - 1]);
+    uint64_t si = (j == 0 ? 0 : subtree_sizes[j - 1]);
 
     /*
      * we inserted an integer in some children, and number of
@@ -1582,7 +1588,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     assert(nr_children <= subtree_psums.size());
     assert(nr_children <= subtree_sizes.size());
 
-    for (uint32_t k = 0; k < nr_children; ++k) {
+    for (uint32_t k = j; k <= j + 1 && k < nr_children; ++k) {
       if (has_leaves()) {
         assert(leaves[k] != NULL);
         ps += leaves[k]->psum();
@@ -1596,6 +1602,11 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
       subtree_psums[k] = ps;
       subtree_sizes[k] = si;
+    }
+
+    for (uint32_t k = j + 2; k < nr_children; ++k) {
+      subtree_psums[k] += x;
+      subtree_sizes[k] += 1;
     }
   }
 
