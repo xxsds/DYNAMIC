@@ -160,7 +160,7 @@ namespace dyn{
 
       uint64_t at(uint64_t i) const {
 
-	 //assert(i<size_);
+	 assert(i<size_);
 
 	 return MASK & (words[i/int_per_word_] >> ((i%int_per_word_)*width_));
 
@@ -414,7 +414,8 @@ namespace dyn{
       }
 
       void remove(uint64_t i) {
-	 auto x = this->at(i);
+        assert(i < size_);
+        auto x = this->at(i);
 
 	 if (width_>1) { // otherwise, cannot rebuild
 	    if (bitsize(x) == width_) {
@@ -571,6 +572,7 @@ namespace dyn{
       void set(uint64_t i, uint64_t x){
 
 	 assert(bitsize(x) <= width_);
+        assert(i < size_);
 
 	 auto y = at(i);
 
@@ -720,6 +722,7 @@ namespace dyn{
       //from the i-th.
       //assumption: last element does not overflow!
       void shift_right(uint64_t i){
+        assert(i < size_);
 
 	 //number of integers that fit in a memory word
 	 assert(int_per_word_>0);
@@ -728,12 +731,15 @@ namespace dyn{
 
 	 uint64_t current_word = i/int_per_word_;
 
-	 uint64_t falling_out_idx = current_word*int_per_word_+(int_per_word_-1);
+	 uint64_t falling_out_idx = std::min(current_word*int_per_word_+(int_per_word_-1), size_);
 
 	 //integer that falls out from the right of current word
 	 uint64_t falling_out = (words[current_word] >> (int_per_word_-1)*width_);
 
-	 for(uint64_t j = falling_out_idx;j>i;--j) set_without_psum_update(j,at(j-1));
+        for(uint64_t j = falling_out_idx; j > i; --j) {
+            assert(j - 1 < size_);
+            set_without_psum_update(j,at(j-1));
+        }
 
 	 //now for the remaining integers we can work blockwise
 
@@ -745,7 +751,7 @@ namespace dyn{
 
 	    words[j] = words[j] << width_;
 
-	    assert(at(j*int_per_word_)==0);
+	    assert(j*int_per_word_ >= size_ || at(j*int_per_word_)==0);
 
 	    set_without_psum_update(j*int_per_word_,falling_out);
 
@@ -761,6 +767,7 @@ namespace dyn{
 
 	 //number of integers that fit in a memory word
 	 assert(int_per_word_>0);
+        assert(i < size_);
 
 	 if (i == (size_ - 1)) {
 	    set_without_psum_update( i, 0 );
@@ -781,17 +788,18 @@ namespace dyn{
 
 	 
 	 for(uint64_t j = i; j <= falling_in_idx - 1;++j) {
+           assert(j + 1 < size_);
 	    set_without_psum_update(j,at(j+1));
 	 }
 
 	 //now for the remaining integers we can work blockwise
-	 for(uint64_t j = current_word+1;j<words.size();++j){
+	 for(uint64_t j = current_word+1; j < words.size(); ++j){
 	    words[j] = words[j] >> width_;
 	    
 	    if (j < words.size() - 1) {
-	       falling_in = at( (j + 1)*int_per_word_ );
-	    
-	       set_without_psum_update(j*int_per_word_ + int_per_word_ - 1,falling_in);
+	       falling_in = (j + 1)*int_per_word_ < size_ ? at( (j + 1)*int_per_word_ ) : 0;
+
+           set_without_psum_update(j*int_per_word_ + int_per_word_ - 1,falling_in);
 	    }
 
 	 }
@@ -823,6 +831,7 @@ namespace dyn{
 	       ++i;
 	       new_psum_ += y;
 	    } else {
+              assert( k < size_ );
 	       auto x = this->at( k );
 	       set_without_psum_update( i, x,
 					new_words,
@@ -868,6 +877,7 @@ namespace dyn{
 	       //skip
 	       
 	    } else {
+              assert( k < size_ );
 	       auto x = this->at( k );
 	       set_without_psum_update( i, x,
 					new_words,
@@ -909,6 +919,7 @@ namespace dyn{
 	       new_psum_ += y;
 	    }
 
+           assert( k < size_ );
 	    auto x = this->at( k );
 	    set_without_psum_update( i, x,
 				     new_words,
