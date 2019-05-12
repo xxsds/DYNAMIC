@@ -486,12 +486,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
   uint64_t at(uint64_t i) {
     assert(i < size());
 
-    uint32_t j = 0;
-
-    while (subtree_sizes[j] <= i) {
-      j++;
-      assert(j < subtree_sizes.size());
-    }
+    uint32_t j = find_child(i);
 
     // size stored in previous counter
     uint64_t previous_size = (j == 0 ? 0 : subtree_sizes[j - 1]);
@@ -520,12 +515,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
   uint64_t psum(uint64_t i) {
     assert(i < size());
 
-    uint32_t j = 0;
-
-    while (subtree_sizes[j] <= i) {
-      j++;
-      assert(j < subtree_sizes.size());
-    }
+    uint32_t j = find_child(i);
 
     // size/psum stored in previous counter
     uint64_t previous_size = (j == 0 ? 0 : subtree_sizes[j - 1]);
@@ -550,12 +540,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
   uint64_t search(uint64_t x) {
     assert(x <= psum());
 
-    uint32_t j = 0;
-
-    while (subtree_psums[j] < x or (subtree_psums[j] == 0 and x == 0)) {
-      j++;
-      assert(j < subtree_psums.size());
-    }
+    uint32_t j = find_1(x);
 
     // size/psum stored in previous counter
     uint64_t previous_size = (j == 0 ? 0 : subtree_sizes[j - 1]);
@@ -586,12 +571,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     assert(x <= size() - psum());
     assert(x > 0);
 
-    uint32_t j = 0;
-
-    while ((subtree_sizes[j] - subtree_psums[j]) < x) {
-      j++;
-      assert(j < subtree_psums.size());
-    }
+    uint32_t j = find_0(x);
 
     // size/psum stored in previous counter
     uint64_t previous_size = (j == 0 ? 0 : subtree_sizes[j - 1]);
@@ -616,12 +596,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
   uint64_t search_r(uint64_t x) {
     assert(x <= psum() + size());
 
-    uint32_t j = 0;
-
-    while (subtree_psums[j] + subtree_sizes[j] < x) {
-      j++;
-      assert(j < subtree_psums.size());
-    }
+    uint32_t j = find_r(x);
 
     // size/psum stored in previous counter
     uint64_t previous_size = (j == 0 ? 0 : subtree_sizes[j - 1]);
@@ -648,12 +623,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
     assert(x <= psum());
 
-    uint32_t j = 0;
-
-    while (subtree_psums[j] < x or (x == 0 and subtree_psums[j] == 0)) {
-      j++;
-      assert(j < subtree_psums.size());
-    }
+    uint32_t j = find_1(x);
 
     if (subtree_psums[j] == x) return true;
 
@@ -679,12 +649,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
     assert(x <= psum() + size());
 
-    uint32_t j = 0;
-
-    while (subtree_psums[j] + subtree_sizes[j] < x) {
-      j++;
-      assert(j < subtree_psums.size());
-    }
+    uint32_t j = find_r(x);
 
     if (subtree_psums[j] + subtree_sizes[j] == x) return true;
 
@@ -712,12 +677,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
   void increment(uint64_t i, uint64_t delta, bool subtract = false) {
     assert(i < size());
 
-    uint32_t j = 0;
-
-    while (subtree_sizes[j] <= i) {
-      j++;
-      assert(j < subtree_sizes.size());
-    }
+    uint32_t j = find_child(i);
 
     // size stored in previous counter
     uint64_t previous_size = (j == 0 ? 0 : subtree_sizes[j - 1]);
@@ -1105,11 +1065,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     assert(this->can_lose());
     assert(i < this->size());
 
-    uint32_t j = 0;
-    while (this->subtree_sizes[j] <= i) {
-      ++j;
-      assert(j < this->subtree_sizes.size());
-    }
+    uint32_t j = this->find_child(i);
 
     // size stored in previous counter
     uint64_t previous_size = (j == 0 ? 0 : subtree_sizes[j - 1]);
@@ -1521,14 +1477,8 @@ class spsi<leaf_type, B_LEAF, B>::node {
     uint32_t j = nr_children - 1;
 
     // if i==size, then insert in last children
-    if (i < size()) {
-      j = 0;
-
-      while (subtree_sizes[j] <= i) {
-        j++;
-        assert(j < subtree_sizes.size());
-      }
-    }
+    if (i < size())
+      j = find_child(i);
 
     // size stored in previous counter
     uint64_t previous_size = (j == 0 ? 0 : subtree_sizes[j - 1]);
@@ -1656,6 +1606,45 @@ class spsi<leaf_type, B_LEAF, B>::node {
   bool leaf_is_full(leaf_type* l) {
     assert(l->size() <= 2 * B_LEAF);
     return (l->size() == 2 * B_LEAF);
+  }
+
+  /*
+   * helper functions for child search
+   */
+  inline uint64_t find_child(uint64_t i) {
+    uint64_t j = 0;
+    while (subtree_sizes[j] <= i) {
+      j++;
+      assert(j < subtree_sizes.size());
+    }
+    return j;
+  }
+
+  inline uint64_t find_1(uint64_t x) {
+    uint64_t j = 0;
+    while (!subtree_psums[j] || subtree_psums[j] < x) {
+      j++;
+      assert(j < subtree_psums.size());
+    }
+    return j;
+  }
+
+  inline uint64_t find_0(uint64_t x) {
+    uint64_t j = 0;
+    while (subtree_sizes[j] - subtree_psums[j] < x) {
+      j++;
+      assert(j < subtree_psums.size());
+    }
+    return j;
+  }
+
+  inline size_t find_r(uint64_t x) {
+    size_t j = 0;
+    while (subtree_psums[j] + subtree_sizes[j] < x) {
+      j++;
+      assert(j < subtree_psums.size());
+    }
+    return j;
   }
 
   /*
