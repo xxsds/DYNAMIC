@@ -721,43 +721,49 @@ namespace dyn{
       //shift right of 1 position elements starting
       //from the i-th.
       //assumption: last element does not overflow!
-      void shift_right(uint64_t i){
+      void shift_right(uint64_t i) {
         assert(i < size_);
+        //number of integers that fit in a memory word
+        assert(int_per_word_>0);
+        assert(size_+1 <= words.size()*int_per_word_);
 
-	 //number of integers that fit in a memory word
-	 assert(int_per_word_>0);
+        uint64_t current_word = i / int_per_word_;
 
-	 assert(size_+1 <= words.size()*int_per_word_);
+        //integer that falls out from the right of current word
+        uint64_t falling_out = 0;
 
-	 uint64_t current_word = i/int_per_word_;
+        if (current_word * int_per_word_ < i) {
+            falling_out = (words[current_word] >> (int_per_word_-1)*width_);
 
-	 uint64_t falling_out_idx = std::min(current_word*int_per_word_+(int_per_word_-1), size_);
+            uint64_t falling_out_idx
+                = std::min(current_word * int_per_word_ + (int_per_word_ - 1), size_);
 
-	 //integer that falls out from the right of current word
-	 uint64_t falling_out = (words[current_word] >> (int_per_word_-1)*width_);
+            for (uint64_t j = falling_out_idx; j > i; --j) {
+                assert(j - 1 < size_);
+                set_without_psum_update(j, at(j - 1));
+            }
 
-        for(uint64_t j = falling_out_idx; j > i; --j) {
-            assert(j - 1 < size_);
-            set_without_psum_update(j,at(j-1));
+            current_word++;
         }
 
-	 //now for the remaining integers we can work blockwise
+        //now for the remaining integers we can work blockwise
 
-	 uint64_t falling_out_temp;
+        uint64_t falling_out_temp;
 
-	 for(uint64_t j = current_word+1;j<words.size();++j){
+        for (uint64_t j = current_word; j <= size_ / int_per_word_; ++j) {
 
-	    falling_out_temp = (words[j] >> (int_per_word_-1)*width_);
+            assert(j < words.size());
 
-	    words[j] = words[j] << width_;
+            falling_out_temp = (words[j] >> (int_per_word_ - 1) * width_);
 
-	    assert(j*int_per_word_ >= size_ || at(j*int_per_word_)==0);
+            words[j] <<= width_;
 
-	    set_without_psum_update(j*int_per_word_,falling_out);
+            assert(j * int_per_word_ >= size_ || !at(j * int_per_word_));
 
-	    falling_out = falling_out_temp;
+            set_without_psum_update(j * int_per_word_, falling_out);
 
-	 }
+            falling_out = falling_out_temp;
+        }
 
       }
 
