@@ -24,7 +24,6 @@
 
 #include "includes.hpp"
 #include "alphabet_encoder.hpp"
-#include <thread>
 
 namespace dyn{
 
@@ -549,7 +548,7 @@ namespace dyn{
                     if (pair.second[j])
                         new_Bs.insert(pair);
                 });
-                #pragma omp task
+                #pragma omp task shared(values)
                 child1_->push_many(std::move(new_Bs), values, j+1, idx);
             }
 
@@ -564,7 +563,7 @@ namespace dyn{
                     if (!pair.second[j])
                         new_Bs.insert(pair);
                 });
-                #pragma omp task
+                #pragma omp task shared(values)
                 child0_->push_many(std::move(new_Bs), values, j+1, idx);
             }
         }
