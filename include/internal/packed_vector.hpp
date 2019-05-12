@@ -444,17 +444,16 @@ namespace dyn{
 	 //shift ints left, from position i + 1 onwords
 	 shift_left( i );
 
-	 
-	 while ( (words.size() - extra_ - 1)*(int_per_word_) >= size_ - 1 ) {
-	    //more than extra_ extra words, delete
-	    if (words.size() < extra_)
-	       break;
-	    
-	    words.pop_back();
-	 }
-
 	 --size_;
 	 psum_ -= x;
+
+        while ( words.size() > size_ / int_per_word_ + extra_ ) {
+            words.pop_back();
+        }
+
+        assert((size_ / int_per_word_ <= words.size()
+                    || !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
+                && "uninitialized non-zero values in the end of the vector");
 
       }
       
