@@ -781,34 +781,35 @@ namespace dyn{
 	    return;
 	 }
 	 
-	 uint64_t current_word = i/int_per_word_;
+        uint64_t current_word = i / int_per_word_;
 
-	 //integer that falls in from the right of current word
-	 uint64_t falling_in_idx = (current_word + 1)*int_per_word_;
-	 uint64_t falling_in;
-	 if (falling_in_idx > (size_ - 1)) {
-	    //nothing falls in
-	    falling_in = 0;
-	    falling_in_idx = size_ - 1;
-	 }
+        //integer that falls in from the right of current word
+        uint64_t falling_in_idx;
 
-	 
-	 for(uint64_t j = i; j <= falling_in_idx - 1;++j) {
-           assert(j + 1 < size_);
-	    set_without_psum_update(j,at(j+1));
-	 }
+        if (current_word * int_per_word_ < i) {
+            falling_in_idx = std::min((current_word + 1) * int_per_word_, size_ - 1);
 
-	 //now for the remaining integers we can work blockwise
-	 for(uint64_t j = current_word+1; j < words.size(); ++j){
-	    words[j] = words[j] >> width_;
-	    
-	    if (j < words.size() - 1) {
-	       falling_in = (j + 1)*int_per_word_ < size_ ? at( (j + 1)*int_per_word_ ) : 0;
+            for(uint64_t j = i; j < falling_in_idx; ++j) {
+                assert(j + 1 < size_);
+                set_without_psum_update(j, at(j + 1));
+            }
 
-           set_without_psum_update(j*int_per_word_ + int_per_word_ - 1,falling_in);
-	    }
+            if (falling_in_idx == size_ - 1)
+                set_without_psum_update(size_ - 1, 0);
 
-	 }
+            current_word++;
+        }
+
+        //now for the remaining integers we can work blockwise
+        for (uint64_t j = current_word; j * int_per_word_ < size_; ++j) {
+            words[j] >>= width_;
+
+            falling_in_idx = (j + 1) * int_per_word_ < size_
+                                ? at((j + 1) * int_per_word_)
+                                : 0;
+
+            set_without_psum_update(j * int_per_word_ + int_per_word_ - 1, falling_in_idx);
+        }
 
       }
 
