@@ -33,7 +33,7 @@ class spsi_reference {
  public:
   spsi_reference(Container& c, uint64_t idx) : _spsi(c), _idx(idx) {}
 
-  operator uint64_t() { return _spsi.at(_idx); }
+  operator uint64_t() const { return _spsi.at(_idx); }
 
   spsi_reference const& operator=(uint64_t v) const {
     _spsi.set(_idx, v);
@@ -508,7 +508,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
   /*
    * return i-th integer in the subtree rooted in this node
    */
-  uint64_t at(uint64_t i) {
+  uint64_t at(uint64_t i) const {
     assert(i < size());
 
     uint32_t j = find_child(i);
@@ -537,7 +537,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
   /*
    * returns sum up to i-th integer included
    */
-  uint64_t psum(uint64_t i) {
+  uint64_t psum(uint64_t i) const {
     assert(i < size());
 
     uint32_t j = find_child(i);
@@ -562,7 +562,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
   /*
    * returns smallest i such that I_0 + ... + I_i >= x
    */
-  uint64_t search(uint64_t x) {
+  uint64_t search(uint64_t x) const {
     assert(x <= psum());
 
     uint32_t j = find_1(x);
@@ -592,7 +592,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
    * returns smallest i such that the number of zeros before position
    * i (included) is == x. x must be > 0
    */
-  uint64_t search_0(uint64_t x) {
+  uint64_t search_0(uint64_t x) const {
     assert(x <= size() - psum());
     assert(x > 0);
 
@@ -618,7 +618,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
   /*
    * returns smallest i such that (i+1) + I_0 + ... + I_i >= x
    */
-  uint64_t search_r(uint64_t x) {
+  uint64_t search_r(uint64_t x) const {
     assert(x <= psum() + size());
 
     uint32_t j = find_r(x);
@@ -643,7 +643,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
            children[j]->search_r(x - (previous_psum + previous_size));
   }
 
-  bool contains(uint64_t x) {
+  bool contains(uint64_t x) const {
     if (x == 0) return true;
 
     assert(x <= psum());
@@ -669,7 +669,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     return children[j]->contains(x - previous_psum);
   }
 
-  bool contains_r(uint64_t x) {
+  bool contains_r(uint64_t x) const {
     if (x == 0) return true;
 
     assert(x <= psum() + size());
@@ -737,9 +737,9 @@ class spsi<leaf_type, B_LEAF, B>::node {
     }
   }
 
-  bool is_root() { return parent == NULL; }
+  bool is_root() const { return parent == NULL; }
 
-  bool is_full() {
+  bool is_full() const {
     assert(nr_children <= 2 * B + 2);
     return nr_children == (2 * B + 2);
   }
@@ -750,15 +750,16 @@ class spsi<leaf_type, B_LEAF, B>::node {
    * number of children, B + 1
    * OR this node is the root
    */
-  bool can_lose() { return (nr_children >= (B + 2) || (is_root())); }
+  bool can_lose() const { return (nr_children >= (B + 2) || (is_root())); }
 
-  bool leaf_can_lose(leaf_type* leaf) {
+  bool leaf_can_lose(leaf_type* leaf) const {
     return (leaf->size() >= (B_LEAF + 1));
   }
 
   void increment_rank() { rank_++; }
 
   node* get_parent() { return parent; }
+  const node* get_parent() const { return parent; }
 
   /*
    * insert at position i.
@@ -1261,7 +1262,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     return new_root;
   }
 
-  uint32_t rank() { return rank_; }
+  uint32_t rank() const { return rank_; }
 
   void overwrite_rank(uint32_t r) { rank_ = r; }
 
@@ -1661,7 +1662,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
   /*
    * helper functions for child search
    */
-  inline uint64_t find_child(uint64_t i) {
+  inline uint64_t find_child(uint64_t i) const {
     uint64_t j = 0;
     while (subtree_sizes[j] <= i) {
       j++;
@@ -1670,7 +1671,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     return j;
   }
 
-  inline uint64_t find_1(uint64_t x) {
+  inline uint64_t find_1(uint64_t x) const {
     uint64_t j = 0;
     while (!subtree_psums[j] || subtree_psums[j] < x) {
       j++;
@@ -1679,7 +1680,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     return j;
   }
 
-  inline uint64_t find_0(uint64_t x) {
+  inline uint64_t find_0(uint64_t x) const {
     uint64_t j = 0;
     while (subtree_sizes[j] - subtree_psums[j] < x) {
       j++;
@@ -1688,7 +1689,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     return j;
   }
 
-  inline size_t find_r(uint64_t x) {
+  inline size_t find_r(uint64_t x) const {
     size_t j = 0;
     while (subtree_psums[j] + subtree_sizes[j] < x) {
       j++;
