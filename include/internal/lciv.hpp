@@ -151,6 +151,9 @@ public:
      */
     lciv(uint64_t max_len = 0, uint64_t width = 0){
 
+        std::ignore = max_len;
+        std::ignore = width;
+
         root = new node();
 
     }
@@ -1045,7 +1048,6 @@ private:
 	       
                 assert( i < x->size() );
 
-                uint64_t z = x->at(i);
                 x->remove( i );
 	       
                 //update satellite data

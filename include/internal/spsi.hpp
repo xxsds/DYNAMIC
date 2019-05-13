@@ -387,8 +387,6 @@ class spsi<leaf_type, B_LEAF, B>::node {
       }
     }
 
-    node* parent = NULL;  // NULL for root
-
     rank_ = n.rank_;  // rank of this node among its siblings
 
     nr_children = n.nr_children;  // number of subtrees
@@ -658,8 +656,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
     if (subtree_psums[j] == x) return true;
 
-    // size/psum stored in previous counter
-    uint64_t previous_size = (j == 0 ? 0 : subtree_sizes[j - 1]);
+    // psum stored in previous counter
     uint64_t previous_psum = (j == 0 ? 0 : subtree_psums[j - 1]);
 
     assert(x > previous_psum or (x == 0 and previous_psum == 0));
