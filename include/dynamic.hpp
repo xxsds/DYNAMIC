@@ -138,14 +138,14 @@ typedef rle_string<bv_check, str_check> rle_str_check;
  */
 template<>
 inline
-void rle_bwt::build_from_string(string& bwt, char_type terminator, bool verbose){
+void rle_bwt::build_from_string(string& bwt, char terminator, bool verbose){
 
-	long int step = 1000000;	//print status every step characters
-	long int last_step = 0;
+	const ulint step = 1000000;	//print status every step characters
+	ulint last_step = 0;
 
 	terminator_position = bwt.size();
 
-	char_type c = bwt[0];
+	char c = bwt[0];
 	ulint k=1;
 
 	for(ulint i=1; i<bwt.size();++i){

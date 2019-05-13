@@ -1172,8 +1172,6 @@ public:
 
 
     packed_bit_vector* split() {
-        uint64_t prev_size = size_;
-
         uint64_t tot_words = (size_/int_per_word_) + (size_%int_per_word_!=0);
 
         assert(tot_words <= words.size());

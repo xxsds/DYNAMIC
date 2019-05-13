@@ -143,7 +143,11 @@ class spsi {
    * create empty spsi. Input parameters are not used (legacy option). This
    * structure does not need a max size, and width is automatically detected.
    */
-  spsi(uint64_t max_len = 0, uint64_t width = 0) { root = new node(); }
+  spsi(uint64_t max_len = 0, uint64_t width = 0) {
+    std::ignore = max_len;
+    std::ignore = width;
+    root = new node();
+  }
 
   ~spsi() {
     if (root) {
