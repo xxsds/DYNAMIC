@@ -115,7 +115,7 @@ namespace dyn{
 	 assert(ae.char_exists(c));
 	 assert(i<rank(size(),c));
 
-	 auto code = ae.encode_existing(c);
+	 const auto &code = ae.encode_existing(c);
 
 	 //if this fails, it means that c is not present
 	 //in the string or that it is not present
@@ -138,7 +138,7 @@ namespace dyn{
 
 	 if(not ae.char_exists(c)) return 0;
 
-	 auto code = ae.encode_existing(c);
+	 const auto &code = ae.encode_existing(c);
 
 	 //if this fails, it means that c is not present
 	 //in the string or that it is not present
@@ -198,7 +198,7 @@ namespace dyn{
 
 	 //get code of c
 	 //if code does not yet exist, create it
-	 auto code = ae.encode(c);
+	 const auto &code = ae.encode(c);
 
 	 root.insert(i,code,c);
 
@@ -212,7 +212,7 @@ namespace dyn{
       void remove( uint64_t i ) {
 	 char_type c = this->at(i);
 	 //get code of c
-	 auto code = ae.encode(c);
+	 const auto &code = ae.encode(c);
 
 	 root.remove( i, code, c );
 	 --n;
@@ -416,7 +416,7 @@ namespace dyn{
 	 /*
 	  * true iif code B has already been inserted
 	  */
-	 bool exists(vector<bool>& B, ulint j=0) const {
+	 bool exists(const vector<bool>& B, ulint j=0) const {
 
 	    assert(j <= B.size());
 
@@ -443,7 +443,7 @@ namespace dyn{
 	  * insert code B[j,...,B.size()-1] at position i. This code is associated
 	  * with character c
 	  */
-	 void insert(ulint i, vector<bool>& B, char_type c, ulint j=0){
+	 void insert(ulint i, const vector<bool>& B, char_type c, ulint j=0){
 
 	    if(j==B.size()){
 
@@ -557,7 +557,7 @@ namespace dyn{
                 num_bits = 0;
             }
 
-            if(b && !task_started_1){
+            if (b && !task_started_1){
                 task_started_1 = true;
 
                 if(not has_child1())
@@ -588,7 +588,7 @@ namespace dyn{
 	  * remove code B[j,...,B.size()-1] from position i. This code is associated
 	  * with character c
 	  */
-	 void remove(ulint i, vector<bool>& B, char_type c, ulint j=0){
+	 void remove(ulint i, const vector<bool>& B, char_type c, ulint j=0){
 
 	    if(j==B.size()){
 
@@ -640,7 +640,7 @@ namespace dyn{
 	    bv.remove(i);
 	 }
 
-	 ulint rank(ulint i, vector<bool>& B, ulint j=0) const {
+	 ulint rank(ulint i, const vector<bool>& B, ulint j=0) const {
 
 	    assert(j <= B.size());
 
@@ -664,7 +664,7 @@ namespace dyn{
 	 }
 
 
-	 ulint select(ulint i, vector<bool>& B) const {
+	 ulint select(ulint i, const vector<bool>& B) const {
 
 	    //top-down: find leaf associated with B
         const node* L = get_leaf(B);
@@ -676,7 +676,7 @@ namespace dyn{
 
 	 }
 
-	 ulint select(ulint i, vector<bool>& B, ulint j){
+	 ulint select(ulint i, const vector<bool>& B, ulint j){
 
 	    auto s = bv.select(i,B[j]);
 
@@ -687,7 +687,7 @@ namespace dyn{
 	 }
 
 	 //get leaf associated to code B
-     const node* get_leaf(vector<bool>& B, ulint j=0) const {
+     const node* get_leaf(const vector<bool>& B, ulint j=0) const {
 
 	    assert(j<=B.size());
 
