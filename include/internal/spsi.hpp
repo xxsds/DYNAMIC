@@ -165,6 +165,8 @@ class spsi {
     // empty sum
     if (size() == 0) return 0;
 
+    if (i == size() - 1) return root->psum();
+
     assert(i < size());
 
     return root->psum(i);
