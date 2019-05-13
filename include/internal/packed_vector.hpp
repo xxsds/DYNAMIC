@@ -506,7 +506,47 @@ namespace dyn{
                 && "uninitialized non-zero values in the end of the vector");
       }
 
-      
+      void insert_word(uint64_t i,
+                       uint64_t word, uint8_t width, uint8_t n) {
+        assert(i <= size());
+        assert(n);
+        assert(n * width <= sizeof(word) * 8);
+        assert(width * n == 64 || (word >> width * n) == 0);
+
+        if (n == 1) {
+            // only one integer to insert
+            insert(i, word);
+
+        } else if (width == 1 && width_ == 1 && n == 64) {
+            // insert 64 bits packed into a word
+            uint64_t pos = size_ / 64;
+            uint8_t offset = size_ - pos * 64;
+
+            if (!offset) {
+                words.insert(words.begin() + pos, word);
+            } else {
+                assert(pos + 1 < words.size());
+
+                words.insert(words.begin() + pos, words[pos + 1]);
+
+                words[pos] &= ((1llu << offset) - 1);
+                words[pos] |= word << offset;
+
+                words[pos + 1] &= ~((1llu << offset) - 1);
+                words[pos + 1] &= word >> (64 - offset);
+            }
+
+            size_ += n;
+            psum_ += __builtin_popcountll(word);
+
+        } else {
+            const uint64_t mask = (1llu << width) - 1;
+            while (n--) {
+                insert(i++, word & mask);
+                word >>= width;
+            }
+        }
+      }
 
       /*
        * efficient push-back, implemented with a push-back on the underlying container

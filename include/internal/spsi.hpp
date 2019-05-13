@@ -224,6 +224,14 @@ class spsi {
 
   void push_back(uint64_t x) { insert(size(), x); }
 
+  void push_word(uint64_t x, uint8_t width, uint8_t n) {
+    assert(n);
+    assert(n * width <= sizeof(x) * 8);
+    assert(n <= B_LEAF);
+
+    insert_word(size(), x, width, n);
+  }
+
   /*
    * insert a new integer x at position i
    */
@@ -231,6 +239,23 @@ class spsi {
     assert(i <= root->size());
 
     node* new_root = root->insert(i, x);
+
+    if (new_root != NULL) {
+      root = new_root;
+    }
+  }
+
+  /*
+   * insert n integers packed into word x at position i
+   */
+  void insert_word(uint64_t i, uint64_t x, uint8_t width, uint8_t n) {
+    assert(n);
+    assert(n * width <= sizeof(x) * 8);
+    assert(n <= B_LEAF);
+
+    assert(i <= root->size());
+
+    node* new_root = root->insert(i, x, width, n);
 
     if (new_root != NULL) {
       root = new_root;
@@ -736,14 +761,15 @@ class spsi<leaf_type, B_LEAF, B>::node {
   node* get_parent() { return parent; }
 
   /*
-   * insert integer x at position i.
+   * insert at position i.
    * If this node is the root, return the new root.
    *
    * new root could be different than current root if current root
    * is full and is splitted
    *
    */
-  node* insert(uint64_t i, uint64_t x) {
+  template <typename... Args>
+  node* insert(uint64_t i, Args... args) {
     assert(i <= size());
     assert(is_root() || not parent->is_full());
 
@@ -758,11 +784,11 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
       // insert recursively
       if (i < size()) {
-        insert_without_split(i, x);
+        insert_without_split(i, args...);
 
       } else {
         assert(right != NULL);
-        right->insert_without_split(i - size(), x);
+        right->insert_without_split(i - size(), args...);
       }
 
       // if this is the root, create new root
@@ -780,7 +806,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
       }
 
     } else {
-      insert_without_split(i, x);
+      insert_without_split(i, args...);
     }
 
     // if not root, do not return anything.
@@ -1467,10 +1493,63 @@ class spsi<leaf_type, B_LEAF, B>::node {
     }
   }
 
+  // insert a single integer x into leaf
+  inline static leaf_type* insert_into_leaf(leaf_type *leaf,
+                                            uint64_t insert_pos,
+                                            uint64_t x) {
+    if (free_capacity(*leaf)) {
+      leaf->insert(insert_pos, x);
+      return NULL;
+    }
+
+    // the leaf does not have enough vacant slots
+    leaf_type *next = leaf->split();
+
+    assert(free_capacity(*leaf));
+
+    // insert in the correct leaf half
+    if (insert_pos < leaf->size()) {
+      leaf->insert(insert_pos, x);
+    } else {
+      next->insert(insert_pos - leaf->size(), x);
+    }
+
+    return next;
+  }
+
+  // insert n integers from the packed word x into leaf
+  inline static leaf_type* insert_into_leaf(leaf_type *leaf,
+                                            uint64_t insert_pos,
+                                            uint64_t x, uint8_t width, uint8_t n) {
+    assert(n);
+    assert(n * width <= sizeof(x) * 8);
+    assert(n <= B_LEAF);
+
+    if (free_capacity(*leaf) >= n) {
+      leaf->insert_word(insert_pos, x, width, n);
+      return NULL;
+    }
+
+    // the leaf does not have enough vacant slots
+    leaf_type *next = leaf->split();
+
+    assert(free_capacity(*leaf) >= n);
+
+    // insert in the correct leaf half
+    if (insert_pos < leaf->size()) {
+      leaf->insert_word(insert_pos, x, width, n);
+    } else {
+      next->insert_word(insert_pos - leaf->size(), x, width, n);
+    }
+
+    return next;
+  }
+
   /*
    * insert in a node, where we know that this node is not full
    */
-  void insert_without_split(uint64_t i, uint64_t x) {
+  template <typename... Args>
+  void insert_without_split(uint64_t i, Args... args) {
     assert(not is_full());
     assert(i <= size());
 
@@ -1493,36 +1572,12 @@ class spsi<leaf_type, B_LEAF, B>::node {
       assert(insert_pos <= children[j]->size());
       assert(children[j]->get_parent() == this);
 
-      children[j]->insert(insert_pos, x);
-
-    } else if (!leaf_is_full(leaves[j])) {
-
-      leaves[j]->insert(insert_pos, x);
-
-      for (uint32_t k = j; k < nr_children; ++k) {
-        assert(leaves[k] != NULL);
-        subtree_psums[k] += x;
-        subtree_sizes[k] += 1;
-      }
-      return;
+      children[j]->insert(insert_pos, args...);
 
     } else {
-      // the leaf is full, split it
-
-      leaf_type* right = leaves[j]->split();
-      leaf_type* left = leaves[j];
-
-      assert(not leaf_is_full(leaves[j]));
-
-      // insert new children in this node
-      this->new_children(j, left, right);
-
-      // insert in the correct leaf half
-      if (insert_pos < left->size()) {
-        left->insert(insert_pos, x);
-      } else {
-        right->insert(insert_pos - left->size(), x);
-      }
+      auto *new_leaf = insert_into_leaf(leaves[j], insert_pos, args...);
+      if (new_leaf)
+        new_children(j, leaves[j], new_leaf);
     }
 
     uint64_t ps = (j == 0 ? 0 : subtree_psums[j - 1]);
@@ -1538,7 +1593,7 @@ class spsi<leaf_type, B_LEAF, B>::node {
     assert(nr_children <= subtree_psums.size());
     assert(nr_children <= subtree_sizes.size());
 
-    for (uint32_t k = j; k <= j + 1 && k < nr_children; ++k) {
+    for (uint32_t k = j; k < nr_children; ++k) {
       if (has_leaves()) {
         assert(leaves[k] != NULL);
         ps += leaves[k]->psum();
@@ -1552,11 +1607,6 @@ class spsi<leaf_type, B_LEAF, B>::node {
 
       subtree_psums[k] = ps;
       subtree_sizes[k] = si;
-    }
-
-    for (uint32_t k = j + 2; k < nr_children; ++k) {
-      subtree_psums[k] += x;
-      subtree_sizes[k] += 1;
     }
   }
 
@@ -1603,9 +1653,9 @@ class spsi<leaf_type, B_LEAF, B>::node {
     return right;
   }
 
-  bool leaf_is_full(leaf_type* l) {
-    assert(l->size() <= 2 * B_LEAF);
-    return (l->size() == 2 * B_LEAF);
+  static uint64_t free_capacity(const leaf_type& l) {
+    assert(l.size() <= 2 * B_LEAF);
+    return 2 * B_LEAF - l.size();
   }
 
   /*

@@ -538,15 +538,24 @@ namespace dyn{
             assignment[pair.first] = pair.second[j];
         });
 
+        uint64_t word = 0;
+        uint8_t num_bits = 0;
+
         for(ulint idx = offset; idx < values.size(); ++idx) {
             char_type c = values[idx];
             auto it = assignment.find(c);
             if (it == assignment.end())
                 continue;
 
-            bool b = it->second;
+            uint64_t b = it->second;
 
-            bv.push_back(b);
+            word |= b << num_bits;
+
+            if (++num_bits == 64) {
+                bv.push_word(word, 64);
+                word = 0;
+                num_bits = 0;
+            }
 
             if(b && !task_started_1){
                 task_started_1 = true;
@@ -568,6 +577,9 @@ namespace dyn{
                 child0_->push_many(Bs_left, values, j+1, idx);
             }
         }
+
+        if (num_bits)
+            bv.push_word(word, num_bits);
 
         #pragma omp taskwait
     }
