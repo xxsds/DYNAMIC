@@ -181,8 +181,17 @@ public:
 	 * alphabet size
 	 */
 	uint64_t size() const {
-		return sigma;
+           return enc_type==fixed ? 1ull<<log_sigma : sigma;
 	}
+
+        set<char_type> keys() const {
+           set<char_type> keys;
+           for(char_type c = 0; c < size(); ++c) {
+              if (char_exists(c) || enc_type==fixed)
+                 keys.insert(c);
+           }
+           return keys;
+        }
 
 	/*
 	 * Total number of bits allocated in RAM for this structure

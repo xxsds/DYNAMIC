@@ -24,6 +24,7 @@
 
 #include "includes.hpp"
 #include "alphabet_encoder.hpp"
+#include <thread>
 
 namespace dyn{
 
@@ -89,9 +90,9 @@ namespace dyn{
       }
 
       /*
-       * high-level access to the string. Supports assign (operator=) and access
+       * high-level access to the string.
        */
-      char_type operator[](uint64_t i){
+      char_type operator[](uint64_t i) const {
 
           return at(i);
 
@@ -166,6 +167,25 @@ namespace dyn{
 
       }
 
+      template<class Vector>
+      void push_many(const Vector& values) {
+         for (ulint i = 0; i < values.size(); ++i) {
+            auto c = values[i];
+            if(!ae.char_exists(c))
+               ae.encode(c);
+         }
+
+         map<char_type, vector<bool>> path_to_leaf;
+         for(char_type c : ae.keys()) {
+            path_to_leaf[c] = ae.encode(c);
+         }
+
+         #pragma omp parallel
+         #pragma omp master
+         root.push_many(std::move(path_to_leaf), values);
+         n += values.size();
+      }
+
       void push_front(char_type c){
 
 	 insert(0,c);
@@ -208,7 +228,7 @@ namespace dyn{
 
       }
 
-      ulint alphabet_size(){
+      ulint alphabet_size() const {
 
 	 return ae.size();
 
@@ -270,6 +290,56 @@ namespace dyn{
 	    }
 
 	 }
+
+         node(const node& other)
+            : child0_(nullptr)
+            , child1_(nullptr)
+            , parent_(nullptr)
+            , l_(0)
+            , is_leaf_(false)
+         {
+            *this = other;
+         }
+
+         node& operator=(const node& other) {
+            *child0_ = *other.child0_;
+	    child0_->parent_ = this;
+            *child1_ = *other.child1_;
+	    child1_->parent_ = this;
+            bv = other.bv;
+            l_ = other.l_;
+            is_leaf_ = other.is_leaf_;
+            return *this;
+         }
+
+         node(node&& other)
+            : child0_(nullptr)
+            , child1_(nullptr)
+            , parent_(nullptr)
+            , l_(0)
+            , is_leaf_(false)
+         {
+            *this = std::move(other);
+         }
+
+         node& operator=(node&& other){
+	    if (this != &other){
+               if(has_child0())
+                  delete child0_;
+               if(has_child1())
+                  delete child1_;
+               child0_ = other.child0_;
+               child1_ = other.child1_;
+               parent_ = other.parent_;
+               bv = std::move(other.bv);
+               l_ = other.l_;
+               is_leaf_ = other.is_leaf_;
+               other.child0_ = nullptr;
+               other.child1_ = nullptr;
+               other.parent_ = nullptr;
+            }
+            return *this;
+         }
 
 	 //turn this node into a leaf
 	 void make_leaf(char_type c){
@@ -390,6 +460,79 @@ namespace dyn{
 	    }
 
 	 }
+
+    template<class Vector>
+    void push_many(map<char_type, vector<bool>>&& Bs,
+                   const Vector& values,
+                   ulint j=0,
+                   ulint offset=0) {
+
+        if(Bs.size()==1){
+            //this node must be a leaf
+            assert(bv.size()==0);
+
+            auto c = Bs.begin()->first;
+            assert(j==Bs[c].size());
+
+            if(is_leaf()){
+                //if it's already marked as leaf, check
+                //that the label is correct
+                assert(c==label());
+            }else{
+                //else, mark node as leaf
+                make_leaf(c);
+            }
+            return;
+        }
+
+        assert(not is_leaf());
+
+        bool task_started_0 = false;
+        bool task_started_1 = false;
+
+        for(ulint idx = offset; idx < values.size(); ++idx) {
+            char_type c = values[idx];
+            auto it = Bs.find(c);
+            if (it == Bs.end())
+                continue;
+
+            bool b = it->second[j];
+
+            bv.push_back(b);
+
+            if(b && !task_started_1){
+                task_started_1 = true;
+
+                if(not has_child1())
+                    child1_ = new node(this);
+
+                map<char_type, vector<bool>> new_Bs;
+                for_each(Bs.begin(), Bs.end(), [&new_Bs,j](const pair<char_type, vector<bool>> &pair) {
+                    if (pair.second[j])
+                        new_Bs.insert(pair);
+                });
+                #pragma omp task
+                child1_->push_many(std::move(new_Bs), values, j+1, idx);
+            }
+
+            if (!b && !task_started_0){
+                task_started_0 = true;
+
+                if(not has_child0())
+                    child0_ = new node(this);
+
+                map<char_type, vector<bool>> new_Bs;
+                for_each(Bs.begin(), Bs.end(), [&new_Bs,j](const pair<char_type, vector<bool>> &pair) {
+                    if (!pair.second[j])
+                        new_Bs.insert(pair);
+                });
+                #pragma omp task
+                child0_->push_many(std::move(new_Bs), values, j+1, idx);
+            }
+        }
+
+        #pragma omp taskwait
+    }
 
 	 /*
 	  * remove code B[j,...,B.size()-1] from position i. This code is associated

@@ -930,11 +930,7 @@ namespace dyn{
 	    node* new_root = NULL;
 	    node* right = NULL;
 	    
-	    bool splitted = false;
-
 	    if(is_full()){
-
-	       splitted = true;
 
 	       right = split();
 

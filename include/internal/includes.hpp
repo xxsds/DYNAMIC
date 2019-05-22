@@ -17,6 +17,7 @@
 #include <string>
 #include <iostream>
 #include <set>
+#include <map>
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -31,6 +32,7 @@ using namespace std;
 
 typedef unsigned char uchar;
 typedef uint64_t ulint;
+typedef uint32_t uint;
 
 typedef unsigned char symbol;
 typedef pair<uint64_t,uint64_t> range_t;
