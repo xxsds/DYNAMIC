@@ -349,7 +349,7 @@ private:
          */
         node(){
 
-            subtree_sizes = vector<uint64_t>(2*B+2,1);
+            subtree_sizes = vector<uint64_t>(2*B+2);
 
             nr_children = 1;
             has_leaves_ = true;
@@ -368,7 +368,7 @@ private:
             this->rank_ = rank;
             this->parent = P;
 
-            subtree_sizes = vector<uint64_t>(2*B+2,1);
+            subtree_sizes = vector<uint64_t>(2*B+2);
 
             uint64_t si = 0;
 
@@ -406,7 +406,7 @@ private:
             this->rank_ = rank;
             this->parent = P;
 
-            subtree_sizes = vector<uint64_t>(2*B+2,1);
+            subtree_sizes = vector<uint64_t>(2*B+2);
 
             assert(c.size()<=2*B+2);
 
@@ -1512,7 +1512,7 @@ private:
 
     };
 
-    node* root;  //= NULL;		//tree root
+    node* root = NULL;		//tree root
 
 };
 

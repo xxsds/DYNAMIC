@@ -20,7 +20,7 @@
 #include <internal/bwt.hpp>
 #include <internal/sparse_vector.hpp>
 #include <internal/packed_vector.hpp>
-//#include <internal/packed_array.hpp>
+#include <internal/hacked_vector.hpp>
 #include <internal/lciv.hpp>
 #include <internal/wt_string.hpp>
 #include <internal/fm_index.hpp>

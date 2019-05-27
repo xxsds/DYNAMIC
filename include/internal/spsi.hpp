@@ -1888,7 +1888,7 @@ namespace dyn{
 
       };
 
-      node* root;  //= NULL;		//tree root
+      node* root = NULL;		//tree root
 
    };
 
