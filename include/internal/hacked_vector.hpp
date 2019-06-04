@@ -27,16 +27,15 @@ public:
     }
 
     hv_reference const&operator=(uint64_t v) const {
-
-        _pv.set(_idx, v);
-
+        auto val = _pv.at(_idx);
+        _pv.increment(_idx, (val>v?val-v:v-val), v<val);
         return *this;
     }
 
     hv_reference const&operator=(hv_reference& ref) const {
-
-        _pv.set(_idx, uint64_t(ref));
-
+        auto val = _pv.at(_idx);
+        auto v = uint64_t(ref);
+        _pv.increment(_idx, (val>v?val-v:v-val), v<val);
         return *this;
     }
 
