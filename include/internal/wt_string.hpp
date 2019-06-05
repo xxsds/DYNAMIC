@@ -236,35 +236,13 @@ class wt_string<dynamic_bitvector_t>::node {
   /*
    * copy constructor
    */
-  explicit node(const node& x) {
-    bv = x.bv;
-    l_ = x.l_;
-    is_leaf_ = x.is_leaf_;
-    parent_ = NULL;  // the root
-    child0_ = NULL;
-    child1_ = NULL;
-
-    if (x.child0_ != NULL) child0_ = copy(x.child0_, this);
-    if (x.child1_ != NULL) child1_ = copy(x.child1_, this);
-  }
-
-  /*
-   * create a copy of x, using p as parent
-   */
-  node* copy(node* x, node* p) {
-    node* y = new node();
-
-    y->bv = x->bv;
-    y->l_ = x->l_;
-    y->is_leaf_ = x->is_leaf_;
-    y->parent_ = p;
-    y->child0_ = NULL;
-    y->child1_ = NULL;
-
-    if (x->child0_ != NULL) y->child0_ = copy(x->child0_, y);
-    if (x->child1_ != NULL) y->child1_ = copy(x->child1_, y);
-
-    return y;
+  explicit node(const node& other)
+      : child0_(nullptr),
+        child1_(nullptr),
+        parent_(nullptr),
+        l_(0),
+        is_leaf_(false) {
+    *this = other;
   }
 
   ~node() {
@@ -279,21 +257,24 @@ class wt_string<dynamic_bitvector_t>::node {
     }
   }
 
-  /*node(const node& other)
-     : child0_(nullptr)
-     , child1_(nullptr)
-     , parent_(nullptr)
-     , l_(0)
-     , is_leaf_(false)
-  {
-     *this = other;
-  }*/
-
   node& operator=(const node& other) {
-    *child0_ = *other.child0_;
-    child0_->parent_ = this;
-    *child1_ = *other.child1_;
-    child1_->parent_ = this;
+    if (!child0_) child0_ = new node();
+    if (other.child0_) {
+      *child0_ = *other.child0_;
+      child0_->parent_ = this;
+    } else {
+      delete child0_;
+      child0_ = nullptr;
+    }
+    if (!child1_) child1_ = new node();
+    if (other.child1_) {
+      *child1_ = *other.child1_;
+      child1_->parent_ = this;
+    } else {
+      delete child1_;
+      child1_ = nullptr;
+    }
+    parent_ = other.parent_;
     bv = other.bv;
     l_ = other.l_;
     is_leaf_ = other.is_leaf_;
@@ -314,7 +295,9 @@ class wt_string<dynamic_bitvector_t>::node {
       if (has_child0()) delete child0_;
       if (has_child1()) delete child1_;
       child0_ = other.child0_;
+      if (has_child0()) child0_->parent_ = this;
       child1_ = other.child1_;
+      if (has_child1()) child1_->parent_ = this;
       parent_ = other.parent_;
       bv = std::move(other.bv);
       l_ = other.l_;
