@@ -10,6 +10,7 @@ using namespace std;
 using namespace dyn;
 
 int main() {
+
    dyn::succinct_spsi spsi;
    spsi.insert(0,0);
    spsi.remove(0);
@@ -28,7 +29,6 @@ int main() {
    for(size_t i = 0; i < spsi.size(); ++i)
       std::cout << spsi[i] << ",";
    std::cout << std::endl;
-   
 
    return 0;
 }
