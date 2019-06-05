@@ -1130,7 +1130,7 @@ namespace dyn{
 
 class packed_bit_vector : public packed_vector {
 public:
-    packed_bit_vector(ulint size = 0) : packed_vector(size, 1) {}
+    explicit packed_bit_vector(ulint size = 0) : packed_vector(size, 1) {}
 
     packed_bit_vector(vector<uint64_t>&& words, uint64_t size)
         : packed_vector(std::move(words), size, 1) {}
