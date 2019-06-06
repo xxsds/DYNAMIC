@@ -67,12 +67,7 @@ class wt_string {
   explicit wt_string(vector<pair<char_type, double>>& P) { ae = alphabet_encoder(P); }
 
   template <typename t_str>
-  wt_string(uint64_t sigma, t_str str) : wt_string(sigma) {
-    // this->wt_string( sigma ); //fixed alphabet size
-    for (size_t i = 0; i < str.size(); ++i) {
-      this->push_back(static_cast<char_type>(str[i]));
-    }
-  }
+  wt_string(uint64_t sigma, const t_str& str) : wt_string(sigma) { push_many(str); }
 
   /*
    * number of bits in the bitvector
@@ -138,6 +133,23 @@ class wt_string {
   bool char_exists(char_type c) const { return ae.char_exists(c); }
 
   void push_back(char_type c) { insert(size(), c); }
+
+  // insert values from range [0,...,sigma)
+  template <class Vector>
+  void push_many(uint64_t sigma, const Vector& values) {
+    map<char_type, vector<bool>> path_to_leaf;
+    for (ulint c = 0; c < sigma; ++c) {
+      path_to_leaf[c] = ae.encode(c);
+    }
+
+    assert(std::all_of(values.begin(), values.end(),
+                       [&](typename Vector::value_type c) { return ae.char_exists(c); }));
+
+    #pragma omp parallel
+    #pragma omp master
+    root.push_many(path_to_leaf, values);
+    n += values.size();
+  }
 
   template <class Vector>
   void push_many(const Vector& values) {

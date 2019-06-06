@@ -600,10 +600,9 @@ namespace dyn{
 	 assert(tot_words <= words.size());
 
 	 uint64_t nr_left_words = tot_words/2;
-	 uint64_t nr_right_words = tot_words-nr_left_words;
 
 	 assert(nr_left_words>0);
-	 assert(nr_right_words>0);
+	 assert(tot_words-nr_left_words>0);
 
 	 uint64_t nr_left_ints = nr_left_words*int_per_word_;
 
@@ -1177,10 +1176,9 @@ public:
         assert(tot_words <= words.size());
 
         uint64_t nr_left_words = tot_words/2;
-        uint64_t nr_right_words = tot_words-nr_left_words;
 
         assert(nr_left_words>0);
-        assert(nr_right_words>0);
+        assert(tot_words-nr_left_words>0);
 
         uint64_t nr_left_ints = nr_left_words*int_per_word_;
 
