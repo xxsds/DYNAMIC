@@ -498,10 +498,10 @@ private:
 
 
 
-    spp::sparse_hash_map<char_type,vector<bool> > encode_;
+    tsl::hopscotch_map<char_type,vector<bool> > encode_;
 
 	//char_type value 0 is reserved
-    spp::sparse_hash_map<vector<bool>, char_type> decode_;
+    tsl::hopscotch_map<vector<bool>, char_type> decode_;
 
 	uint64_t sigma;
 

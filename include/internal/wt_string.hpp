@@ -443,7 +443,7 @@ class wt_string<dynamic_bitvector_t>::node {
     bool task_started_0 = false;
     bool task_started_1 = false;
 
-    map<char_type, bool> assignment;
+    tsl::hopscotch_map<char_type, bool> assignment;
     map<char_type, vector<bool>> Bs_left, Bs_right;
     for_each(Bs.begin(), Bs.end(),
              [&](const pair<char_type, vector<bool>>& pair) {
