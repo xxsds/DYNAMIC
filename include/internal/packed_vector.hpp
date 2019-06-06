@@ -609,10 +609,12 @@ namespace dyn{
 	 assert(size_ > nr_left_ints);
 	 uint64_t nr_right_ints = size_ - nr_left_ints;
 
-	 auto right_words = vector<uint64_t>(words.begin()+nr_left_words, words.begin()+tot_words);
-	 words.resize(nr_left_words + extra_);
-        words.shrink_to_fit();
+        assert(words.begin() + nr_left_words + extra_ < words.end());
+        vector<uint64_t> right_words(tot_words - nr_left_words + extra_, 0);
+        std::copy(&words[nr_left_words], &words[tot_words], right_words.begin());
+        words.resize(nr_left_words + extra_);
         std::fill(words.begin() + nr_left_words, words.end(), 0);
+        words.shrink_to_fit();
 
 	 size_ = nr_left_ints;
 	 psum_ = psum(size_-1);
@@ -1185,11 +1187,12 @@ public:
         assert(size_ > nr_left_ints);
         uint64_t nr_right_ints = size_ - nr_left_ints;
 
-        assert(words.begin()+nr_left_words+extra_ < words.end());
-        auto right_words = vector<uint64_t>(words.begin()+nr_left_words, words.begin()+tot_words);
+        assert(words.begin() + nr_left_words + extra_ < words.end());
+        vector<uint64_t> right_words(tot_words - nr_left_words + extra_, 0);
+        std::copy(&words[nr_left_words], &words[tot_words], right_words.begin());
         words.resize(nr_left_words + extra_);
-        words.shrink_to_fit();
         std::fill(words.begin() + nr_left_words, words.end(), 0);
+        words.shrink_to_fit();
 
         size_ = nr_left_ints;
         psum_ = psum(size_-1);
