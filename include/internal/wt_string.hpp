@@ -273,6 +273,44 @@ namespace dyn{
 
 	 }
 
+	 /*
+	  * copy constructor
+	  */
+	 node(const node &x){
+
+		 bv = x.bv;
+		 l_ = x.l_;
+		 is_leaf_=x.is_leaf_;
+		 parent_ = NULL; //the root
+		 child0_ = NULL;
+		 child1_ = NULL;
+
+		 if(x.child0_!=NULL) child0_ = copy(x.child0_,this);
+		 if(x.child1_!=NULL) child1_ = copy(x.child1_,this);
+
+	 }
+
+	 /*
+	  * create a copy of x, using p as parent
+	  */
+	 node* copy(node* x, node* p){
+
+		 node* y = new node();
+
+		 y->bv = x->bv;
+		 y->l_ = x->l_;
+		 y->is_leaf_=x->is_leaf_;
+		 y->parent_ = p;
+		 y->child0_ = NULL;
+		 y->child1_ = NULL;
+
+		 if(x->child0_!=NULL) y->child0_ = copy(x->child0_,y);
+		 if(x->child1_!=NULL) y->child1_ = copy(x->child1_,y);
+
+		 return y;
+
+	 }
+
 	 ~node(){
 
 	    if(has_child0()){
@@ -291,7 +329,7 @@ namespace dyn{
 
 	 }
 
-         node(const node& other)
+         /*node(const node& other)
             : child0_(nullptr)
             , child1_(nullptr)
             , parent_(nullptr)
@@ -299,7 +337,7 @@ namespace dyn{
             , is_leaf_(false)
          {
             *this = other;
-         }
+         }*/
 
          node& operator=(const node& other) {
             *child0_ = *other.child0_;
@@ -753,7 +791,7 @@ namespace dyn{
 
 	 }
 
-      private:
+     private:
 
 	 node* child0_ = NULL;
 	 node* child1_ = NULL;
