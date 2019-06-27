@@ -31,7 +31,7 @@ namespace dyn{
       /*
        * create empty bitvector. parameter max_n is not used (legacy option)
        */
-      gap_bitvector(uint64_t max_n = 0){
+      gap_bitvector(uint64_t max_n = 0){  std::ignore = max_n;
 
 	 spsi_.insert(0,0);
 	 size_ = 0;

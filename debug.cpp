@@ -1,10 +1,7 @@
-#include "include/internal/packed_vector.hpp"
-//#include "inlcude/internal/spsi.hpp"
-#include <dynamic.hpp>
-//#include "include/internal/packed_array.hpp"
 #include <iostream>
 #include <chrono>
 #include <cstdlib>
+#include <dynamic.hpp>
 
 using namespace std;
 using namespace dyn;

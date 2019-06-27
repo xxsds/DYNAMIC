@@ -14,25 +14,23 @@ project (dynamic)
 
 include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 
-# sparsepp
-ExternalProject_Add(sparsepp
-  GIT_REPOSITORY "https://github.com/edawson/sparsepp.git"
-  GIT_TAG "1c5a285e87b2244383efe0398f9992acd61234e9"
+# hopscotch_map
+ExternalProject_Add(hopscotch_map
+  GIT_REPOSITORY "https://github.com/Tessil/hopscotch-map.git"
   BUILD_IN_SOURCE TRUE
   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} # TODO ADD static build flag
   UPDATE_COMMAND ""
   INSTALL_COMMAND ""
   BUILD_COMMAND ""
   CONFIGURE_COMMAND "")
-ExternalProject_Get_property(sparsepp INSTALL_DIR)
-set(sparsepp_INCLUDE "${INSTALL_DIR}/src/sparsepp/sparsepp/")
-set(sparsepp_LIB "${INSTALL_DIR}/src/sparsepp/sparsepp/")
+ExternalProject_Get_property(hopscotch_map INSTALL_DIR)
+set(hopscotch_map_INCLUDE "${INSTALL_DIR}/src/hopscotch_map/include/")
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/include/internal)
 include_directories(${PROJECT_SOURCE_DIR}/include/algorithms)
 include_directories(${PROJECT_SOURCE_DIR}/include/algorithms/cw-bwt)
-include_directories(${INSTALL_DIR}/src/sparsepp/sparsepp)
+include_directories(${INSTALL_DIR}/src/hopscotch_map/include)
 
 message("Building in ${CMAKE_BUILD_TYPE} mode")
 
@@ -44,7 +42,7 @@ if(XXSDS_DYN_MULTI_THREADED)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif(XXSDS_DYN_MULTI_THREADED)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -ggdb -g -p")
+set(CMAKE_CXX_FLAGS_DEBUG "-g3 -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "-ggdb -Ofast -fstrict-aliasing -DNDEBUG -march=native")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -ggdb -Ofast -fstrict-aliasing -march=native")
 
@@ -56,11 +54,11 @@ add_executable(rle_bwt rle_bwt.cpp)
 add_executable(cw-bwt cw-bwt.cpp)
 add_executable(benchmark benchmark.cpp)
 
-add_dependencies(debug sparsepp)
-add_dependencies(rle_lz77_v1 sparsepp)
-add_dependencies(rle_lz77_v2 sparsepp)
-add_dependencies(h0_lz77 sparsepp)
-add_dependencies(rle_bwt sparsepp)
-add_dependencies(cw-bwt sparsepp)
-add_dependencies(benchmark sparsepp)
+add_dependencies(debug hopscotch_map)
+add_dependencies(rle_lz77_v1 hopscotch_map)
+add_dependencies(rle_lz77_v2 hopscotch_map)
+add_dependencies(h0_lz77 hopscotch_map)
+add_dependencies(rle_bwt hopscotch_map)
+add_dependencies(cw-bwt hopscotch_map)
+add_dependencies(benchmark hopscotch_map)
 

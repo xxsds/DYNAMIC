@@ -13,7 +13,7 @@
 #define INCLUDES_HPP_
 
 
-#include "stdint.h"
+#include <cstdint>
 #include <string>
 #include <iostream>
 #include <set>
@@ -22,9 +22,9 @@
 #include <fstream>
 #include <sstream>
 #include <cassert>
-#include "spp.h"
 #include <cmath>
 #include <algorithm>
+#include <tsl/hopscotch_map.h>
 
 #define WORD_SIZE 64;
 
