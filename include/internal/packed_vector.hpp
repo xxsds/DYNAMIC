@@ -388,6 +388,7 @@ namespace dyn{
 	 if(subtract){
 
 	    assert(pvi>=delta);
+		assert(bitsize(pvi-delta)<=width_);
 	    set_without_psum_update(i,pvi-delta);
 
 	    psum_ -= delta;
@@ -407,6 +408,7 @@ namespace dyn{
 
 	       psum_ += delta;
 
+	       assert(bitsize(s)<=width_);
 	       set_without_psum_update(i,s);
 
 	    }
@@ -495,6 +497,7 @@ namespace dyn{
 	 shift_right(i);
 
 	 //insert x
+	 assert(bitsize(x)<=width_);
 	 set_without_psum_update(i,x);
 
 	 psum_+=x;
@@ -571,6 +574,7 @@ namespace dyn{
         words.push_back(0);
 
 	 //insert x
+	 assert(bitsize(x)<=width_);
 	 set_without_psum_update(size(),x);
 
 	 psum_+=x;
@@ -610,8 +614,9 @@ namespace dyn{
 	 uint64_t nr_right_ints = size_ - nr_left_ints;
 
         assert(words.begin() + nr_left_words + extra_ < words.end());
+        assert(words.begin() + tot_words <= words.end());
         vector<uint64_t> right_words(tot_words - nr_left_words + extra_, 0);
-        std::copy(&words[nr_left_words], &words[tot_words], right_words.begin());
+        std::copy(words.begin() + nr_left_words, words.begin() + tot_words, right_words.begin());
         words.resize(nr_left_words + extra_);
         std::fill(words.begin() + nr_left_words, words.end(), 0);
         words.shrink_to_fit();
@@ -738,7 +743,7 @@ namespace dyn{
       
    protected:
 
-      virtual void set_without_psum_update(uint64_t i, uint64_t x) {
+     virtual void set_without_psum_update(uint64_t i, uint64_t x) {
 
 	 assert(bitsize(x)<=width_);
 
@@ -806,13 +811,16 @@ namespace dyn{
         uint64_t falling_out = 0;
 
         if (current_word * int_per_word_ < i) {
-            falling_out = (words[current_word] >> (int_per_word_-1)*width_);
+
+            falling_out = (words[current_word] >> (int_per_word_-1)*width_) & ((uint64_t(1)<<width_)-1);
+    		assert(bitsize(falling_out)<=width_);
 
             uint64_t falling_out_idx
                 = std::min(current_word * int_per_word_ + (int_per_word_ - 1), size_);
 
             for (uint64_t j = falling_out_idx; j > i; --j) {
                 assert(j - 1 < size_);
+        		assert(bitsize(at(j - 1))<=width_);
                 set_without_psum_update(j, at(j - 1));
             }
 
@@ -827,12 +835,14 @@ namespace dyn{
 
             assert(j < words.size());
 
-            falling_out_temp = (words[j] >> (int_per_word_ - 1) * width_);
+            falling_out_temp = (words[j] >> (int_per_word_ - 1) * width_) & ((uint64_t(1)<<width_)-1);
+    		assert(bitsize(falling_out_temp)<=width_);
 
             words[j] <<= width_;
 
             assert(j * int_per_word_ >= size_ || !at(j * int_per_word_));
 
+    		assert(bitsize(falling_out)<=width_);
             set_without_psum_update(j * int_per_word_, falling_out);
 
             falling_out = falling_out_temp;
@@ -864,6 +874,7 @@ namespace dyn{
 
             for(uint64_t j = i; j < falling_in_idx; ++j) {
                 assert(j + 1 < size_);
+        		assert(bitsize(at(j + 1))<=width_);
                 set_without_psum_update(j, at(j + 1));
             }
 
@@ -881,6 +892,7 @@ namespace dyn{
                                 ? at((j + 1) * int_per_word_)
                                 : 0;
 
+    		assert(bitsize(falling_in_idx)<=width_);
             set_without_psum_update(j * int_per_word_ + int_per_word_ - 1, falling_in_idx);
         }
 
@@ -1064,6 +1076,7 @@ namespace dyn{
 	 for(ulint j=0;j<vec.size();++j){
 
 	    auto x = vec[j];
+		assert(bitsize(x)<=width_);
 	    set_without_psum_update(j, x);
 
 	 }
@@ -1188,8 +1201,9 @@ public:
         uint64_t nr_right_ints = size_ - nr_left_ints;
 
         assert(words.begin() + nr_left_words + extra_ < words.end());
+        assert(words.begin() + tot_words <= words.end());
         vector<uint64_t> right_words(tot_words - nr_left_words + extra_, 0);
-        std::copy(&words[nr_left_words], &words[tot_words], right_words.begin());
+        std::copy(words.begin() + nr_left_words, words.begin() + tot_words, right_words.begin());
         words.resize(nr_left_words + extra_);
         std::fill(words.begin() + nr_left_words, words.end(), 0);
         words.shrink_to_fit();
