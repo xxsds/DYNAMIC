@@ -624,7 +624,7 @@ private:
         vector<ulint>* z_val_ptr = nullptr;
 
         // character start index
-        spp::sparse_hash_map<char_type, ulint>* C_ptr = nullptr;
+        tsl::hopscotch_map<char_type, ulint>* C_ptr = nullptr;
 
         //if is_leaf_, then node is labeled
         char_type l_ = 0;
@@ -642,7 +642,7 @@ private:
     vector<ulint> z_val;
 
     // the character start index
-    spp::sparse_hash_map<char_type, ulint> C;
+    tsl::hopscotch_map<char_type, ulint> C;
 
     alphabet_encoder ae;
 
