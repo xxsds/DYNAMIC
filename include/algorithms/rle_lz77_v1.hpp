@@ -341,7 +341,7 @@ private:
 
 	//suffix array samples (two per BWT run)
 	//one (sparse) vector of samples per character
-    spp::sparse_hash_map<char_t,sparse_vec> SA;
+    tsl::hopscotch_map<char_t,sparse_vec> SA;
 
 };
 

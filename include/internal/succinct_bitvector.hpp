@@ -196,6 +196,16 @@ namespace dyn{
       }
 
       /*
+       * push back n bits packed into word
+       */
+      void push_word(uint64_t word, uint8_t n){
+
+          // insert n least significant bits from word
+          spsi_.push_word(word, 1, n);
+
+      }
+
+      /*
        * insert a bit not set at position i
        */
       void insert0(uint64_t i){

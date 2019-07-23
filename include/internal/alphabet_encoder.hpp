@@ -120,7 +120,7 @@ public:
 	 * new coming characters
 	 *
 	 */
-	vector<bool> encode(char_type c) {
+	const vector<bool>& encode(char_type c) {
 
 		auto code = encode_[c];
 
@@ -152,11 +152,11 @@ public:
 
 	}
 
-    vector<bool> encode_existing(char_type c) const {
+    const vector<bool>& encode_existing(char_type c) const {
         return encode_.at(c);
     }
 
-	char_type decode(vector<bool>& code) const {
+	char_type decode(const vector<bool>& code) const {
 
 		//code must be present in dictionary!
 		assert(decode_.at(code)!=0);
@@ -165,7 +165,7 @@ public:
 
 	}
 
-	bool code_exists(vector<bool>& code) const {
+	bool code_exists(const vector<bool>& code) const {
 
 		return decode_.at(code)!=0;
 
@@ -235,7 +235,7 @@ public:
 		out.write((char*)&decode_size,sizeof(decode_size));
 		w_bytes += sizeof(decode_size);
 
-		for(spp::sparse_hash_map<char_type,vector<bool> >::value_type e : encode_){
+		for(const auto& e : encode_){
 
 			out.write((char*)&e.first,sizeof(e.first));
 			w_bytes += sizeof(e.first);
@@ -245,7 +245,7 @@ public:
 
 		}
 
-		for(spp::sparse_hash_map<vector<bool>, char_type>::value_type d : decode_){
+		for(const auto& d : decode_){
 
 			auto B = d.first;
 			w_bytes += serialize_vec_bool(out, B);
@@ -310,7 +310,7 @@ public:
 
 private:
 
-	ulint serialize_vec_bool(ostream &out, vector<bool>& vb) const {
+	ulint serialize_vec_bool(ostream &out, const vector<bool>& vb) const {
 
 		ulint size = vb.size();
 		ulint n_words = (size/64) + (size%64 != 0);
@@ -397,7 +397,7 @@ private:
 
 	};
 
-	void extract_codes(node* n, vector<bool> C){
+	void extract_codes(node* n, const vector<bool>& C){
 
 		if(is_leaf(n)){
 
@@ -498,10 +498,10 @@ private:
 
 
 
-    spp::sparse_hash_map<char_type,vector<bool> > encode_;
+    tsl::hopscotch_map<char_type,vector<bool> > encode_;
 
 	//char_type value 0 is reserved
-    spp::sparse_hash_map<vector<bool>, char_type> decode_;
+    tsl::hopscotch_map<vector<bool>, char_type> decode_;
 
 	uint64_t sigma;
 

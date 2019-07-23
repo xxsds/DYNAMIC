@@ -167,12 +167,12 @@ public:
 
         }
 
-	ulint serialize(std::ostream &out) const {
+	ulint serialize(std::ostream &/*out*/) const {
 	    throw std::domain_error("not implemented");
 	    return 0;
 	}
 
-	void load(std::istream &in){
+	void load(std::istream &/*in*/){
 	    throw std::domain_error("not implemented");
 	}
 

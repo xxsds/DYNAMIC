@@ -1,10 +1,7 @@
-#include "include/internal/packed_vector.hpp"
-//#include "inlcude/internal/spsi.hpp"
-#include <dynamic.hpp>
-//#include "include/internal/packed_array.hpp"
 #include <iostream>
 #include <chrono>
 #include <cstdlib>
+#include <dynamic.hpp>
 
 using namespace std;
 using namespace dyn;
@@ -12,23 +9,31 @@ using namespace dyn;
 int main() {
 
    dyn::succinct_spsi spsi;
-   spsi.insert(0,0);
-   spsi.remove(0);
-   spsi.insert(0,0);
-   spsi.insert(0,0);
-   spsi.insert(2,1);
-   spsi.insert(1,1);
-   spsi.remove(3);
+   dyn::spsi_check<> check;
 
-   for(size_t i = 0; i < spsi.size(); ++i)
-      std::cout << spsi[i] << ",";
-   std::cout << std::endl;
+   int n=40000;
+   int sigma=120;
 
-   spsi.insert(3,1);
+   srand(time(NULL));
 
-   for(size_t i = 0; i < spsi.size(); ++i)
-      std::cout << spsi[i] << ",";
-   std::cout << std::endl;
+   for(int i=0;i<n;++i){
+
+	   cout << i << endl;
+
+	   int j = rand()%(i+1);
+	   int x = rand()%sigma;
+
+	   spsi.insert(j,x);
+	   check.insert(j,x);
+
+   }
+
+   for(int i=0;i<n;++i){
+
+ 	   assert(spsi[i]==check[i]);
+
+    }
+
 
    return 0;
 }
