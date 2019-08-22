@@ -1,8 +1,14 @@
 DYNAMIC: a succinct and compressed fully-dynamic data structures library
 ===============
 
-Author: Nicola Prezza, Alan Kuhnle
-mail: nicola.prezza@gmail.com, akuhnle418@gmail.com
+### Contributors
+
+The main contributors to the library are: 
+
+- Alan Kuhnle. akuhnle418@gmail.com
+- Nicola Prezza (creator).  nicola.prezza@gmail.com
+
+The library has also received many contributions from other researchers: we wish to thank Mikhail Karasikov, Erik Garrison, and Chris Barber for adding many useful features. We are also very grateful to Adam Novak, Jan Studený, and Uula Ulkuniemi for useful bug reports. 
 
 Please cite this library as: 
 

@@ -276,6 +276,9 @@ public:
 
 		}
 
+
+		if(verbose) cout << "Done. Number of phrases: " << z << endl;
+
 	}
 
 	/*
