@@ -4,8 +4,8 @@ option(USE_OPENMP "Enable multi-threading" OFF)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE)
-  message(STATUS "Setting build type to 'Debug' as none was specified.")
-  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+  message(STATUS "Setting build type to 'Release' as none was specified.")
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
 endif()
 
 #set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/.. )
