@@ -223,7 +223,22 @@ public:
 		char_type c = at(i);
 
 		ulint j = i <= terminator_position ? i : i-1;
+		//add 1 because terminator is not explicitly stored in F
+		return 	c == TERMINATOR ? 0 :
+				F.select(0,c) + L.rank(j,c) + 1;
 
+	}
+
+	/*
+	 * LF function generalized with a character
+	 */
+	ulint LF(ulint i, char_type c) const {
+
+		assert(i<bwt_length());
+
+		ulint j = i <= terminator_position ? i : i-1;
+
+		//add 1 because terminator is not explicitly stored in F
 		return 	c == TERMINATOR ? 0 :
 				F.select(0,c) + L.rank(j,c) + 1;
 
