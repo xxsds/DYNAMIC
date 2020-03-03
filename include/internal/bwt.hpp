@@ -234,7 +234,7 @@ public:
 	 */
 	ulint LF(ulint i, char_type c) const {
 
-		assert(i<bwt_length());
+		assert(i<=bwt_length());
 
 		ulint j = i <= terminator_position ? i : i-1;
 
