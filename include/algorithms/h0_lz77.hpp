@@ -177,6 +177,13 @@ public:
 
 				fmi.extend(c);
 
+				uint64_t backward_pos = len == 0 ? 0 : (fmi.text_length() - len - 1) - p;
+
+				if(backward_pos > fmi.text_length()){
+					cout << "err" << endl;
+					exit(0);
+				}
+
 				auto start = (char*)(new ulint(p));
 				auto l = (char*)(new ulint(len));
 
@@ -184,12 +191,12 @@ public:
 				out.write(l,sizeof(ulint));
 				out.write(&cc,1);
 
-				gamma_bits += gamma(uint64_t(start));
-				gamma_bits += gamma(uint64_t(l));
+				gamma_bits += gamma(uint64_t(backward_pos+1));
+				gamma_bits += gamma(uint64_t(len+1));
 				gamma_bits += gamma(uint64_t(uint8_t(cc)));
 
-				delta_bits += delta(uint64_t(start));
-				delta_bits += delta(uint64_t(l));
+				delta_bits += delta(uint64_t(backward_pos+1));
+				delta_bits += delta(uint64_t(len+1));
 				delta_bits += delta(uint64_t(uint8_t(cc)));
 
 

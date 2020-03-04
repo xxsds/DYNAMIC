@@ -258,6 +258,10 @@ public:
 		assert(factors_len.size() == z);
 		assert(factors_char.size() == z);
 
+		uint64_t cumulative=1;
+		uint64_t gamma_bits = 0;
+		uint64_t delta_bits = 0;
+
 		for(ulint j=0;j<z;++j) {
 
 			auto start = (char*)(new ulint(factors_start[j]));
@@ -271,13 +275,41 @@ public:
 			out.write(len,sizeof(ulint));
 			out.write(&cc,1);
 
+			uint64_t backward_pos = uint64_t(factors_len[j]) == 0 ? 0 : (cumulative - 1) - uint64_t(factors_start[j]);
+
+			if(backward_pos > cumulative){
+				cout << "err" << endl;
+				cout << cumulative << endl;
+				cout << uint64_t(factors_len[j]) << endl;
+				cout << uint64_t(factors_start[j]) << endl;
+				cout << backward_pos << endl;
+
+				exit(0);
+			}
+
+			gamma_bits += gamma(uint64_t(backward_pos+1));
+			gamma_bits += gamma(uint64_t(uint64_t(factors_len[j])+1));
+			gamma_bits += gamma(uint64_t(uint8_t(cc)));
+
+			delta_bits += delta(uint64_t(backward_pos+1));
+			delta_bits += delta(uint64_t(uint64_t(factors_len[j])+1));
+			delta_bits += delta(uint64_t(uint8_t(cc)));
+
+			cumulative += (uint64_t(factors_len[j]) + 1);
+
 			delete start;
 			delete len;
 
 		}
 
 
-		if(verbose) cout << "Done. Number of phrases: " << z << endl;
+		if(verbose){
+
+			cout << "Done. Number of phrases: " << z << endl;
+			cout << "gamma complexity of the output: " << (gamma_bits/8)+1 << " Bytes, " << double(gamma_bits)/double(RLBWT.text_length()) << " bit/symbol" << endl;
+			cout << "delta complexity of the output: " << (delta_bits/8)+1 << " Bytes, " << double(delta_bits)/double(RLBWT.text_length()) << " bit/symbol" << endl;
+
+		}
 
 	}
 
@@ -308,6 +340,38 @@ public:
 	}
 
 private:
+
+	/*
+	 * number of bits required to write down x>0
+	 */
+	uint64_t bit_size(uint64_t x){
+
+		assert(x>0);
+
+		return 64 - __builtin_clzll(x);
+
+	}
+
+	/*
+	 * compute the bit-size of the gamma encoding of x
+	 */
+	uint64_t gamma(uint64_t x){
+
+		return 2*bit_size(x) - 1;
+
+	}
+
+	/*
+	 * compute the bit-size of the delta encoding of x
+	 */
+	uint64_t delta(uint64_t x){
+
+		auto bits = bit_size(x);//bits needed to encode x
+
+		return gamma(bits) + bits -1;
+
+	}
+
 
 	//the run-length encoded BWT
 	rle_bwt RLBWT;
