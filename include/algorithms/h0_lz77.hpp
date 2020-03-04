@@ -69,6 +69,38 @@ public:
 	}
 
 	/*
+	 * number of bits required to write down x>0
+	 */
+	uint64_t bit_size(uint64_t x){
+
+		assert(x>0);
+
+		return 64 - __builtin_clzll(x);
+
+	}
+
+	/*
+	 * compute the bit-size of the gamma encoding of x
+	 */
+	uint64_t gamma(uint64_t x){
+
+		return 2*bit_size(x) - 1;
+
+	}
+
+	/*
+	 * compute the bit-size of the delta encoding of x
+	 */
+	uint64_t delta(uint64_t x){
+
+		auto bits = bit_size(x);//bits needed to encode x
+
+		return gamma(bits) + bits -1;
+
+	}
+
+
+	/*
 	 * input: an input stream and an output stream
 	 * the algorithms scans the input (just 1 scan) and
 	 * saves to the output stream (could be a file) a series
@@ -86,6 +118,10 @@ public:
 	 *
 	 */
 	void parse(istream& in, ostream& out, ulint skip = 1, bool verbose = false){
+
+		//size of the output if this is compressed using gamma/delta encoding
+		uint64_t gamma_bits = 0;
+		uint64_t delta_bits = 0;
 
 		assert(skip>0);
 
@@ -148,6 +184,14 @@ public:
 				out.write(l,sizeof(ulint));
 				out.write(&cc,1);
 
+				gamma_bits += gamma(uint64_t(start));
+				gamma_bits += gamma(uint64_t(l));
+				gamma_bits += gamma(uint64_t(uint8_t(cc)));
+
+				delta_bits += delta(uint64_t(start));
+				delta_bits += delta(uint64_t(l));
+				delta_bits += delta(uint64_t(uint8_t(cc)));
+
 
 				delete start;
 				delete l;
@@ -185,7 +229,14 @@ public:
 
 		}
 
-		if(verbose) cout << "\nNumber of LZ77 phrases: " << z << endl;
+		if(verbose){
+
+			cout << "\nNumber of LZ77 phrases: " << z << endl;
+			cout << "gamma complexity of the output: " << (gamma_bits/8)+1 << " Bytes, " << double(gamma_bits)/double(fmi.text_length()) << " bit/symbol" << endl;
+			cout << "delta complexity of the output: " << (delta_bits/8)+1 << " Bytes, " << double(delta_bits)/double(fmi.text_length()) << " bit/symbol" << endl;
+
+
+		}
 
 
 	}
