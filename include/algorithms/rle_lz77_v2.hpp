@@ -25,6 +25,7 @@
 #define INCLUDE_ALGORITHMS_RLE_LZ77_V2_HPP_
 
 #include <dynamic.hpp>
+#include <unordered_map>
 
 namespace dyn{
 
@@ -258,9 +259,12 @@ public:
 		assert(factors_len.size() == z);
 		assert(factors_char.size() == z);
 
-		uint64_t cumulative=1;
+		uint64_t cumulative=1; //sum of phrase before current position (we start with terminator)
 		uint64_t gamma_bits = 0;
 		uint64_t delta_bits = 0;
+
+		vector<uint64_t> off;
+		uint64_t sum_log = 0;
 
 		for(ulint j=0;j<z;++j) {
 
@@ -275,17 +279,18 @@ public:
 			out.write(len,sizeof(ulint));
 			out.write(&cc,1);
 
-			uint64_t backward_pos = uint64_t(factors_len[j]) == 0 ? 0 : (cumulative - 1) - uint64_t(factors_start[j]);
+			if(factors_len[j] > 0 and cumulative < uint64_t(factors_start[j])+1){
 
-			if(backward_pos > cumulative){
-				cout << "err" << endl;
-				cout << cumulative << endl;
-				cout << uint64_t(factors_len[j]) << endl;
-				cout << uint64_t(factors_start[j]) << endl;
-				cout << backward_pos << endl;
-
+				cout << "err: " << cumulative << "/" << factors_start[j] << endl;
 				exit(0);
+
 			}
+
+			uint64_t backward_pos = uint64_t(factors_len[j]) == 0 ? 1 : cumulative - uint64_t(factors_start[j]);
+
+			off.push_back(backward_pos);
+
+			sum_log += bit_size(backward_pos);
 
 			gamma_bits += gamma(uint64_t(backward_pos+1));
 			gamma_bits += gamma(uint64_t(uint64_t(factors_len[j])+1));
@@ -306,6 +311,8 @@ public:
 		if(verbose){
 
 			cout << "Done. Number of phrases: " << z << endl;
+			cout << "Entropy of the offsets: " << entropy(off) << endl;
+			cout << "Sum of logs of the offsets: " << sum_log << endl;
 			cout << "gamma complexity of the output: " << (gamma_bits/8)+1 << " Bytes, " << double(gamma_bits)/double(RLBWT.text_length()) << " bit/symbol" << endl;
 			cout << "delta complexity of the output: " << (delta_bits/8)+1 << " Bytes, " << double(delta_bits)/double(RLBWT.text_length()) << " bit/symbol" << endl;
 
@@ -346,9 +353,7 @@ private:
 	 */
 	uint64_t bit_size(uint64_t x){
 
-		assert(x>0);
-
-		return 64 - __builtin_clzll(x);
+		return x==0 ? 1 : 64 - __builtin_clzll(x);
 
 	}
 
@@ -369,6 +374,31 @@ private:
 		auto bits = bit_size(x);//bits needed to encode x
 
 		return gamma(bits) + bits -1;
+
+	}
+
+	/*
+	 * entropy of a vector
+	 */
+	double entropy(vector<uint64_t> & V){
+
+		unordered_map<uint64_t, double> freq;
+		double n = V.size();
+
+		for(auto x : V)	freq[x]=0;
+		for(auto x : V)	freq[x]++;
+
+		double H = 0;
+
+		for(auto p : freq){
+
+			auto f = p.second/n;
+
+			H -= f*log2(f);
+
+		}
+
+		return H;
 
 	}
 
