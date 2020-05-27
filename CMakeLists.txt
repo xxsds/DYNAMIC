@@ -34,7 +34,7 @@ include_directories(${INSTALL_DIR}/src/hopscotch_map/include)
 
 message("Building in ${CMAKE_BUILD_TYPE} mode")
 
-set(CMAKE_CXX_FLAGS "--std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11")
 
 if(XXSDS_DYN_MULTI_THREADED)
   find_package(OpenMP REQUIRED)
@@ -42,9 +42,9 @@ if(XXSDS_DYN_MULTI_THREADED)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif(XXSDS_DYN_MULTI_THREADED)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g3 -ggdb")
-set(CMAKE_CXX_FLAGS_RELEASE "-ggdb -Ofast -fstrict-aliasing -DNDEBUG -march=native")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -ggdb -Ofast -fstrict-aliasing -march=native")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g3 -ggdb")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ggdb -Ofast -fstrict-aliasing -DNDEBUG -march=native")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -g -ggdb -Ofast -fstrict-aliasing -march=native")
 
 add_executable(debug debug.cpp)
 add_executable(rle_lz77_v1 rle_lz77_v1.cpp)
