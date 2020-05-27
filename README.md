@@ -8,7 +8,7 @@ The main contributors to the library are:
 - Alan Kuhnle. akuhnle418@gmail.com
 - Nicola Prezza (creator).  nicola.prezza@gmail.com
 
-The library has also received many contributions from other researchers: we wish to thank Mikhail Karasikov, Erik Garrison, and Chris Barber for adding many useful features. We are also very grateful to Adam Novak, Jan Studený, and Uula Ulkuniemi for useful bug reports. 
+The library has also received many contributions from other researchers: we wish to thank Mikhail Karasikov, Erik Garrison, and Chris Barber for adding many useful features. We are also very grateful to Adam Novak, Jan Studený, Uula Ulkuniemi, and Michael R. Crusoe for useful bug reports and suggestions. 
 
 Please cite this library as: 
 
@@ -42,7 +42,7 @@ LZ77 Computation Based on the Run-Length Encoded BWT", Alberto Policriti and Nic
 - An algorithm to build the BWT in run-compressed space
 - An algorithm to build LZ77 in nH0(2+o(1)) space and n * log n * H0 time. From the paper "Fast Online Lempel-Ziv Factorization in Compressed Space", Alberto Policriti and Nicola Prezza, SPIRE2015
 - An algorithm to build the BWT in high-order compressed space. The algorithm runs in O(n * H_k * log log n) average-case time (e.g. good for DNA) and O(n * H_k * log n) worst-case time. From the paper "Average linear time and compressed space construction of the Burrows-Wheeler transform"
-Policriti A., Gigante N. and Prezza N., LATA 2015
+Policriti A., Gigante N. and Prezza N., LATA 2015 (the paper discusses a theoretically faster variant)
 
 The SPSI structure is the building block on which all other structures are based. This structure is implemented with cache-efficient B-trees.
 
