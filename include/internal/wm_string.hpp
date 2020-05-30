@@ -50,6 +50,31 @@ public:
         }
     }
 
+    // hack to accept an alphabet with frequencies, to match wt_string interface for testing
+    // doesn't work
+    /*
+    wm_string(vector<pair<ulint, double>>& P) {
+        n = 0;
+        sigma = 0;
+        for (auto& e : P) {
+            if (e.first > sigma) {
+                sigma = e.first;
+            }
+        }
+        ++sigma;
+        this->bit_width = this->get_num_of_bit(sigma-1);
+        if (bit_width == 0) {
+            bit_width = 1;
+        }
+        this->begin_one.resize(bit_width);
+
+        for (ulint i = 0; i < bit_width; ++i) {
+            dynamic_bitvector_t sv;
+            bit_arrays.push_back(sv);
+        }
+    }
+    */
+
     wm_string (ulint num_of_alphabet, const std::vector<ulint> &array) : n(0), sigma(num_of_alphabet + 1) {
         this->bit_width = this->get_num_of_bit(num_of_alphabet);
         if (bit_width == 0) {
