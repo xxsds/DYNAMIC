@@ -193,7 +193,7 @@ bool test_select(uint64_t num, uint64_t num_of_alphabet) {
         //cerr << data[i] << " ";
         count[data[i]]++;
     }
-    cerr << endl;
+    //cerr << endl;
 
     dyn::wm_str wm(num_of_alphabet, data);
 
@@ -337,6 +337,30 @@ bool test_update(uint64_t num, uint64_t num_of_alphabet) {
     return true;
 }
 
+bool test_serialize(uint64_t num, uint64_t num_of_alphabet) {
+    vector<uint64_t> data(num);
+    for (int i = 0; i < num; ++i) {
+        data[i] = (uint64_t)randxor() % num_of_alphabet;
+    }
+
+    dyn::wm_str expected(num_of_alphabet, data);
+    string f = "wm_string.test.temp";
+    ofstream out(f.c_str());
+    expected.serialize(out);
+    out.close();
+    dyn::wm_str actual;
+    ifstream in(f.c_str());
+    actual.load(in);
+    in.close();
+    std::remove(f.c_str());
+
+    if (not same(expected, actual)) {
+        return false;
+    }
+
+    return true;
+}
+
 void speed_test(uint64_t num, uint64_t num_of_alphabet) {
     cout << "access:" << speed_access(num, num_of_alphabet) << "ms" << endl;
     cout << "rank:" << speed_rank(num, num_of_alphabet) << "ms" << endl;
@@ -356,6 +380,7 @@ bool test(uint64_t num, uint64_t num_of_alphabet) {
     cout << "test erase:" << (test_remove(num, num_of_alphabet) ? "OK" : "NG") << endl;
     cout << "test insert:" << (test_insert(num, num_of_alphabet) ? "OK" : "NG") << endl;
     cout << "test update:" << (test_update(num, num_of_alphabet) ? "OK" : "NG") << endl;
+    cout << "test serialize:" << (test_serialize(num, num_of_alphabet) ? "OK" : "NG") << endl;
 
     return ok;
 }

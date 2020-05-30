@@ -29,11 +29,13 @@ public:
     std::vector<dynamic_bitvector_t> bit_arrays;
     std::vector<ulint> begin_one;               // 各bitの1の開始位置
 
-    ulint size;                                 // 与えられた配列のサイズ
-    ulint maximum_element;                      // 最大の文字
-    ulint bit_size;                             // 文字を表すのに必要なbit数
+    ulint size = 0;                                 // 与えられた配列のサイズ
+    ulint maximum_element = 0;                      // 最大の文字
+    ulint bit_size = 0;                             // 文字を表すのに必要なbit数
 
 public:
+    wm_string (void) { } // default constructor, for loading from file
+
     // max_element: 入ってくる中で一番大きい数値
     wm_string (ulint maximum_element) : size(0), maximum_element(maximum_element + 1) {
         this->bit_size = this->get_num_of_bit(maximum_element);
