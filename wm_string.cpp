@@ -45,7 +45,7 @@ double speed_rank(uint64_t num, uint64_t num_of_alphabet) {
     auto start = std::chrono::system_clock::now();
     for (uint64_t rank = 1; rank < data.size(); ++rank) {
         uint64_t val = data[randxor() % num];
-        if (wm.rank(val, rank) == -1) {
+        if (wm.rank(rank, val) == -1) {
             dummy++;
         }
     }
@@ -71,7 +71,7 @@ double speed_select(uint64_t num, uint64_t num_of_alphabet) {
     for (int i = 0; i < num; ++i) {
         uint64_t val = data[randxor() % num];
         uint64_t rank  = randxor() % count.at(val) + 1;
-        if (wm.select(val, rank) == -1) {
+        if (wm.select(rank, val) == -1) {
             dummy++;
         }
     }
@@ -93,7 +93,7 @@ double speed_remove(uint64_t num, uint64_t num_of_alphabet) {
 
     auto start = std::chrono::system_clock::now();
     for (int i = 0; i < num; ++i) {
-        uint64_t pos = i == 0 ? 0 : randxor() % dwm.size;
+        uint64_t pos = i == 0 ? 0 : randxor() % dwm.size();
         dwm.remove(pos);
     }
     auto end = std::chrono::system_clock::now();
@@ -175,7 +175,7 @@ bool test_rank(uint64_t num, uint64_t num_of_alphabet) {
                 expected += (data[j] == val);
             }
 
-            if (wm.rank(val, i) != expected) {
+            if (wm.rank(i, val) != expected) {
                 return false;
             }
         }
@@ -213,7 +213,7 @@ bool test_select(uint64_t num, uint64_t num_of_alphabet) {
             }
 
             //cerr << "val/rank " << val << " " << rank << endl;
-            if (wm.select(val, rank) != expected) {
+            if (wm.select(rank, val) != expected) {
                 //cerr << "got " << wm.select(val, rank) << " but expected " << expected << endl;
                 return false;
             } else {
@@ -228,16 +228,16 @@ bool test_select(uint64_t num, uint64_t num_of_alphabet) {
 // 2つの動的ビットベクトルが同じかチェック
 bool same(dyn::wm_str expected, dyn::wm_str actual) {
 
-    if (expected.size != actual.size) {
-        cout << "Error at n:" << " expected:" << expected.size << " actual: " << actual.size << endl;
+    if (expected.size() != actual.size()) {
+        cout << "Error at n:" << " expected:" << expected.size() << " actual: " << actual.size() << endl;
         return false;
     }
-    if (expected.maximum_element != actual.maximum_element) {
-        cout << "Error at maximum_element:" << " expected:" << expected.maximum_element << " actual: " << actual.maximum_element << endl;
+    if (expected.sigma != actual.sigma) {
+        cout << "Error at sigma:" << " expected:" << expected.sigma << " actual: " << actual.sigma << endl;
         return false;
     }
-    if (expected.bit_size != actual.bit_size) {
-        cout << "Error at num_of_bit:" << " expected:" << expected.bit_size << " actual: " << actual.bit_size << endl;
+    if (expected.bit_width != actual.bit_width) {
+        cout << "Error at num_of_bit:" << " expected:" << expected.bit_width << " actual: " << actual.bit_width << endl;
         return false;
     }
     if (expected.begin_one != actual.begin_one) {

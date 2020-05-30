@@ -29,53 +29,53 @@ public:
     std::vector<dynamic_bitvector_t> bit_arrays;
     std::vector<ulint> begin_one;               // 各bitの1の開始位置
 
-    ulint size = 0;                                 // 与えられた配列のサイズ
-    ulint maximum_element = 0;                      // 最大の文字
-    ulint bit_size = 0;                             // 文字を表すのに必要なbit数
+    ulint n = 0;                                    // 与えられた配列のサイズ
+    ulint sigma = 0;                      // 最大の文字
+    ulint bit_width = 0;                             // 文字を表すのに必要なbit数
 
 public:
     wm_string (void) { } // default constructor, for loading from file
 
     // max_element: 入ってくる中で一番大きい数値
-    wm_string (ulint maximum_element) : size(0), maximum_element(maximum_element + 1) {
-        this->bit_size = this->get_num_of_bit(maximum_element);
-        if (bit_size == 0) {
-            bit_size = 1;
+    wm_string (ulint sigma) : n(0), sigma(sigma + 1) {
+        this->bit_width = this->get_num_of_bit(sigma);
+        if (bit_width == 0) {
+            bit_width = 1;
         }
-        this->begin_one.resize(bit_size);
+        this->begin_one.resize(bit_width);
 
-        for (ulint i = 0; i < bit_size; ++i) {
+        for (ulint i = 0; i < bit_width; ++i) {
             dynamic_bitvector_t sv;
             bit_arrays.push_back(sv);
         }
     }
 
-    wm_string (ulint num_of_alphabet, const std::vector<ulint> &array) : size(0), maximum_element(num_of_alphabet + 1) {
-        this->bit_size = this->get_num_of_bit(num_of_alphabet);
-        if (bit_size == 0) {
-            bit_size = 1;
+    wm_string (ulint num_of_alphabet, const std::vector<ulint> &array) : n(0), sigma(num_of_alphabet + 1) {
+        this->bit_width = this->get_num_of_bit(num_of_alphabet);
+        if (bit_width == 0) {
+            bit_width = 1;
         }
-        this->begin_one.resize(bit_size);
+        this->begin_one.resize(bit_width);
 
         if (array.empty()) {
-            for (ulint i = 0; i < bit_size; ++i) {
+            for (ulint i = 0; i < bit_width; ++i) {
                 dynamic_bitvector_t sv;
                 bit_arrays.push_back(sv);
             }
             return;
         }
 
-        size = array.size();
+        n = array.size();
 
         std::vector<ulint> v(array), b(array.size(), 0);
 
-        for (ulint i = 0; i < bit_size; ++i) {
+        for (ulint i = 0; i < bit_width; ++i) {
 
             std::vector<ulint> temp;
             // 0をtempにいれてく
             for (ulint j = 0; j < v.size(); ++j) {
                 ulint c = v.at(j);
-                ulint bit = (c >> (bit_size - i - 1)) & 1;  //　上からi番目のbit
+                ulint bit = (c >> (bit_width - i - 1)) & 1;  //　上からi番目のbit
                 if (bit == 0) {
                     temp.push_back(c);
                     b[j] = 0;
@@ -87,7 +87,7 @@ public:
             // 1をtempにいれてく
             for (ulint j = 0; j < v.size(); ++j) {
                 ulint c = v.at(j);
-                ulint bit = (c >> (bit_size - i - 1)) & 1;  //　上からi番目のbit
+                ulint bit = (c >> (bit_width - i - 1)) & 1;  //　上からi番目のbit
                 if (bit == 1) {
                     temp.push_back(c);
                     b[j] = 1;
@@ -103,14 +103,14 @@ public:
 
     ulint serialize(ostream& out) const {
         ulint w_bytes = 0;
-        out.write((char*)&size, sizeof(size));
-        w_bytes += sizeof(size);
-        out.write((char*)&maximum_element, sizeof(maximum_element));
-        w_bytes += sizeof(maximum_element);
-        out.write((char*)&bit_size, sizeof(bit_size));
-        w_bytes += sizeof(bit_size);
-        out.write((char*)begin_one.data(), sizeof(ulint) * bit_size);
-        w_bytes += sizeof(ulint) * bit_size;
+        out.write((char*)&n, sizeof(n));
+        w_bytes += sizeof(n);
+        out.write((char*)&sigma, sizeof(sigma));
+        w_bytes += sizeof(sigma);
+        out.write((char*)&bit_width, sizeof(bit_width));
+        w_bytes += sizeof(bit_width);
+        out.write((char*)begin_one.data(), sizeof(ulint) * bit_width);
+        w_bytes += sizeof(ulint) * bit_width;
         for (auto& bv : bit_arrays) {
             w_bytes += bv.serialize(out);
         }
@@ -118,20 +118,20 @@ public:
     }
 
     void load(istream& in) {
-        in.read((char*)&size, sizeof(size));
-        in.read((char*)&maximum_element, sizeof(maximum_element));
-        in.read((char*)&bit_size, sizeof(bit_size));
-        begin_one.resize(bit_size);
-        in.read((char*)begin_one.data(), sizeof(ulint) * bit_size);
-        bit_arrays.resize(bit_size);
-        for (ulint i = 0; i < bit_size; ++i) {
+        in.read((char*)&n, sizeof(n));
+        in.read((char*)&sigma, sizeof(sigma));
+        in.read((char*)&bit_width, sizeof(bit_width));
+        begin_one.resize(bit_width);
+        in.read((char*)begin_one.data(), sizeof(ulint) * bit_width);
+        bit_arrays.resize(bit_width);
+        for (ulint i = 0; i < bit_width; ++i) {
             bit_arrays[i].load(in);
         }
     }
 
     // v[pos]
-    ulint at(ulint pos) {
-        assert(pos < this->size);
+    ulint at(ulint pos) const {
+        assert(pos < this->n);
 
         ulint c = 0;
         for (ulint i = 0; i < bit_arrays.size(); ++i) {
@@ -145,16 +145,19 @@ public:
         return c;
     }
 
+    // high-level access
+    ulint operator[](ulint i) const { return this->at(i); }
+
     // v[0, pos)のcの数
-    ulint rank(ulint c, ulint pos) {
-        assert(pos <= size);
-        if (c >= maximum_element) {
+    ulint rank(ulint pos, ulint c) const {
+        assert(pos <= n);
+        if (c >= sigma) {
             return 0;
         }
 
         ulint left = 0, right = pos;
-        for (ulint i = 0; i < bit_size; ++i) {
-            const ulint bit = (c >> (bit_size - i - 1)) & 1;  // 上からi番目のbit
+        for (ulint i = 0; i < bit_width; ++i) {
+            const ulint bit = (c >> (bit_width - i - 1)) & 1;  // 上からi番目のbit
             left = bit_arrays.at(i).rank(left, bit);             // cのi番目のbitと同じ数値の数
             right = bit_arrays.at(i).rank(right, bit);           // cのi番目のbitと同じ数値の数
             if (bit) {
@@ -167,14 +170,14 @@ public:
     }
 
     // i番目のcの位置 + 1を返す。rankは1-origin
-    ulint select(ulint c, ulint rank) { // todo change to match rest of dyn
+    ulint select(ulint rank, ulint c) const {
         --rank; // hmm
         assert(rank > 0);
-        assert(c < maximum_element);
+        assert(c < sigma);
 
         ulint left = 0;
-        for (ulint i = 0; i < bit_size; ++i) {
-            const ulint bit = (c >> (bit_size - i - 1)) & 1;  // 上からi番目のbit
+        for (ulint i = 0; i < bit_width; ++i) {
+            const ulint bit = (c >> (bit_width - i - 1)) & 1;  // 上からi番目のbit
             left = bit_arrays.at(i).rank(left, bit);               // cのi番目のbitと同じ数値の数
             if (bit) {
                 left += this->begin_one.at(i);
@@ -185,20 +188,20 @@ public:
         for (ulint i = 0; i < bit_arrays.size(); ++i){
             ulint bit = ((c >> i) & 1);      // 下からi番目のbit
             if (bit == 1) {
-                index -= this->begin_one.at(bit_size - i - 1);
+                index -= this->begin_one.at(bit_width - i - 1);
             }
             //std::cerr << "selecting index " << index << " bit " << bit << std::endl;
-            index = this->bit_arrays.at(bit_size - i - 1).select(index, bit);
+            index = this->bit_arrays.at(bit_width - i - 1).select(index, bit);
         }
         return index+1;
     }
 
     // posにcを挿入する
     void insert(ulint pos, ulint c) {
-        assert(pos <= this->size);
+        assert(pos <= this->n);
 
         for (ulint i = 0; i < bit_arrays.size(); ++i) {
-            const ulint bit = (c >> (bit_size - i - 1)) & 1;  //　上からi番目のbit
+            const ulint bit = (c >> (bit_width - i - 1)) & 1;  //　上からi番目のbit
             bit_arrays.at(i).insert(pos, bit);
             pos = bit_arrays.at(i).rank(pos, bit);
             if (bit) {
@@ -209,7 +212,7 @@ public:
             }
         }
 
-        this->size++;
+        this->n++;
     }
 
     void push_front(ulint c) {
@@ -218,13 +221,13 @@ public:
 
     // 末尾にcを追加する
     void push_back(ulint c) {
-        this->insert(this->size, c);
+        this->insert(this->n, c);
     }
 
     // posを削除する
     void remove(ulint pos) {
-        assert(pos < this->size);
-        if (pos >= this->size) {
+        assert(pos < this->n);
+        if (pos >= this->n) {
             throw "Segmentation fault";
         }
 
@@ -242,14 +245,27 @@ public:
             }
             pos = next_pos;
         }
-        this->size--;
+        this->n--;
     }
 
     // posにcをセットする
     void update(ulint pos, ulint c) {
-        assert(pos < this->size);
+        assert(pos < this->n);
         this->remove(pos);
         this->insert(pos, c);
+    }
+
+    ulint size(void) const {
+        return this->n;
+    }
+
+    ulint bit_size(void) const {
+        ulint n_bits = 0;
+        for (auto& ba : bit_arrays) {
+            n_bits += ba.bit_size();
+        }
+        n_bits += sizeof(ulint) * begin_one.size();
+        return n_bits;
     }
 
     // 他の操作は通常のWavelet Matrixと同じ
