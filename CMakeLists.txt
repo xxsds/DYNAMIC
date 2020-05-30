@@ -53,6 +53,7 @@ add_executable(h0_lz77 h0_lz77.cpp)
 add_executable(rle_bwt rle_bwt.cpp)
 add_executable(cw-bwt cw-bwt.cpp)
 add_executable(benchmark benchmark.cpp)
+add_executable(wm_string wm_string.cpp)
 
 add_dependencies(debug hopscotch_map)
 add_dependencies(rle_lz77_v1 hopscotch_map)
@@ -61,4 +62,5 @@ add_dependencies(h0_lz77 hopscotch_map)
 add_dependencies(rle_bwt hopscotch_map)
 add_dependencies(cw-bwt hopscotch_map)
 add_dependencies(benchmark hopscotch_map)
+add_dependencies(wm_string hopscotch_map)
 

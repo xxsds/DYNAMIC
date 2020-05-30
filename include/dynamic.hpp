@@ -23,6 +23,7 @@
 #include <internal/hacked_vector.hpp>
 #include <internal/lciv.hpp>
 #include <internal/wt_string.hpp>
+#include <internal/wm_string.hpp>
 #include <internal/fm_index.hpp>
 
 namespace dyn{
@@ -56,6 +57,11 @@ typedef succinct_bitvector<spsi<packed_bit_vector,8192,16>> suc_bv;
  * user can choose (at construction time) between fixed-length / gamma / Huffman encoding of characters.
  */
 typedef wt_string<suc_bv> wt_str;
+
+/*
+ * succinct/compressed dynamic string implemented with a wavelet matrix.
+ */
+typedef wm_string<succinct_bitvector<spsi<packed_bit_vector,256,16>>> wm_str;
 
 /*
  * run-length encoded (RLE) string. This string uses 1 sparse bitvector
