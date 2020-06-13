@@ -70,9 +70,8 @@ namespace dyn{
 
 	 assert(i<size());
 
-	 return i==0 ? rank1(1) : rank1(i+1)-rank1(i);
-
-	 //return spsi_.contains_r(i+1);
+	 //return i==0 ? rank1(1) : rank1(i+1)-rank1(i);
+	 return rank1(i+1)-rank1(i);
 
       }
 

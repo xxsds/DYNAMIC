@@ -592,51 +592,56 @@ namespace dyn{
 
       }
 
-      /*
-       * split content of this vector into 2 packed blocks:
-       * Left part remains in this block, right part in the
-       * new returned block
-       */
-      packed_vector* split(){
+	/*
+	* split content of this vector into 2 packed blocks:
+	* Left part remains in this block, right part in the
+	* new returned block
+	*/
+	packed_vector* split(){
 
-	 uint64_t tot_words = (size_/int_per_word_) + (size_%int_per_word_!=0);
+		uint64_t tot_words = (size_/int_per_word_) + (size_%int_per_word_!=0);
 
-	 assert(tot_words <= words.size());
+		assert(tot_words <= words.size());
 
-	 uint64_t nr_left_words = tot_words/2;
+		uint64_t nr_left_ints = size_ / 2 + (size_%2 != 0);
+		uint64_t nr_right_ints = size_ - nr_left_ints;
 
-	 assert(nr_left_words>0);
-	 assert(tot_words-nr_left_words>0);
+		uint64_t nr_left_words = (nr_left_ints/int_per_word_) + (nr_left_ints%int_per_word_!=0);
+		uint64_t nr_right_words = tot_words-nr_left_words;
 
-	 uint64_t nr_left_ints = nr_left_words*int_per_word_;
+		assert(nr_left_words>0);
+		assert(nr_right_words>0);
 
-	 assert(size_ > nr_left_ints);
-	 uint64_t nr_right_ints = size_ - nr_left_ints;
+		assert(size_ > nr_left_ints);
+		assert(words.begin() + nr_left_words + extra_ < words.end());
+		assert(words.begin() + tot_words <= words.end());
 
-        assert(words.begin() + nr_left_words + extra_ < words.end());
-        assert(words.begin() + tot_words <= words.end());
-        vector<uint64_t> right_words(tot_words - nr_left_words + extra_, 0);
-        std::copy(words.begin() + nr_left_words, words.begin() + tot_words, right_words.begin());
-        words.resize(nr_left_words + extra_);
-        std::fill(words.begin() + nr_left_words, words.end(), 0);
-        words.shrink_to_fit();
+		assert(int_per_word_ == 64 / width_);
 
-	 size_ = nr_left_ints;
-	 psum_ = psum(size_-1);
+		auto right = new packed_vector(nr_right_ints, width_);
 
-        assert(int_per_word_ == 64 / width_);
-        assert(right_words.size() * int_per_word_ >= nr_right_ints);
+		for(uint64_t i = nr_left_ints; i<size_;++i)
+			right->operator[](i-nr_left_ints) = at(i);
 
-	 auto right = new packed_vector(std::move(right_words), nr_right_ints, width_);
+		size_ = nr_left_ints;
+		psum_ = psum(size_-1);
 
-        assert(size_ / int_per_word_ <= words.size());
-        assert((size_ / int_per_word_ == words.size()
-                    || !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
-                && "uninitialized non-zero values in the end of the vector");
+		//clear unused bits
+		words.resize(nr_left_words + extra_);
+		std::fill(words.begin() + nr_left_words, words.end(), 0);
+		words.shrink_to_fit();
+		words[size_ / int_per_word_] &= ((~uint64_t(0)) >> (64 - ((size_ % int_per_word_) * width_)));
 
-	 return right;
+		assert(size_ / int_per_word_ <= words.size());
+		assert((size_ / int_per_word_ == words.size()
+				|| !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
+			&& "uninitialized non-zero values in the end of the vector");
+
+		return right;
 
       }
+
+
 
       /* set i-th element to x. updates psum */
       void set(uint64_t i, uint64_t x){
