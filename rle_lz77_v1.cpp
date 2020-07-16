@@ -21,8 +21,8 @@
  */
 
 #include <chrono>
-#include <dynamic.hpp>
-#include "include/algorithms/rle_lz77_v1.hpp"
+#include "dynamic/dynamic.hpp"
+#include "dynamic/algorithms/rle_lz77_v1.hpp"
 
 using namespace std;
 using namespace dyn;

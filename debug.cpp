@@ -1,7 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <cstdlib>
-#include <dynamic.hpp>
+#include "dynamic/dynamic.hpp"
 
 using namespace std;
 using namespace dyn;

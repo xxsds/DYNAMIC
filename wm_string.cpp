@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-#include <dynamic.hpp>
+#include "dynamic/dynamic.hpp"
 
 using namespace std;
 

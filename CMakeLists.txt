@@ -27,9 +27,10 @@ ExternalProject_Get_property(hopscotch_map INSTALL_DIR)
 set(hopscotch_map_INCLUDE "${INSTALL_DIR}/src/hopscotch_map/include/")
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR}/include/internal)
-include_directories(${PROJECT_SOURCE_DIR}/include/algorithms)
-include_directories(${PROJECT_SOURCE_DIR}/include/algorithms/cw-bwt)
+#include_directories(${PROJECT_SOURCE_DIR}/include/dynamic)
+#include_directories(${PROJECT_SOURCE_DIR}/include/dynamic/internal)
+#include_directories(${PROJECT_SOURCE_DIR}/include/dynamic/algorithms)
+#include_directories(${PROJECT_SOURCE_DIR}/include/dynamic/algorithms/cw-bwt)
 include_directories(${INSTALL_DIR}/src/hopscotch_map/include)
 
 message("Building in ${CMAKE_BUILD_TYPE} mode")

@@ -4,7 +4,7 @@
 
 #include <chrono>
 
-#include "include/algorithms/cw-bwt/cw_bwt.hpp"
+#include "dynamic/algorithms/cw_bwt.hpp"
 
 using namespace bwtil;
 using namespace std;
