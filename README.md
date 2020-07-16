@@ -76,7 +76,7 @@ The above command creates the executables in the bin directory.
 
 ### Usage
 
-The header include/dynamic.hpp contains all type definitions and is all you need to include in your code. The folder algorithms/ contains some algorithms implemented with the library's structures. This is a snapshot of dynamic.hpp:
+The header include/dynamic/dynamic.hpp contains all type definitions and is all you need to include in your code. The folder algorithms/ contains some algorithms implemented with the library's structures. This is a snapshot of dynamic.hpp:
 
     /*
      * a succinct searchable partial sum with inserts implemented with cache-efficient
