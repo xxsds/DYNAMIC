@@ -129,10 +129,10 @@ namespace dyn{
 
 	 words = vector<uint64_t>( size_/int_per_word_ +  ( size_%int_per_word_ != 0 ) );
 
-        assert(size_ / int_per_word_ <= words.size());
-        assert((size_ / int_per_word_ == words.size()
-                    || !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
-                && "uninitialized non-zero values in the end of the vector");
+	 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+	 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+            && "uninitialized non-zero values in the end of the vector");
       }
 
       packed_vector(vector<uint64_t>&& _words, uint64_t size, uint8_t width) {
@@ -148,10 +148,10 @@ namespace dyn{
 
 	 psum_=psum(size_-1);
 
-        assert(size_ / int_per_word_ <= words.size());
-        assert((size_ / int_per_word_ == words.size()
-                    || !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
-                && "uninitialized non-zero values in the end of the vector");
+	 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+	 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+            && "uninitialized non-zero values in the end of the vector");
       }
 
       virtual ~packed_vector() {}
@@ -423,47 +423,60 @@ namespace dyn{
 
       }
 
-      void remove(uint64_t i) {
-        assert(i < size_);
-        auto x = this->at(i);
+     void remove(uint64_t i) {
 
-	 if (width_>1) { // otherwise, cannot rebuild
-	    if (bitsize(x) == width_) {
+		 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+		 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                    || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+                && "uninitialized non-zero values in the end of the vector");
 
-	       uint8_t max_b = 0;
+         assert(i < size_);
+         auto x = this->at(i);
 
-	       for(ulint j = 0; j < size_ ;++j){
-		  if (j != i) {
-		     auto x = this->at(j);
+		 if (width_>1) { // otherwise, cannot rebuild
+			if (bitsize(x) == width_) {
 
-		     uint8_t bs = bitsize(x);
+				uint8_t max_b = 0;
 
-		     if(bs>max_b) max_b=bs;
-		  }
-	       
-	       }
+				for(ulint j = 0; j < size_ ;++j){
+				  if (j != i) {
+					 auto x = this->at(j);
 
-	       //rebuild entire vector
-	       rebuild_rem( i, max_b );
+					 uint8_t bs = bitsize(x);
 
-	       return;
+					 if(bs>max_b) max_b=bs;
+				  }
 
-	    }
-	 }
+				}
 
-	 //shift ints left, from position i + 1 onwords
-	 shift_left( i );
+				//rebuild entire vector
+				rebuild_rem( i, max_b );
 
-	 --size_;
-	 psum_ -= x;
+				return;
 
-        while ( words.size() > size_ / int_per_word_ + extra_ ) {
+			}
+		 }
+
+		 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+		 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                    || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+                && "uninitialized non-zero values in the end of the vector");
+
+		 //shift ints left, from position i + 1 onwards
+		 shift_left( i );
+
+		 //set_without_psum_update(size_-1, 0);
+
+		 --size_;
+		 psum_ -= x;
+
+		 while ( words.size() > size_ / int_per_word_  + (size_%int_per_word_!=0) + extra_ ) {
             words.pop_back();
-        }
+		 }
 
-        assert(size_ / int_per_word_ <= words.size());
-        assert((size_ / int_per_word_ == words.size()
-                    || !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
+		 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+		 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                    || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
                 && "uninitialized non-zero values in the end of the vector");
 
       }
@@ -503,10 +516,10 @@ namespace dyn{
 	 psum_+=x;
 	 ++size_;
 
-        assert(size_ / int_per_word_ <= words.size());
-        assert((size_ / int_per_word_ == words.size()
-                    || !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
-                && "uninitialized non-zero values in the end of the vector");
+	 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+	 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+            && "uninitialized non-zero values in the end of the vector");
       }
 
       void insert_word(uint64_t i,
@@ -580,10 +593,10 @@ namespace dyn{
 	 psum_+=x;
 	 size_++;
 
-        assert(size_ / int_per_word_ <= words.size());
-        assert((size_ / int_per_word_ == words.size()
-                    || !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
-                && "uninitialized non-zero values in the end of the vector");
+	 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+	 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+            && "uninitialized non-zero values in the end of the vector");
       }
 
       uint64_t size() const {
@@ -598,6 +611,11 @@ namespace dyn{
 	* new returned block
 	*/
 	packed_vector* split(){
+
+		 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+		 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                   || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+               && "uninitialized non-zero values in the end of the vector");
 
 		uint64_t tot_words = (size_/int_per_word_) + (size_%int_per_word_!=0);
 
@@ -632,10 +650,10 @@ namespace dyn{
 		words.shrink_to_fit();
 		words[size_ / int_per_word_] &= ((~uint64_t(0)) >> (64 - ((size_ % int_per_word_) * width_)));
 
-		assert(size_ / int_per_word_ <= words.size());
-		assert((size_ / int_per_word_ == words.size()
-				|| !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
-			&& "uninitialized non-zero values in the end of the vector");
+		 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+		 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                   || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+               && "uninitialized non-zero values in the end of the vector");
 
 		return right;
 
@@ -663,10 +681,10 @@ namespace dyn{
 	 //insert x inside i-th position
 	 words[word_nr] |= (x<<(width_*pos));
 
-        assert(size_ / int_per_word_ <= words.size());
-        assert((size_ / int_per_word_ == words.size()
-                    || !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
-                && "uninitialized non-zero values in the end of the vector");
+	 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+	 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+            && "uninitialized non-zero values in the end of the vector");
       }
 
       /*
@@ -736,10 +754,10 @@ namespace dyn{
 
 	 in.read((char*)&int_per_word_,sizeof(int_per_word_));
 
-        assert(size_ / int_per_word_ <= words.size());
-        assert((size_ / int_per_word_ == words.size()
-                    || !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
-                && "uninitialized non-zero values in the end of the vector");
+	 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+	 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+            && "uninitialized non-zero values in the end of the vector");
       }
 
       uint64_t width() const {
@@ -859,9 +877,15 @@ namespace dyn{
       //from the (i + 1)-st.
       void shift_left(uint64_t i){
 
+ 		 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+ 		 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                     || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+                 && "uninitialized non-zero values in the end of the vector");
+
+
 	 //number of integers that fit in a memory word
 	 assert(int_per_word_>0);
-        assert(i < size_);
+     assert(i < size_);
 
 	 if (i == (size_ - 1)) {
 	    set_without_psum_update( i, 0 );
@@ -900,6 +924,13 @@ namespace dyn{
     		assert(bitsize(falling_in_idx)<=width_);
             set_without_psum_update(j * int_per_word_ + int_per_word_ - 1, falling_in_idx);
         }
+
+
+		 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+		 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                   || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+               && "uninitialized non-zero values in the end of the vector");
+
 
       }
 
@@ -946,10 +977,10 @@ namespace dyn{
 	 width_ = new_width_;
 	 int_per_word_ = new_int_per_word_;
 
-        assert(size_ / int_per_word_ <= words.size());
-        assert((size_ / int_per_word_ == words.size()
-                    || !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
-                && "uninitialized non-zero values in the end of the vector");
+	 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+	 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+            && "uninitialized non-zero values in the end of the vector");
       }
 
       // Rebuilds entire vector, removing j from the vector
@@ -962,10 +993,10 @@ namespace dyn{
 	    int_per_word_ = 0;
 	    psum_ = 0;
 
-           assert(size_ / int_per_word_ <= words.size());
-           assert((size_ / int_per_word_ == words.size()
-                       || !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
-                   && "uninitialized non-zero values in the end of the vector");
+		 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+		 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                   || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+               && "uninitialized non-zero values in the end of the vector");
 	    return;
 	 }
 	 
@@ -1001,10 +1032,10 @@ namespace dyn{
 	 width_ = new_width_;
 	 int_per_word_ = new_int_per_word_;
 
-        assert(size_ / int_per_word_ <= words.size());
-        assert((size_ / int_per_word_ == words.size()
-                    || !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
-                && "uninitialized non-zero values in the end of the vector");
+	 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+	 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+            && "uninitialized non-zero values in the end of the vector");
       }
 
       // Rebuilds entire vector, inserting y at position j
@@ -1058,10 +1089,10 @@ namespace dyn{
 
 	 words.assign( new_words.begin(), new_words.end() );
 
-        assert(size_ / int_per_word_ <= words.size());
-        assert((size_ / int_per_word_ == words.size()
-                    || !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
-                && "uninitialized non-zero values in the end of the vector");
+	 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+	 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+            && "uninitialized non-zero values in the end of the vector");
       }
       
       void rebuild(packed_vector& vec){
@@ -1086,10 +1117,10 @@ namespace dyn{
 
 	 }
 
-        assert(size_ / int_per_word_ <= words.size());
-        assert((size_ / int_per_word_ == words.size()
-                    || !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
-                && "uninitialized non-zero values in the end of the vector");
+	 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+	 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+            && "uninitialized non-zero values in the end of the vector");
 
       }
 
@@ -1171,11 +1202,10 @@ public:
             words[(size_ - 1) / int_per_word_] |= static_cast<uint64_t>(1) << ((size_ - 1) % 64);
             psum_++;
         }
-
-        assert(size_ / int_per_word_ <= words.size());
-        assert((size_ / int_per_word_ == words.size()
-                    || !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
-                && "uninitialized non-zero values in the end of the vector");
+		 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+		 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                   || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+               && "uninitialized non-zero values in the end of the vector");
     }
 
     virtual void set_without_psum_update(uint64_t i, uint64_t x) override final {
@@ -1218,10 +1248,10 @@ public:
 
         auto right = new packed_bit_vector(std::move(right_words), nr_right_ints);
 
-        assert(size_ / int_per_word_ <= words.size());
-        assert((size_ / int_per_word_ == words.size()
-                    || !(words[size_ / int_per_word_] >> ((size_ % int_per_word_) * width_)))
-                && "uninitialized non-zero values in the end of the vector");
+		 assert(size_ / int_per_word_ + (size_%int_per_word_!=0) <= words.size());
+		 assert((size_ / int_per_word_ + (size_%int_per_word_!=0) == words.size()
+                   || !(words[words.size()-1] >> ((size_ % int_per_word_) * width_)))
+               && "uninitialized non-zero values in the end of the vector");
 
         return right;
     }

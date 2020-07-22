@@ -228,7 +228,7 @@ public:
             }
         }
 
-        //shift ints left, from position i + 1 onwords
+        //shift ints left, from position i + 1 onwards
         shift_left( i );
 
 	 
