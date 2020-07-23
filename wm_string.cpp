@@ -1,19 +1,16 @@
 #include <bits/stdc++.h>
+#include <random>
 #include "dynamic/dynamic.hpp"
 
 using namespace std;
 
-unsigned long randxor(){
-    static unsigned long x=123456789,y=362436069,z=521288629,w=88675123;
-    unsigned long t;
-    t=(x^(x<<11));x=y;y=z;z=w;
-    return( w=(w^(w>>19))^(t^(t>>8)) );
-}
-
 double speed_access(uint64_t num, uint64_t num_of_alphabet) {
     vector<uint64_t> data(num);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> alpha_distrib(0, num_of_alphabet-1);
     for (int i = 0; i < num; ++i) {
-        data[i] = (uint64_t)randxor() % num_of_alphabet;
+        data[i] = alpha_distrib(gen);
     }
 
     dyn::wm_str wm(num_of_alphabet, data);
@@ -35,16 +32,20 @@ double speed_access(uint64_t num, uint64_t num_of_alphabet) {
 
 double speed_rank(uint64_t num, uint64_t num_of_alphabet) {
     vector<uint64_t> data(num);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> alpha_distrib(0, num_of_alphabet-1);
     for (int i = 0; i < num; ++i) {
-        data[i] = (uint64_t)randxor() % num_of_alphabet;
+        data[i] = alpha_distrib(gen);
     }
 
     dyn::wm_str wm(num_of_alphabet, data);
 
+    std::uniform_int_distribution<uint64_t> data_distrib(0, num-1);
     int dummy = 0;
     auto start = std::chrono::system_clock::now();
     for (uint64_t rank = 1; rank < data.size(); ++rank) {
-        uint64_t val = data[randxor() % num];
+        uint64_t val = data[data_distrib(gen)];
         if (wm.rank(rank, val) == -1) {
             dummy++;
         }
@@ -59,18 +60,24 @@ double speed_rank(uint64_t num, uint64_t num_of_alphabet) {
 
 double speed_select(uint64_t num, uint64_t num_of_alphabet) {
     vector<uint64_t> data(num), count(num_of_alphabet, 0);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> alpha_distrib(0, num_of_alphabet-1);
     for (int i = 0; i < num; ++i) {
-        data[i] = (uint64_t)randxor() % num_of_alphabet;
+        data[i] = alpha_distrib(gen);
         count[data[i]]++;
     }
 
     dyn::wm_str wm(num_of_alphabet, data);
 
+    std::uniform_int_distribution<uint64_t> data_distrib(0, num-1);
     int dummy = 0;
     auto start = std::chrono::system_clock::now();
     for (int i = 0; i < num; ++i) {
-        uint64_t val = data[randxor() % num];
-        uint64_t rank  = randxor() % count.at(val) + 1;
+        uint64_t val = data[data_distrib(gen)];
+        std::uniform_int_distribution<uint64_t> rank_distrib(1, count.at(val));
+        uint64_t rank  = rank_distrib(gen);
+        //std::cerr << "select(" << rank << ", " << val << ")" << std::endl;
         if (wm.select(rank, val) == -1) {
             dummy++;
         }
@@ -85,21 +92,23 @@ double speed_select(uint64_t num, uint64_t num_of_alphabet) {
 
 double speed_remove(uint64_t num, uint64_t num_of_alphabet) {
     vector<uint64_t> data;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> alpha_distrib(0, num_of_alphabet-1);
     for (int i = 0; i < num; ++i) {
-        data.emplace_back((uint64_t)randxor() % num_of_alphabet);
+        data.emplace_back(alpha_distrib(gen));
     }
 
     dyn::wm_str dwm(num_of_alphabet, data);
 
     auto start = std::chrono::system_clock::now();
     for (int i = 0; i < num; ++i) {
-        uint64_t pos = i == 0 ? 0 : randxor() % dwm.size();
+        std::uniform_int_distribution<uint64_t> pos_distrib(0, dwm.size()-1);
+        uint64_t pos = pos_distrib(gen);
         dwm.remove(pos);
     }
     auto end = std::chrono::system_clock::now();
-    if (dwm.at(0) == 1) {
-        cout << "dummy" << endl;
-    }
+    assert(dwm.size() == 0);
 
     return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 }
@@ -107,10 +116,15 @@ double speed_remove(uint64_t num, uint64_t num_of_alphabet) {
 double speed_insert(uint64_t num, uint64_t num_of_alphabet) {
 
     dyn::wm_str dwm(num_of_alphabet);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> alpha_distrib(0, num_of_alphabet-1);
+
     auto start = std::chrono::system_clock::now();
     for (int i = 0; i < num; ++i) {
-        uint64_t pos = i == 0 ? 0 : randxor() % i;
-        uint64_t c = randxor() % num_of_alphabet;
+        std::uniform_int_distribution<uint64_t> pos_distrib(0, dwm.size());
+        uint64_t pos = pos_distrib(gen);
+        uint64_t c = alpha_distrib(gen);
         dwm.insert(pos, c);
     }
     auto end = std::chrono::system_clock::now();
@@ -122,17 +136,22 @@ double speed_insert(uint64_t num, uint64_t num_of_alphabet) {
 }
 
 double speed_update(uint64_t num, uint64_t num_of_alphabet) {
-    vector<uint64_t> data;
+
+    vector<uint64_t> data(num);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> alpha_distrib(0, num_of_alphabet-1);
     for (int i = 0; i < num; ++i) {
-        data.emplace_back((uint64_t)randxor() % num_of_alphabet);
+        data[i] = alpha_distrib(gen);
     }
 
     dyn::wm_str dwm(num_of_alphabet, data);
+    std::uniform_int_distribution<uint64_t> pos_distrib(0, dwm.size()-1);
 
     auto start = std::chrono::system_clock::now();
     for (int i = 0; i < num - 1; ++i) {
-        uint64_t pos = randxor() % data.size();
-        uint64_t c = randxor() % num_of_alphabet;
+        uint64_t pos = pos_distrib(gen);
+        uint64_t c = alpha_distrib(gen);
         dwm.update(pos, c);
     }
     auto end = std::chrono::system_clock::now();
@@ -145,8 +164,11 @@ double speed_update(uint64_t num, uint64_t num_of_alphabet) {
 
 bool test_access(uint64_t num, uint64_t num_of_alphabet) {
     vector<uint64_t> data(num);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> alpha_distrib(0, num_of_alphabet-1);
     for (int i = 0; i < num; ++i) {
-        data[i] = (uint64_t)randxor() % num_of_alphabet;
+        data[i] = alpha_distrib(gen);
     }
 
     dyn::wm_str wm(num_of_alphabet, data);
@@ -160,8 +182,11 @@ bool test_access(uint64_t num, uint64_t num_of_alphabet) {
 
 bool test_rank(uint64_t num, uint64_t num_of_alphabet) {
     vector<uint64_t> data(num);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> alpha_distrib(0, num_of_alphabet-1);
     for (int i = 0; i < num; ++i) {
-        data[i] = (uint64_t)randxor() % num_of_alphabet;
+        data[i] = alpha_distrib(gen);
     }
 
     dyn::wm_str wm(num_of_alphabet, data);
@@ -187,13 +212,13 @@ bool test_rank(uint64_t num, uint64_t num_of_alphabet) {
 
 bool test_select(uint64_t num, uint64_t num_of_alphabet) {
     vector<uint64_t> data(num), count(num_of_alphabet, 0);
-    //cerr << "data: ";
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> alpha_distrib(0, num_of_alphabet-1);
     for (int i = 0; i < num; ++i) {
-        data[i] = (uint64_t)randxor() % num_of_alphabet;
-        //cerr << data[i] << " ";
+        data[i] = alpha_distrib(gen);
         count[data[i]]++;
     }
-    //cerr << endl;
 
     dyn::wm_str wm(num_of_alphabet, data);
 
@@ -270,15 +295,20 @@ bool same(dyn::wm_str expected, dyn::wm_str actual) {
 }
 
 bool test_remove(uint64_t num, uint64_t num_of_alphabet) {
-    vector<uint64_t> data;
+    vector<uint64_t> data(num);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> alpha_distrib(0, num_of_alphabet-1);
     for (int i = 0; i < num; ++i) {
-        data.emplace_back((uint64_t)randxor() % num_of_alphabet);
+        data[i] = alpha_distrib(gen);
     }
 
     dyn::wm_str actual(num_of_alphabet, data);
 
     for (int i = 0; i < num; ++i) {
-        uint64_t pos = i == 0 ? 0 : randxor() % data.size();
+        std::uniform_int_distribution<uint64_t> pos_distrib(0, actual.size()-1);
+        uint64_t pos = pos_distrib(gen);
+
         data.erase(data.begin() + pos);
 
         dyn::wm_str expected(num_of_alphabet, data);
@@ -295,10 +325,15 @@ bool test_remove(uint64_t num, uint64_t num_of_alphabet) {
 bool test_insert(uint64_t num, uint64_t num_of_alphabet) {
 
     dyn::wm_str actual(num_of_alphabet);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> alpha_distrib(0, num_of_alphabet-1);
+
     vector<uint64_t> data;
     for (int i = 0; i < num; ++i) {
-        uint64_t pos = data.size() == 0 ? 0 : randxor() % data.size();
-        uint64_t c = randxor() % num_of_alphabet;
+        std::uniform_int_distribution<uint64_t> pos_distrib(0, actual.size()-1);
+        uint64_t pos = pos_distrib(gen);
+        uint64_t c = alpha_distrib(gen);
 
         data.insert(data.begin() + pos, c);
 
@@ -315,15 +350,19 @@ bool test_insert(uint64_t num, uint64_t num_of_alphabet) {
 
 bool test_update(uint64_t num, uint64_t num_of_alphabet) {
     vector<uint64_t> data(num);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> alpha_distrib(0, num_of_alphabet-1);
     for (int i = 0; i < num; ++i) {
-        data[i] = (uint64_t)randxor() % num_of_alphabet;
+        data[i] = alpha_distrib(gen);
     }
 
     dyn::wm_str actual(num_of_alphabet, data);
+    std::uniform_int_distribution<uint64_t> pos_distrib(0, actual.size()-1);
 
     for (int i = 0; i < num - 1; ++i) {
-        uint64_t pos = randxor() % data.size();
-        uint64_t c = randxor() % num_of_alphabet;
+        uint64_t pos = pos_distrib(gen);
+        uint64_t c = alpha_distrib(gen);
         data[pos] = c;
 
         dyn::wm_str expected(num_of_alphabet, data);
@@ -339,8 +378,11 @@ bool test_update(uint64_t num, uint64_t num_of_alphabet) {
 
 bool test_serialize(uint64_t num, uint64_t num_of_alphabet) {
     vector<uint64_t> data(num);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> alpha_distrib(0, num_of_alphabet-1);
     for (int i = 0; i < num; ++i) {
-        data[i] = (uint64_t)randxor() % num_of_alphabet;
+        data[i] = alpha_distrib(gen);
     }
 
     dyn::wm_str expected(num_of_alphabet, data);
@@ -373,15 +415,12 @@ void speed_test(uint64_t num, uint64_t num_of_alphabet) {
 
 bool test(uint64_t num, uint64_t num_of_alphabet) {
     bool ok = true;
-
-    cout << "test access:" << ((ok &= test_access(num, num_of_alphabet)) ? "OK" : "NG") << endl;
-    cout << "test rank:" << ((ok &= test_rank(num, num_of_alphabet)) ? "OK" : "NG") << endl;
-    cout << "test select:" << ((ok &= test_select(num, num_of_alphabet)) ? "OK" : "NG") << endl;
-    cout << "test erase:" << (test_remove(num, num_of_alphabet) ? "OK" : "NG") << endl;
-    cout << "test insert:" << (test_insert(num, num_of_alphabet) ? "OK" : "NG") << endl;
-    cout << "test update:" << (test_update(num, num_of_alphabet) ? "OK" : "NG") << endl;
-    cout << "test serialize:" << (test_serialize(num, num_of_alphabet) ? "OK" : "NG") << endl;
-
+    ok &= test_access(num, num_of_alphabet);
+    ok &= test_rank(num, num_of_alphabet);
+    ok &= test_select(num, num_of_alphabet);
+    ok &= test_remove(num, num_of_alphabet);
+    ok &= test_update(num, num_of_alphabet);
+    ok &= test_serialize(num, num_of_alphabet);
     return ok;
 }
 
@@ -390,19 +429,27 @@ int main() {
     uint64_t num = 100000;
     uint64_t num_of_alphabet = 10000000;
 
-    cout << "SPEED" << endl;
+    cout << "SPEED alpha=100" << endl;
+    speed_test(num, 100);
+    cout << "SPEED alpha=" << num_of_alphabet << endl;
     speed_test(num, num_of_alphabet);
 
     cout << "TEST" << endl;
-    for (int i = 0; i < 1000; ++i) {
-        cout << "Test:" << i << endl;
-        num = randxor() % 100 + 1;
-        num_of_alphabet = randxor() % 50 + 1;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> alpha_distrib(1, 1000);
+    std::uniform_int_distribution<uint64_t> len_distrib(1, 100);
+
+    for (int i = 0; i < 100; ++i) {
+        num = len_distrib(gen);
+        num_of_alphabet = alpha_distrib(gen);
+        cout << "TEST size=" << num << " alpha=" << num_of_alphabet << endl;
         if (not test(num, num_of_alphabet)) {
-            cout << "ERROR" << endl;
+            cout << "ERROR!" << std::endl;
             break;
         }
     }
+    cout << "OK" << endl;
 
     return 0;
 }

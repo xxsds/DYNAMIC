@@ -196,9 +196,9 @@ public:
 
     // i番目のcの位置 + 1を返す。rankは1-origin
     ulint select(ulint rank, ulint c) const {
-        --rank; // hmm
         assert(rank > 0);
         assert(c < sigma);
+        --rank;
 
         ulint left = 0;
         for (ulint i = 0; i < bit_width; ++i) {
