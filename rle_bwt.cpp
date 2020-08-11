@@ -12,7 +12,7 @@
  */
 
 #include <chrono>
-#include <dynamic.hpp>
+#include "dynamic/dynamic.hpp"
 
 using namespace std;
 using namespace dyn;

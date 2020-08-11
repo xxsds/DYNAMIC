@@ -9,17 +9,15 @@
  *      Author: nico
  */
 
-#include "spsi.hpp"
-#include "spsi_check.hpp"
+#include "dynamic/internal/spsi.hpp"
+#include "dynamic/internal/spsi_check.hpp"
 #include <chrono>
-#include <dynamic.hpp>
-#include <alphabet_encoder.hpp>
-#include "include/algorithms/rle_lz77_v1.hpp"
-#include "include/algorithms/rle_lz77_v2.hpp"
-
-#include "include/internal/packed_vector.hpp"
-
-#include "include/internal/wt_string.hpp"
+#include "dynamic/dynamic.hpp"
+#include "dynamic/internal/alphabet_encoder.hpp"
+#include "dynamic/algorithms/rle_lz77_v1.hpp"
+#include "dynamic/algorithms/rle_lz77_v2.hpp"
+#include "dynamic/internal/packed_vector.hpp"
+#include "dynamic/internal/wt_string.hpp"
 
 using namespace std;
 using namespace dyn;

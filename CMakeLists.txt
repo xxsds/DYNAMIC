@@ -4,8 +4,8 @@ option(USE_OPENMP "Enable multi-threading" OFF)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE)
-  message(STATUS "Setting build type to 'Debug' as none was specified.")
-  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+  message(STATUS "Setting build type to 'Release' as none was specified.")
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
 endif()
 
 #set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/.. )
@@ -27,9 +27,10 @@ ExternalProject_Get_property(hopscotch_map INSTALL_DIR)
 set(hopscotch_map_INCLUDE "${INSTALL_DIR}/src/hopscotch_map/include/")
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR}/include/internal)
-include_directories(${PROJECT_SOURCE_DIR}/include/algorithms)
-include_directories(${PROJECT_SOURCE_DIR}/include/algorithms/cw-bwt)
+#include_directories(${PROJECT_SOURCE_DIR}/include/dynamic)
+#include_directories(${PROJECT_SOURCE_DIR}/include/dynamic/internal)
+#include_directories(${PROJECT_SOURCE_DIR}/include/dynamic/algorithms)
+#include_directories(${PROJECT_SOURCE_DIR}/include/dynamic/algorithms/cw-bwt)
 include_directories(${INSTALL_DIR}/src/hopscotch_map/include)
 
 message("Building in ${CMAKE_BUILD_TYPE} mode")
@@ -53,6 +54,7 @@ add_executable(h0_lz77 h0_lz77.cpp)
 add_executable(rle_bwt rle_bwt.cpp)
 add_executable(cw-bwt cw-bwt.cpp)
 add_executable(benchmark benchmark.cpp)
+add_executable(wm_string wm_string.cpp)
 
 add_dependencies(debug hopscotch_map)
 add_dependencies(rle_lz77_v1 hopscotch_map)
@@ -61,4 +63,5 @@ add_dependencies(h0_lz77 hopscotch_map)
 add_dependencies(rle_bwt hopscotch_map)
 add_dependencies(cw-bwt hopscotch_map)
 add_dependencies(benchmark hopscotch_map)
+add_dependencies(wm_string hopscotch_map)
 

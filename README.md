@@ -1,8 +1,14 @@
 DYNAMIC: a succinct and compressed fully-dynamic data structures library
 ===============
 
-Author: Nicola Prezza, Alan Kuhnle
-mail: nicola.prezza@gmail.com, akuhnle418@gmail.com
+### Contributors
+
+The main contributors to the library are: 
+
+- Alan Kuhnle. akuhnle418@gmail.com
+- Nicola Prezza (creator).  nicola.prezza@gmail.com
+
+The library has also received many contributions from other researchers: we wish to thank Mikhail Karasikov, Erik Garrison, and Chris Barber for adding many useful features. We are also very grateful to Adam Novak, Jan Studený, Uula Ulkuniemi, and Michael R. Crusoe for useful bug reports and suggestions. 
 
 Please cite this library as: 
 
@@ -36,7 +42,7 @@ LZ77 Computation Based on the Run-Length Encoded BWT", Alberto Policriti and Nic
 - An algorithm to build the BWT in run-compressed space
 - An algorithm to build LZ77 in nH0(2+o(1)) space and n * log n * H0 time. From the paper "Fast Online Lempel-Ziv Factorization in Compressed Space", Alberto Policriti and Nicola Prezza, SPIRE2015
 - An algorithm to build the BWT in high-order compressed space. The algorithm runs in O(n * H_k * log log n) average-case time (e.g. good for DNA) and O(n * H_k * log n) worst-case time. From the paper "Average linear time and compressed space construction of the Burrows-Wheeler transform"
-Policriti A., Gigante N. and Prezza N., LATA 2015
+Policriti A., Gigante N. and Prezza N., LATA 2015 (the paper discusses a theoretically faster variant)
 
 The SPSI structure is the building block on which all other structures are based. This structure is implemented with cache-efficient B-trees.
 
@@ -70,7 +76,7 @@ The above command creates the executables in the bin directory.
 
 ### Usage
 
-The header include/dynamic.hpp contains all type definitions and is all you need to include in your code. The folder algorithms/ contains some algorithms implemented with the library's structures. This is a snapshot of dynamic.hpp:
+The header include/dynamic/dynamic.hpp contains all type definitions and is all you need to include in your code. The folder algorithms/ contains some algorithms implemented with the library's structures. This is a snapshot of dynamic.hpp:
 
     /*
      * a succinct searchable partial sum with inserts implemented with cache-efficient
