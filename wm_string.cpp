@@ -1,4 +1,3 @@
-#include <bits/stdc++.h>
 #include <random>
 #include "dynamic/dynamic.hpp"
 
