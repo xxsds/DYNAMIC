@@ -1,0 +1,3 @@
+[submodule "deps/hopscotch_map"]
+	path = deps/hopscotch_map
+	url = https://github.com/Tessil/hopscotch-map.git

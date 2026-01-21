@@ -14,24 +14,12 @@ project (dynamic)
 
 include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 
-# hopscotch_map
-ExternalProject_Add(hopscotch_map
-  GIT_REPOSITORY "https://github.com/Tessil/hopscotch-map.git"
-  BUILD_IN_SOURCE TRUE
-  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${INSTALL_DIR} # TODO ADD static build flag
-  UPDATE_COMMAND ""
-  INSTALL_COMMAND ""
-  BUILD_COMMAND ""
-  CONFIGURE_COMMAND "")
-ExternalProject_Get_property(hopscotch_map INSTALL_DIR)
-set(hopscotch_map_INCLUDE "${INSTALL_DIR}/src/hopscotch_map/include/")
-
 include_directories(${PROJECT_SOURCE_DIR}/include)
 #include_directories(${PROJECT_SOURCE_DIR}/include/dynamic)
 #include_directories(${PROJECT_SOURCE_DIR}/include/dynamic/internal)
 #include_directories(${PROJECT_SOURCE_DIR}/include/dynamic/algorithms)
 #include_directories(${PROJECT_SOURCE_DIR}/include/dynamic/algorithms/cw-bwt)
-include_directories(${INSTALL_DIR}/src/hopscotch_map/include)
+include_directories(${CMAKE_SOURCE_DIR}/deps/hopscotch_map/include)
 
 message("Building in ${CMAKE_BUILD_TYPE} mode")
 
@@ -55,13 +43,3 @@ add_executable(rle_bwt rle_bwt.cpp)
 add_executable(cw-bwt cw-bwt.cpp)
 add_executable(benchmark benchmark.cpp)
 add_executable(wm_string wm_string.cpp)
-
-add_dependencies(debug hopscotch_map)
-add_dependencies(rle_lz77_v1 hopscotch_map)
-add_dependencies(rle_lz77_v2 hopscotch_map)
-add_dependencies(h0_lz77 hopscotch_map)
-add_dependencies(rle_bwt hopscotch_map)
-add_dependencies(cw-bwt hopscotch_map)
-add_dependencies(benchmark hopscotch_map)
-add_dependencies(wm_string hopscotch_map)
-
